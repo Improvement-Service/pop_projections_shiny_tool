@@ -3,6 +3,7 @@ library(tidyverse)
 library(readxl)
 
 projection_data <- read.csv("Data files/All Councils - Detailed Projections - Male & Female.csv")
+shape_data <- read_rds("Data files/SCAP_shapefile.rds")
 
 # Add Scotland level data to projection_data
 la_data <- projection_data %>% filter(Level == "Council")
