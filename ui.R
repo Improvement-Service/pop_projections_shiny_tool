@@ -16,10 +16,8 @@ ui <- navbarPage(
            ),
            fluidRow(
              # Add conditionalPanel, if council input is blank show Scotland map - outputID = scot_map_tab_1
-             # This will include absolute panel with across areas graph and within areas graph;
-             # across areas graph - outputID = across_areas_plot_tab_1
-             # within areas graph - outputID = within_areas_plot_tab_1
-            
+             # This will not include absolute panel with across areas graph and within areas graph
+             
              # Add 2nd conditionalPanel, if council input is not blank show council map - outputID = la_map_tab_1
              # This will include absolute panel with across areas graph and within areas graph;
              # across areas graph - outputID = across_areas_plot_tab_1
@@ -41,9 +39,7 @@ ui <- navbarPage(
            ),
            fluidRow(
              # Add conditionalPanel, if council and small area input are blank show Scotland map - outputID = scot_map_tab_2
-             # This will include absolute panel with across areas graph and similar areas graph;
-             # across areas graph - outputID = across_areas_plot_tab_2
-             # similar areas graph - outputID = similar_areas_plot_tab_2
+             # This will not include absolute panel with across areas graph and similar areas graph
              
              # Add 2nd conditionalPanel, if council and small area input are not blank show council map - outputID = la_map_tab_2
              # This will include absolute panel with across areas graph and similar areas graph;
