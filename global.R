@@ -28,3 +28,25 @@ persons_data <- projection_data %>%
 
 projection_data <- rbind(projection_data, persons_data)
 rm(persons_data)
+
+# Add dependency ratio to projection_data (this relates to all genders)
+age_data <- projection_data %>% filter(Age != "All ages") 
+age_data$Age[age_data$Age == "90+"] <- "90"
+age_data$Age <- as.numeric(age_data$Age)
+
+working_age_data <- age_data %>% 
+  filter(Age %in% 16:64) %>%
+  group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
+  summarise(WA.Population = sum(Population)) 
+
+dependent_age_data <- age_data %>% 
+  filter(Age %in% c(0:15, 65:90)) %>%
+  group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
+  summarise(Dependent.Population = sum(Population))
+
+dependency_ratio_data <- merge(working_age_data, dependent_age_data) %>%
+  mutate(Dependency.Ratio = round((Dependent.Population / WA.Population) * 100,1)) %>%
+  select(-WA.Population, -Dependent.Population)
+
+projection_data <- merge(projection_data, dependency_ratio_data)
+rm(age_data, working_age_data, dependent_age_data, dependency_ratio_data)
