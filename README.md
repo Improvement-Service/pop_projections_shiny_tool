@@ -19,6 +19,12 @@ At the beginning of the project the tasks for the global file have already been 
 
 The UI and Server files have comments added to them mapping out the tasks that need to be complete and where the code should be entered. 
 
-For each chunk of code an Issue has been opened detailing what needs to be done. These issues were created in the order thye should be completed, to view them in order sort from oldest to newest. (The issues for tab 1 and tab 2 are independent of each other so can be carried out at the same time if need be). Each issue has been tagged to show what and where it relates to. Specific types of code (maps, graphs, bespoke functions and reactive expressions) have been tagged so that collaborators can work on the type of issues they are comfortable with. 
+For each chunk of code an Issue has been opened detailing what needs to be done. These issues were created in the order they should be completed, to view them in order sort from oldest to newest. (The issues for tab 1 and tab 2 are independent of each other so can be carried out at the same time if need be). Each issue has been tagged to show what and where it relates to. Specific types of code (maps, graphs, bespoke functions and reactive expressions) have been tagged so that collaborators can work on the type of issues they are comfortable with. 
 
 To start work on an issue:
+1. Select the name of an issue
+2. At the right hand-side where it says "Assignees" assign yourself to the issue
+3. At the right hand-side where it says "Development" create a branch for the issue
+4. Once you have worked on your code open a pull request for the branch and associate it with the issue
+5. Once the pull request has been reviewed and agreed the branch can be merged with the Master branch
+6. Finally close the issue and pull request and delete the branch
