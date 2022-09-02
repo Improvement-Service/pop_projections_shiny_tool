@@ -60,3 +60,11 @@ sex_data <- projection_data %>%
 
 projection_data <- merge(projection_data, sex_data)
 rm(sex_data)
+
+#extract drop down list options
+councils <- unique(projection_data$Council.Name[projection_data$Council.Name != "Scotland"])
+years <- unique(projection_data$Year)
+small_areas <- projection_data %>%
+  filter(Level == "Small Area") %>%
+  select(Area.Name)
+unique_small_areas <- unique(small_areas$Area.Name) %>% sort()
