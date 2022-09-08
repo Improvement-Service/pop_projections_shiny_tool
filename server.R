@@ -5,6 +5,44 @@ server <- function(input, output) {
   # Function to create Scotland level map - function name = create_scot_map
   
   # Function to add total population index to data - function name = add_pop_index
+  add_pop_index <- function(dataset, gender_selection, age_selection) {
+    
+    total_pop_data <- dataset %>% 
+      filter(Sex == gender_selection & Age %in% age_selection) %>%
+      group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
+      summarise(Total.Population = sum(Population)) %>%
+      select(-Sex)
+    
+    index_data <- total_pop_data %>% 
+      pivot_wider(names_from = Year, values_from = Total.Population) %>% 
+      mutate(across(`2019`:`2030`, ~ .x / `2018`)) %>%
+      mutate(across(`2018`, ~ .x / `2018`))
+    index_data <- index_data %>% 
+      mutate(across(`2018`:`2030`, ~ round(.x * 100, 1))) %>%
+      pivot_longer(cols = `2018`:`2030`, names_to = "Year", values_to = "Population.Index")
+    index_data$Year <- as.numeric(index_data$Year)
+    
+    sex_data <- projection_data %>% 
+      filter(Age %in% age_selection) %>%
+      group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
+      summarise(Total.Population = sum(Population)) %>%
+      pivot_wider(names_from = Sex, values_from = Total.Population) %>%
+      mutate(Sex.Ratio = round((Males / Females) * 100, 1)) %>%
+      pivot_longer(cols = `Females`:`Persons`, names_to = "Sex", values_to = "Total.Population") %>%
+      filter(Sex == gender_selection) %>%
+      select(Council.Name, Level, Area.Name, Year, Sex.Ratio)
+    
+    dependency_data <- projection_data %>% filter(Sex == gender_selection & Age %in% age_selection) %>%
+      group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
+      arrange(Age) %>%
+      filter(row_number()==1) %>%
+      ungroup() %>%
+      select(Council.Name, Level, Area.Name, Year, Dependency.Ratio)
+    
+    data <- merge(total_pop_data, index_data) %>%
+      merge(dependency_data) %>% 
+      merge(sex_data)
+  }
   
   # Function to create line graphs - function name = create_line_plot
   
