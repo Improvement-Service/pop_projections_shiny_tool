@@ -3,7 +3,25 @@ server <- function(input, output) {
 # Functions ----------------------------------------------------------------------
   
   # Function to create Scotland level map - function name = create_scot_map
-  
+  create_scot_map <- function(){
+    #create leaflet object using local authority shapefiles
+    leaflet(data = la_shape_data) %>%
+    #create background map - OpenStreetMap by default
+      addTiles() %>%
+    #Add polygons for Council areas
+      addPolygons(
+        smoothFactor = 1, 
+        weight = 1.5, 
+        fillOpacity = 0.8,
+        layerId = ~NAME,
+        color = "black", 
+    #fill polygons grey
+        fillColor = "grey",
+    #add Council names when hovering
+        label = ~NAME
+      )
+  }
+
   # Function to add total population index to data - function name = add_pop_index
   
   # Function to create line graphs - function name = create_line_plot
