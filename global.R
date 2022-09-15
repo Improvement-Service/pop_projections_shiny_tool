@@ -51,22 +51,12 @@ dependency_ratio_data <- merge(working_age_data, dependent_age_data) %>%
 projection_data <- merge(projection_data, dependency_ratio_data)
 rm(age_data, working_age_data, dependent_age_data, dependency_ratio_data)
 
-# Add sex ratio to projection_data
-sex_data <- projection_data %>% 
-  select(-Dependency.Ratio) %>%
-  pivot_wider(names_from = Sex, values_from = Population) %>%
-  mutate(Sex.Ratio = round((Males / Females)*100,1)) %>%
-  pivot_longer(cols = 6:8, names_to = "Sex", values_to = "Population")
-
-projection_data <- merge(projection_data, sex_data)
-rm(sex_data)
-
 # Convert age column to numeric
 projection_data <- projection_data %>% filter(Age != "All ages")
 projection_data$Age[projection_data$Age == "90+"] <- "90"
 projection_data$Age <- as.numeric(projection_data$Age)
 
-#extract drop down list options
+# extract drop down list options
 councils <- unique(projection_data$Council.Name[projection_data$Council.Name != "Scotland"])
 years <- unique(projection_data$Year)
 small_areas <- projection_data %>%
