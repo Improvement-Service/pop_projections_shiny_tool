@@ -31,11 +31,7 @@ server <- function(input, output) {
   # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
   
   # Reactive expression to store selection from small_area_output_tab_2 - variable name = selected_small_area_tab_2
-  selected_small_area_tab_2 <- reactive({
-    SA <- input$small_area_output_tab_2
-    return(SA)
-  })   
-  
+
   # Reactive expression to store selection from year_choice_tab_2 - variable name = selected_year_tab_2
   selected_year_tab_2 <- reactive({
     Y <- input$year_choice_tab_2
