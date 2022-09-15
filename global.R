@@ -61,6 +61,11 @@ sex_data <- projection_data %>%
 projection_data <- merge(projection_data, sex_data)
 rm(sex_data)
 
+# Convert age column to numeric
+projection_data <- projection_data %>% filter(Age != "All ages")
+projection_data$Age[projection_data$Age == "90+"] <- "90"
+projection_data$Age <- as.numeric(projection_data$Age)
+
 #extract drop down list options
 councils <- unique(projection_data$Council.Name[projection_data$Council.Name != "Scotland"])
 years <- unique(projection_data$Year)
