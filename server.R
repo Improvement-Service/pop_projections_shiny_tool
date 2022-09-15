@@ -157,15 +157,30 @@ server <- function(input, output) {
 # Reactive expressions (and UI output) for input selections -------------------------------------------
   
   # Reactive expression to store selection from la_choice_tab_1 - variable name = selected_la_tab_1
+  selected_la_tab_1 <- reactive({
+    LA <- input$la_choice_tab_1
+    return(LA)
+  })  
   
   # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
-  
+
   # Reactive expression to store selection from year_choice_tab_1 - variable name = selected_year_tab_1
+  selected_year_tab_1 <- reactive({
+    Y <- input$year_choice_tab_1
+    return(Y)
+  })  
   
   # Reactive expression to store selection from age_choice_tab_1 - variable name = selected_age_tab_1
+  selected_age_tab_1 <- reactive({
+    A <- input$age_choice_tab_1
+    return(A)
+  })   
   
-  # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
-
+    # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
+  selected_gender_tab_1 <- reactive({
+    G <- input$gender_choice_tab_1
+    return(G)
+  })   
   
   # Reactive expression to store selection from la_choice_tab_2 - variable name = selected_la_tab_2
   
