@@ -9,7 +9,7 @@ server <- function(input, output) {
   # Function to create line graphs - function name = create_line_plot
   create_line_plot <- function(dataset, council_selection, small_area_selection, measure_selection){
     
-    renderPlotly({
+    x <- renderPlotly({
       
       data <- if(measure_selection == "Total Population") {
         filter(dataset, Measure == "Population.Index")
@@ -91,7 +91,8 @@ server <- function(input, output) {
         layout(yaxis = list(fixedrange = TRUE)) %>%
         layout(legend = list(x = 0, y = 1))
     })
-  
+    
+    return(x)
   }
 
 # Reactive expressions (and UI output) for input selections -------------------------------------------
