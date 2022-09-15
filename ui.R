@@ -6,13 +6,45 @@ ui <- navbarPage(
   tabPanel("Population size", 
            fluidRow(
              # Add selectize input for council dropdown - inputID = la_choice_tab_1
-             column(3),
+             column(3,
+                    selectizeInput(inputId = "la_choice_tab_1", 
+                                   choices = councils, 
+                                   label = NULL,
+                                   options = list(placeholder = 'Select Council',
+                                                  onInitialize = I('function() { this.setValue(""); }')
+                                   )
+                    )
+             ),
              # Add selectize input for year dropdown - inputID = year_choice_tab_1
-             column(3),
+             column(3,
+                    selectizeInput(inputId = "year_choice_tab_1", 
+                                   choices = years, 
+                                   label = NULL,
+                                   options = list(placeholder = 'Select Year',
+                                                  onInitialize = I('function() { this.setValue(""); }')
+                                   )
+                    )
+             ),
              # Add sliderinput for age range - inputID = age_choice_tab_1
-             column(3),
+             column(3,
+                    sliderInput(inputId = "age_choice_tab_1", 
+                                label = "Select ages to include:", 
+                                min = 0, 
+                                max = 90, 
+                                step = 1, 
+                                value = c(0,90), 
+                                dragRange = TRUE )
+             ),
              # Add checkbox input for gender - inputID = gender_choice_tab_1
-             column(3)
+             column(3,
+                    checkboxGroupInput(
+                      inputId = "gender_choice_tab_1",
+                      label = "Select genders to include:",
+                      choices = c("Male", "Female"),
+                      selected = c("Male", "Female"),
+                      inline = FALSE
+                    )
+             )
            ),
            fluidRow(
              # Add conditionalPanel, if council input is blank show Scotland map - outputID = scot_map_tab_1
