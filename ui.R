@@ -32,7 +32,7 @@ ui <- navbarPage(
                                 min = 0, 
                                 max = 90, 
                                 step = 1, 
-                                value = c(16,64), 
+                                value = c(0,90), 
                                 dragRange = TRUE )
              ),
              # Add checkbox input for gender - inputID = gender_choice_tab_1
