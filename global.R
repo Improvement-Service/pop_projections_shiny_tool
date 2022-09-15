@@ -1,6 +1,7 @@
 library(shiny)
 library(tidyverse)
 library(readxl)
+library(plotly)
 
 projection_data <- read.csv("Data files/All Councils - Detailed Projections - Male & Female.csv")
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
