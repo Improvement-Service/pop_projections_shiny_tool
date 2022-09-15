@@ -183,15 +183,26 @@ server <- function(input, output) {
   })   
   
   # Reactive expression to store selection from la_choice_tab_2 - variable name = selected_la_tab_2
+  selected_la_tab_2 <- reactive({
+    LA <- input$la_choice_tab_2
+    return(LA)
+  }) 
   
   # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
   
   # Reactive expression to store selection from small_area_output_tab_2 - variable name = selected_small_area_tab_2
-  
+
   # Reactive expression to store selection from year_choice_tab_2 - variable name = selected_year_tab_2
+  selected_year_tab_2 <- reactive({
+    Y <- input$year_choice_tab_2
+    return(Y)
+  }) 
   
   # Reactive expression to store selection from measure_choice_tab_2 - variable name = selected_measure_tab_2
-  
+  selected_measure_tab_2 <- reactive({
+    M <- input$measure_choice_tab_2
+    return(M)
+  })  
   
 # Code for Population Size Tab (Tab 1) -------------------------------------------
 
