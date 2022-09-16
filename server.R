@@ -58,9 +58,9 @@ server <- function(input, output) {
       ungroup() %>%
       select(Council.Name, Level, Area.Name, Year, Dependency.Ratio)
     
-    data <- merge(total_pop_data, index_data) %>%
-      merge(dependency_data) %>% 
-      merge(sex_data)
+    data <- left_join(total_pop_data, index_data) %>%
+      left_join(dependency_data) %>% 
+      left_join(sex_data)
     
     return(data)
   }
