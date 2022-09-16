@@ -47,11 +47,11 @@ dependent_age_data <- age_data %>%
   group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
   summarise(Dependent.Population = sum(Population))
 
-dependency_ratio_data <- merge(working_age_data, dependent_age_data) %>%
+dependency_ratio_data <- left_join(working_age_data, dependent_age_data) %>%
   mutate(Dependency.Ratio = round((Dependent.Population / WA.Population) * 100,1)) %>%
   select(-WA.Population, -Dependent.Population)
 
-projection_data <- merge(projection_data, dependency_ratio_data)
+projection_data <- left_join(projection_data, dependency_ratio_data)
 rm(age_data, working_age_data, dependent_age_data, dependency_ratio_data)
 
 # Convert age column to numeric
