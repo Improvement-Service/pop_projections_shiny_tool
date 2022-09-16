@@ -2,7 +2,7 @@
 A shiny tool to display the Small Area Population Projections produced by the Improvement Service.
 
 # Updating the tool
-If new data is added the script Add-aggregations-to-data.R needs to be run first. This script adds aggregations to the projection data and saves as a csv called which is then read into the global script. This initial script can be found in Resources - Helper files
+If new data is added the script Add-aggregations-to-data.R needs to be run first. This script adds aggregations to the projection data and saves as a csv called Population Projections With Aggregations.csv which is then read into the global script. This initial script can be found in Resources - Helper scripts.
 
 # Resources
 
