@@ -1,6 +1,9 @@
 # pop_projections_shiny_tool
 A shiny tool to display the Small Area Population Projections produced by the Improvement Service.
 
+# Updating the tool
+If new data is added the script Add-aggregations-to-data.R needs to be run first. This script adds aggregations to the projection data and saves as a csv called which is then read into the global script. This initial script can be found in Resources - Helper files
+
 # Resources
 
 A mockup of the app has been created in Mockflow. A PDF copy of this can be viewed in the resources folder. 
