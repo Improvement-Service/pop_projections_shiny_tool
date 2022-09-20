@@ -213,7 +213,10 @@ server <- function(input, output) {
   # Create data for council level map - variable name = map_data_tab_1
   
   # Combine map data with shape file - variable name = map_data_tab_1
-  
+  map_data_tab_1 <- reactive({
+    map_data_tab_1 <- map_data_tab_1()
+    left_join(map_data_tab_1, shape_data, by = c("Area.Name"="Sub-Council Area Name"))
+  })
   # RenderLeaflet for council level map - output name = la_map_tab_1
   
   # Create observe event to update selected_small_area_tab_1
