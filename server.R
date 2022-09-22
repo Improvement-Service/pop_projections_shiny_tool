@@ -216,15 +216,8 @@ server <- function(input, output) {
     #filter this data based on council and year
     council_map_data <- filter(indexed_data_tab_1, Year == input$year_choice_tab_1 & Council.Name == input$la_choice_tab_1) %>%
       filter(., Level == "Small Area")
-    
-    council_map_data <- council_map_data %>% mutate(pop_quints = ntile(Population, 5)) 
-  })
-  
-  ####Second reactive function??
-  map_colours_tab_1 <- brewer.pal(5, "RdYlGn")
-  map_colours_palette_tab_1 <- colorBin(map_colours, test$pop_quints) ##would add below (la_map_tab_1)
-  
-  
+    })
+
   # Combine map data with shape file - variable name = map_data_tab_1
 
   # RenderLeaflet for council level map - output name = la_map_tab_1
