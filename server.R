@@ -176,7 +176,7 @@ server <- function(input, output) {
     return(A)
   })   
   
-    # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
+  # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
   selected_gender_tab_1 <- reactive({
     G <- input$gender_choice_tab_1
     return(G)
@@ -211,13 +211,71 @@ server <- function(input, output) {
   # Run add_pop_index - variable name = indexed_data_tab_1
   
   # Create data for council level map - variable name = map_data_tab_1
-  
+  map_data_tab_1 <- reactive({
+    indexed_data_tab_1 <- indexed_data_tab_1()
+    #filter this data based on council and year
+    council_map_data <- filter(indexed_data_tab_1, Year ==selected_year_tab_1() & Council.Name == selected_la_tab_1()) %>%
+      filter(., Level == "Small Area")
+    })
+
   # Combine map data with shape file - variable name = map_data_tab_1
   map_data_tab_1 <- reactive({
     map_data_tab_1 <- map_data_tab_1()
     left_join(map_data_tab_1, shape_data, by = c("Area.Name"="Sub-Council Area Name"))
   })
+
   # RenderLeaflet for council level map - output name = la_map_tab_1
+  output$la_map_tab_1 <- renderLeaflet({
+    
+    # store selected age
+    selected_age_tab_1 <- selected_age_tab_1()
+    # label of the ages included, if more than 1 age is selected is will be presented as "16-64"
+    age_label <- if(length(selected_age_tab_1) > 1) { 
+      paste(first(selected_age_tab_1), "-", last(selected_age_tab_1))
+    } else {
+      selected_age_tab_1
+    }
+
+    # Store selected gender
+    selected_gender_tab_1 <- selected_gender_tab_1()
+    
+    # Set colours for the map
+    map_colours <- brewer.pal(8, "Blues")
+    # Assign colours to quintiles
+    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1@data$Total.Population, n = 8)
+    
+    # Create a leaflet object using small area shapefiles
+    leaflet(map_data_tab_1) %>%
+      # Create background map - OpenStreetMap by default
+      addTiles() %>%
+      # Add polygons for small areas
+      addPolygons(smoothFactor = 1, 
+                  weight = 1.5, 
+                  fillOpacity = 0.8,
+                  layerId = ~Area.Name,
+                  color = "black", 
+                  # colour of polygons should map to population quintiles
+                  fillColor = ~map_colour_quintiles(Total.Population),
+                  # Use HTML to create popover labels with all the selected info
+                  label = (sprintf(
+                    "<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
+                    map_data_tab_1@data$Area.Name, 
+                    map_data_tab_1@data$Year,
+                    age_label,
+                    selected_gender_tab_1,
+                    map_data_tab_1@data$Total.Population)
+                    %>% lapply(htmltools::HTML)
+                    ),
+                  # Creates a white border on the polygon where the mouse hovers
+                  highlightOptions = highlightOptions(color = "white", weight = 3, bringToFront = TRUE)
+                  ) %>%
+      addLegend("bottomleft", 
+                colors = map_colours,
+                labels = c("Smallest Population", "","","","","","","Largest Population"),
+                title = "",
+                opacity = 1
+                ) 
+  })
   
   # Create observe event to update selected_small_area_tab_1
   
