@@ -188,14 +188,23 @@ server <- function(input, output) {
     return(LA)
   }) 
   
+  # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
+  small_area_choices_tab_2 <- reactive({
+    req(input$la_choice_tab_2)
+    small_areas_subset <- small_area_lookup %>%
+          filter(Council.Name == input$la_choice_tab_2) %>%
+           pull(Area.Name)
+    return(small_areas_subset)
+    
+  })
+  
   # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
   output$small_area_output_tab_2 <- renderUI({
     selectizeInput(inputId = "small_area_choice_tab_2", 
-                   choices = small_area_lookup[Council.Name == selected_la_tab_1()],
-                   label = NULL,
-                   options = list(placeholder = 'Select Area',
-                                  onInitialize = I('function() { this.setValue(""); }')
-                                  )
+                  choices = small_area_choices_tab_2(),
+                  label = NULL,
+                  options = list(placeholder = 'Select Area',
+                                 onInitialize = I('function() { this.setValue(""); }')
                   )
   })
   
