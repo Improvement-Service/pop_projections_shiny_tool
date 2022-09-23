@@ -211,9 +211,15 @@ server <- function(input, output) {
   # Run add_pop_index - variable name = indexed_data_tab_1
   
   # Create data for council level map - variable name = map_data_tab_1
-  
+  map_data_tab_1 <- reactive({
+    indexed_data_tab_1 <- indexed_data_tab_1()
+    #filter this data based on council and year
+    council_map_data <- filter(indexed_data_tab_1, Year ==selected_year_tab_1() & Council.Name == selected_la_tab_1()) %>%
+      filter(., Level == "Small Area")
+    })
+
   # Combine map data with shape file - variable name = map_data_tab_1
-  
+
   # RenderLeaflet for council level map - output name = la_map_tab_1
   output$la_map_tab_1 <- renderLeaflet({
     
