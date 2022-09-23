@@ -263,6 +263,9 @@ server <- function(input, output) {
   # RenderLeaflet for council level map - output name = la_map_tab_1
   output$la_map_tab_1 <- renderLeaflet({
     
+    # Call reactive map data
+    map_data_tab_1 <- map_data_tab_1()
+    
     # store selected age
     selected_age_tab_1 <- selected_age_tab_1()
     # label of the ages included, if more than 1 age is selected is will be presented as "16-64"
