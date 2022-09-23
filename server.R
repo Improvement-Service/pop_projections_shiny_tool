@@ -178,7 +178,13 @@ server <- function(input, output) {
   
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
   selected_gender_tab_1 <- reactive({
-    G <- input$gender_choice_tab_1
+    # Length greater than 1 means both male and female are selected so should return "Persons"
+    # so the data can be filtered as such
+    G <- if(length(input$gender_choice_tab_1) > 1){
+      "Persons"
+    } else {
+      input$gender_choice_tab_1
+    }
     return(G)
   })   
   
