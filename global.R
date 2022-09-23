@@ -5,7 +5,7 @@ library(leaflet)
 library(plotly)
 library(RColorBrewer)
 
-projection_data <- read.csv("Data files/Population Projections With Aggregations.csv")
+projection_data <- read_csv("Data files/Population Projections With Aggregations.csv")
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
 la_shape_data <- read_rds("Data files/LAShps.rds") 
 
