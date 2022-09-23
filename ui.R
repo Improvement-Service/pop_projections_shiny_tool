@@ -87,14 +87,7 @@ ui <- navbarPage(
                     )
              ),
              # Add UiOutput for small area dropdown - outputID = small_area_output_tab_2
-             column(3#,
-                    #selectizeInput(inputId = "small_area_output_tab_2", 
-                     #              choices = unique_small_areas, 
-                     #              label = NULL,
-                     #              options = list(placeholder = 'Select Area',
-                     #                             onInitialize = I('function() { this.setValue(""); }')
-                     #              )
-                   # )
+             column(3, uiOutput("small_area_output_tab_2")
              ),
              # Add selectize input for year dropdown - inputID = year_choice_tab_2
              column(3,
