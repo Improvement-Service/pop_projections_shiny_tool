@@ -191,7 +191,7 @@ server <- function(input, output) {
   # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
   output$small_area_output_tab_2 <- renderUI({
     selectizeInput(inputId = "small_area_choice_tab_2", 
-                  choices = selected_small_area_tab_2(), 
+                  choices = small_area_lookup[Council.Name == selected_la_tab_1()]
                   label = NULL,
                   options = list(placeholder = 'Select Area',
                                  onInitialize = I('function() { this.setValue(""); }')
