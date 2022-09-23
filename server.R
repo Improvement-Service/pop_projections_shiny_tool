@@ -211,7 +211,7 @@ server <- function(input, output) {
   # Run add_pop_index - variable name = indexed_data_tab_1
   
    indexed_data_tab_1 <- reactive({
-    add_pop_index(gender_selection = selected_gender_tab_1, age_selection = selected_age_tab_1) # function(gender_selection, age_selection)
+    add_pop_index(gender_selection = selected_gender_tab_1(), age_selection = selected_age_tab_1()) # function(gender_selection, age_selection)
    })  
   
   # Create data for council level map - variable name = map_data_tab_1
