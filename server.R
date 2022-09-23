@@ -214,7 +214,7 @@ server <- function(input, output) {
   map_data_tab_1 <- reactive({
     indexed_data_tab_1 <- indexed_data_tab_1()
     #filter this data based on council and year
-    council_map_data <- filter(indexed_data_tab_1, Year == input$year_choice_tab_1 & Council.Name == input$la_choice_tab_1) %>%
+    council_map_data <- filter(indexed_data_tab_1, Year ==selected_year_tab_1() & Council.Name == selected_la_tab_1()) %>%
       filter(., Level == "Small Area")
     })
 
