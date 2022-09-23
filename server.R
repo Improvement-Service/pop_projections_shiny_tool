@@ -237,7 +237,7 @@ server <- function(input, output) {
 
   # Run create_scot_map - variable name = scot_map_tab_1
   
-    scot_map_tab_1 <- renderLeaflet({
+  output$scot_map_tab_1 <- renderLeaflet({
     create_scot_map()
   })
   
