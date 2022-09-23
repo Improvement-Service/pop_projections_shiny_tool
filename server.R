@@ -212,6 +212,7 @@ server <- function(input, output) {
                   options = list(placeholder = 'Select Area',
                                  onInitialize = I('function() { this.setValue(""); }')
                   )
+    )
   })
   
   # Reactive expression to store selection from small_area_output_tab_2 - variable name = selected_small_area_tab_2
