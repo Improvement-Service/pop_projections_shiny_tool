@@ -156,25 +156,7 @@ server <- function(input, output) {
 
 # Reactive expressions (and UI output) for input selections -------------------------------------------
   
-  # Reactive expression to store selection from la_choice_tab_1 - variable name = selected_la_tab_1
-  selected_la_tab_1 <- reactive({
-    LA <- input$la_choice_tab_1
-    return(LA)
-  })  
-  
   # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
-
-  # Reactive expression to store selection from year_choice_tab_1 - variable name = selected_year_tab_1
-  selected_year_tab_1 <- reactive({
-    Y <- input$year_choice_tab_1
-    return(Y)
-  })  
-  
-  # Reactive expression to store selection from age_choice_tab_1 - variable name = selected_age_tab_1
-  selected_age_tab_1 <- reactive({
-    A <- input$age_choice_tab_1
-    return(A)
-  })   
   
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
   selected_gender_tab_1 <- reactive({
@@ -187,12 +169,6 @@ server <- function(input, output) {
     }
     return(G)
   })   
-  
-  # Reactive expression to store selection from la_choice_tab_2 - variable name = selected_la_tab_2
-  selected_la_tab_2 <- reactive({
-    LA <- input$la_choice_tab_2
-    return(LA)
-  }) 
   
   # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
   small_area_choices_tab_2 <- reactive({
@@ -215,24 +191,6 @@ server <- function(input, output) {
     )
   })
   
-  # Reactive expression to store selection from small_area_output_tab_2 - variable name = selected_small_area_tab_2
-  selected_small_area_tab_2 <- reactive({
-  small_area <-  input$small_area_choice_tab_2
-  return(small_area)
-})
-
-  # Reactive expression to store selection from year_choice_tab_2 - variable name = selected_year_tab_2
-  selected_year_tab_2 <- reactive({
-    Y <- input$year_choice_tab_2
-    return(Y)
-  }) 
-  
-  # Reactive expression to store selection from measure_choice_tab_2 - variable name = selected_measure_tab_2
-  selected_measure_tab_2 <- reactive({
-    M <- input$measure_choice_tab_2
-    return(M)
-  })  
-  
 # Code for Population Size Tab (Tab 1) -------------------------------------------
 
   # Run create_scot_map - variable name = scot_map_tab_1
@@ -247,7 +205,7 @@ server <- function(input, output) {
     indexed_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
                                   age_selection = input$age_choice_tab_1
                                   )
-    # Filter this data based on council and yea
+    # Filter this data based on council and year
     council_map_data <- filter(indexed_data, 
                                Year == input$year_choice_tab_1 & 
                                  Council.Name == input$la_choice_tab_1
@@ -267,7 +225,7 @@ server <- function(input, output) {
     map_data_tab_1 <- map_data_tab_1()
     
     # store selected age
-    selected_age_tab_1 <- selected_age_tab_1()
+    selected_age_tab_1 <- input$age_choice_tab_1
     # label of the ages included, if more than 1 age is selected is will be presented as "16-64"
     age_label <- if(length(selected_age_tab_1) > 1) { 
       paste(first(selected_age_tab_1), "-", last(selected_age_tab_1))
