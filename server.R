@@ -241,24 +241,23 @@ server <- function(input, output) {
     create_scot_map()
   })
   
-  # Run add_pop_index - variable name = indexed_data_tab_1
-  
-   indexed_data_tab_1 <- reactive({
-    add_pop_index(gender_selection = selected_gender_tab_1(), age_selection = selected_age_tab_1()) # function(gender_selection, age_selection)
-   })  
-  
-  # Create data for council level map - variable name = map_data_tab_1
+  # Create reactive data for map - variable name = map_data_tab_1
   map_data_tab_1 <- reactive({
-    indexed_data_tab_1 <- indexed_data_tab_1()
-    #filter this data based on council and year
-    council_map_data <- filter(indexed_data_tab_1, Year ==selected_year_tab_1() & Council.Name == selected_la_tab_1()) %>%
+    # Run add_pop_index using input values
+    indexed_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
+                                  age_selection = input$age_choice_tab_1
+                                  )
+    # Filter this data based on council and yea
+    council_map_data <- filter(indexed_data, 
+                               Year == input$year_choice_tab_1 & 
+                                 Council.Name == input$la_choice_tab_1
+                               ) %>%
       filter(., Level == "Small Area")
-    })
-
-  # Combine map data with shape file - variable name = map_data_tab_1
-  map_data_tab_1 <- reactive({
-    map_data_tab_1 <- map_data_tab_1()
-    left_join(map_data_tab_1, shape_data, by = c("Area.Name"="Sub-Council Area Name"))
+    # Combine map data with shape file 
+    combined_data <- left_join(council_map_data, 
+                               shape_data, 
+                               by = c("Area.Name" = "Sub-Council Area Name")
+                               )
   })
 
   # RenderLeaflet for council level map - output name = la_map_tab_1
