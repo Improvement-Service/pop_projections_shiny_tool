@@ -200,6 +200,10 @@ server <- function(input, output) {
   })
   # Reactive expression to store selection from small_area_output_tab_2 - variable name = selected_small_area_tab_2
   selected_small_area_tab_2 <- reactive({
+  small_area <-  input$small_area_choice_tab_2
+  return(small_area)
+})
+
     small_areas_subset <- small_area_lookup %>%
       filter(Council.Name == input$la_choice_tab_2) %>%
       pull(Area.Name)
