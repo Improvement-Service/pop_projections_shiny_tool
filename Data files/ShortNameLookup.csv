@@ -1,17 +1,17 @@
 ﻿ShortName,LongName,Council
-Airyhal ,Airyhall - Broomhill - Garthdee ,Aberdeen City
+Airyhal ,Airyhall/Broomhill/Garthdee ,Aberdeen City
 BrdgeDon ,Bridge of Don ,Aberdeen City
-DyceBuck ,Dyce - Bucksburn - Danestone ,Aberdeen City
-GeogHarb ,George St - Harbour ,Aberdeen City
-HazleAsh ,Hazlehead - Ashley - Queens Cross ,Aberdeen City
-HiltWood ,Hilton - Woodside - Stockethill ,Aberdeen City
-Kincorth ,Kincorth - Nigg - Cove ,Aberdeen City
-Kingswel ,Kingswells - Sheddocksley - Summerhill ,Aberdeen City
+DyceBuck ,Dyce/Bucksburn / Danestone ,Aberdeen City
+GeogHarb ,George St/Harbour ,Aberdeen City
+HazleAsh ,Hazlehead / Ashley/Queens Cross ,Aberdeen City
+HiltWood ,Hilton/Woodside/Stockethill ,Aberdeen City
+Kincorth ,Kincorth/Nigg/Cove ,Aberdeen City
+Kingswel ,Kingswells/Sheddocksley/Summerhill ,Aberdeen City
 LowerDee ,Lower Deeside ,Aberdeen City
-Midstock ,Midstocket - Rosemount ,Aberdeen City
-Nrthfild ,Northfield - Mastrick North ,Aberdeen City
-Tillydrn ,Tillydrone - Seaton - Old Aberdeen ,Aberdeen City
-TorFerry ,Torry – Ferryhill ,Aberdeen City
+Midstock ,Midstocket/Rosemount ,Aberdeen City
+Nrthfild ,Northfield / Mastrick North ,Aberdeen City
+Tillydrn ,Tillydrone / Seaton/Old Aberdeen ,Aberdeen City
+TorFerry ,Torry/Ferryhill ,Aberdeen City
 AboyneUp,"Aboyne, Upper Deeside & Donside",Aberdeenshire
 Banchory,Banchory & Mid Deeside,Aberdeenshire
 Banffand,Banff & District,Aberdeenshire
@@ -50,21 +50,21 @@ MidArgyl,Mid Argyll,Argyll & Bute
 MulIona,Mull & Iona,Argyll & Bute
 Almond,Almond,City of Edinburgh
 CityCent,City Centre,City of Edinburgh
-Colinton,Colinton-Fairmilehead,City of Edinburgh
-Corstorp,Corstorphine-Murrayfield,City of Edinburgh
-Craigent,Craigentinny-Duddingston,City of Edinburgh
-DrumBrae,Drum Brae-Gyle,City of Edinburgh
+Colinton,Colinton/Fairmilehead,City of Edinburgh
+Corstorp,Corstorphine/Murrayfield,City of Edinburgh
+Craigent,Craigentinny/Duddingston,City of Edinburgh
+DrumBrae,Drum Brae/Gyle,City of Edinburgh
 Forth,Forth,City of Edinburgh
-Fountain,Fountainbridge-Craiglockhart,City of Edinburgh
+Fountain,Fountainbridge/Craiglockhart,City of Edinburgh
 Inverlei,Inverleith,City of Edinburgh
 Leith,Leith,City of Edinburgh
 LeithWal,Leith Walk,City of Edinburgh
-Liberton,Liberton-Gilmerton,City of Edinburgh
+Liberton,Liberton/Gilmerton,City of Edinburgh
 Mornings,Morningside,City of Edinburgh
 Pentland,Pentland Hills,City of Edinburgh
-Portobel,Portobello-Craigmillar,City of Edinburgh
-Sighthil,Sighthill-Gorgie,City of Edinburgh
-Southsid,Southside-Newington,City of Edinburgh
+Portobel,Portobello/Craigmillar,City of Edinburgh
+Sighthil,Sighthill/Gorgie,City of Edinburgh
+Southsid,Southside/Newington,City of Edinburgh
 ClackmaC,Clackmannanshire Central,Clackmannanshire
 ClackmaE,Clackmannanshire East,Clackmannanshire
 ClackmaN,Clackmannanshire North,Clackmannanshire
@@ -146,28 +146,28 @@ Rosyth,Rosyth,Fife
 StAndrew,St. Andrews,Fife
 TayBridg,Tay Bridgehead,Fife
 WestFife,West Fife & Coastal Villages,Fife
-Andersto,Anderston-City-Yorkhill,Glasgow City
+Andersto,Anderston/City/Yorkhill,Glasgow City
 Baillies,Baillieston,Glasgow City
 Calton,Calton,Glasgow City
 Canal,Canal,Glasgow City
 Cardonal,Cardonald,Glasgow City
 Dennisto,Dennistoun,Glasgow City
-Drumchap,Drumchapel-Anniesland,Glasgow City
+Drumchap,Drumchapel/Anniesland,Glasgow City
 EastCent,East Centre,Glasgow City
-Garscadd,Garscadden-Scotstounhill,Glasgow City
+Garscadd,Garscadden/Scotstounhill,Glasgow City
 Govan,Govan,Glasgow City
 GreaterP,Greater Pollok,Glasgow City
 Hillhead,Hillhead,Glasgow City
 Langside,Langside,Glasgow City
 Linn,Linn,Glasgow City
 Maryhill,Maryhill,Glasgow City
-Newlands,Newlands-Auldburn,Glasgow City
+Newlands,Newlands/Auldburn,Glasgow City
 NorthEaG,North East,Glasgow City
-PartickE,Partick East-Kelvindale,Glasgow City
+PartickE,Partick East/Kelvindale,Glasgow City
 Polloksh,Pollokshields,Glasgow City
 Shettles,Shettleston,Glasgow City
 SouthsiC,Southside Central,Glasgow City
-Springbu,Springburn-Robroyston,Glasgow City
+Springbu,Springburn/Robroyston,Glasgow City
 Victoria,Victoria Park,Glasgow City
 BS,Badenoch & Strathspey,Highland
 CA,Caithness,Highland
@@ -285,7 +285,7 @@ ShetlanN,Shetland North,Shetland Islands
 ShetlanS,Shetland South,Shetland Islands
 ShetlanW,Shetland West,Shetland Islands
 AlwyDnft,Alloway & Doonfoot,South Ayrshire
-AnbMbTar,Annbank Mossblown & Tarbolton - the Coalfields,South Ayrshire
+AnbMbTar,Annbank Mossblown & Tarbolton: the Coalfields,South Ayrshire
 ANHbrWNS,Ayr North Harbour Wallacetown & Newton South,South Ayrshire
 ASHbrTC,Ayr South Harbour & Town Centre,South Ayrshire
 Barassie,Barassie,South Ayrshire
