@@ -156,92 +156,76 @@ server <- function(input, output) {
 
 # Reactive expressions (and UI output) for input selections -------------------------------------------
   
-  # Reactive expression to store selection from la_choice_tab_1 - variable name = selected_la_tab_1
-  selected_la_tab_1 <- reactive({
-    LA <- input$la_choice_tab_1
-    return(LA)
-  })  
-  
   # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
-
-  # Reactive expression to store selection from year_choice_tab_1 - variable name = selected_year_tab_1
-  selected_year_tab_1 <- reactive({
-    Y <- input$year_choice_tab_1
-    return(Y)
-  })  
-  
-  # Reactive expression to store selection from age_choice_tab_1 - variable name = selected_age_tab_1
-  selected_age_tab_1 <- reactive({
-    A <- input$age_choice_tab_1
-    return(A)
-  })   
   
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
   selected_gender_tab_1 <- reactive({
-    G <- input$gender_choice_tab_1
+    # Length greater than 1 means both male and female are selected so should return "Persons"
+    # so the data can be filtered as such
+    G <- if(length(input$gender_choice_tab_1) > 1){
+      "Persons"
+    } else {
+      input$gender_choice_tab_1
+    }
     return(G)
   })   
   
-  # Reactive expression to store selection from la_choice_tab_2 - variable name = selected_la_tab_2
-  selected_la_tab_2 <- reactive({
-    LA <- input$la_choice_tab_2
-    return(LA)
-  }) 
+  # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
+  small_area_choices_tab_2 <- reactive({
+    req(input$la_choice_tab_2)
+    small_areas_subset <- small_area_lookup %>%
+          filter(Council.Name == input$la_choice_tab_2) %>%
+           pull(Area.Name)
+    return(small_areas_subset)
+    
+  })
   
   # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
   output$small_area_output_tab_2 <- renderUI({
     selectizeInput(inputId = "small_area_choice_tab_2", 
-                   choices = small_area_lookup[Council.Name == selected_la_tab_1()],
-                   label = NULL,
-                   options = list(placeholder = 'Select Area',
-                                  onInitialize = I('function() { this.setValue(""); }')
-                                  )
+                  choices = small_area_choices_tab_2(),
+                  label = NULL,
+                  options = list(placeholder = 'Select Area',
+                                 onInitialize = I('function() { this.setValue(""); }')
                   )
+    )
   })
-  
-  # Reactive expression to store selection from small_area_output_tab_2 - variable name = selected_small_area_tab_2
-  selected_small_area_tab_2 <- reactive({
-  small_area <-  input$small_area_choice_tab_2
-  return(small_area)
-})
-
-  # Reactive expression to store selection from year_choice_tab_2 - variable name = selected_year_tab_2
-  selected_year_tab_2 <- reactive({
-    Y <- input$year_choice_tab_2
-    return(Y)
-  }) 
-  
-  # Reactive expression to store selection from measure_choice_tab_2 - variable name = selected_measure_tab_2
-  selected_measure_tab_2 <- reactive({
-    M <- input$measure_choice_tab_2
-    return(M)
-  })  
   
 # Code for Population Size Tab (Tab 1) -------------------------------------------
 
   # Run create_scot_map - variable name = scot_map_tab_1
   
-  # Run add_pop_index - variable name = indexed_data_tab_1
+  output$scot_map_tab_1 <- renderLeaflet({
+    create_scot_map()
+  })
   
-  # Create data for council level map - variable name = map_data_tab_1
+  # Create reactive data for map - variable name = map_data_tab_1
   map_data_tab_1 <- reactive({
-    indexed_data_tab_1 <- indexed_data_tab_1()
-    #filter this data based on council and year
-    council_map_data <- filter(indexed_data_tab_1, Year ==selected_year_tab_1() & Council.Name == selected_la_tab_1()) %>%
+    # Run add_pop_index using input values
+    indexed_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
+                                  age_selection = input$age_choice_tab_1
+                                  )
+    # Filter this data based on council and year
+    council_map_data <- filter(indexed_data, 
+                               Year == input$year_choice_tab_1 & 
+                                 Council.Name == input$la_choice_tab_1
+                               ) %>%
       filter(., Level == "Small Area")
-    })
-
-  # Combine map data with shape file - variable name = map_data_tab_1
-  map_data_tab_1 <- reactive({
-    map_data_tab_1 <- map_data_tab_1()
-    left_join(map_data_tab_1, shape_data, by = c("Area.Name"="Sub-Council Area Name"))
+    # Combine map data with shape file 
+    combined_data <- left_join(council_map_data, 
+                               shape_data, 
+                               by = c("Area.Name" = "Sub-Council Area Name")
+                               )
   })
 
   # RenderLeaflet for council level map - output name = la_map_tab_1
   output$la_map_tab_1 <- renderLeaflet({
     
+    # Call reactive map data
+    map_data_tab_1 <- map_data_tab_1()
+    
     # store selected age
-    selected_age_tab_1 <- selected_age_tab_1()
+    selected_age_tab_1 <- input$age_choice_tab_1
     # label of the ages included, if more than 1 age is selected is will be presented as "16-64"
     age_label <- if(length(selected_age_tab_1) > 1) { 
       paste(first(selected_age_tab_1), "-", last(selected_age_tab_1))
