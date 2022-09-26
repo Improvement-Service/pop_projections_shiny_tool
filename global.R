@@ -16,3 +16,9 @@ small_area_lookup <- projection_data %>%
   filter(Level == "Small Area") %>%
   select(Council.Name, Area.Name) %>%
   distinct()
+
+#replace "and" with ampersand in shapefiles
+shape_data$`Sub-Council Area Name` <- gsub(" and ", " & ", shape_data$`Sub-Council Area Name`)
+
+#load shortname lookups
+lookup <- read_csv("Data files/ShortNameLookup.csv")
