@@ -213,10 +213,14 @@ server <- function(input, output) {
                                  Council.Name == input$la_choice_tab_1
                                ) %>%
       filter(., Level == "Small Area")
+    
+    # Filter shape file to selected council before combining with data
+    filtered_shape <- filter(shape_data, Council == input$la_choice_tab_1)
     # Combine map data with shape file 
-    combined_data <- left_join(council_map_data, shape_data, 
-                               by = c("LongName" = "SubCouncil", "Council.Name" = "Council")
-                               )
+    combined_data <- left_join(filtered_shape, 
+                               council_map_data,
+                               by = c("SubCouncil" = "LongName")
+    )
   })
 
   # RenderLeaflet for council level map - output name = la_map_tab_1
