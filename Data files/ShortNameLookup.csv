@@ -179,12 +179,12 @@ NA,Nairn,Highland
 RCW,Ross and Cromarty West,Highland
 SL,Skye and Lochalsh,Highland
 SU,Sutherland,Highland
-InverclC,Inverclyde Central,
-InverclE,Inverclyde East,
-InvercEC,Inverclyde East Central,
-InverclN,Inverclyde North,
-InverclS,Inverclyde South,
-InvercSW,Inverclyde South West,
+InverclC,Inverclyde Central,Inverclyde
+InverclE,Inverclyde East,Inverclyde
+InvercEC,Inverclyde East Central,Inverclyde
+InverclN,Inverclyde North,Inverclyde
+InverclS,Inverclyde South,Inverclyde
+InvercSW,Inverclyde South West,Inverclyde
 InverclW,Inverclyde West,Inverclyde
 Bonnyrig,Bonnyrigg,Midlothian
 Dalkeith,Dalkeith,Midlothian
@@ -209,12 +209,12 @@ SgireanR,Sgire an Rubha,Na h-Eileanan Siar
 SgirUige,Sgir'Uige agus Ceann a Tuath nan Loch,Na h-Eileanan Siar
 SteornaD,Steornabhagh a Deas,Na h-Eileanan Siar
 SteornaT,Steornabhagh a Tuath,Na h-Eileanan Siar
-Arran,Arran,
-GarnockV,Garnock Valley,
-Irvine,Irvine,
-Kilw,Kilwinning,
-NorthCst,North Coast & Cumbraes,
-3Towns,Three Towns,
+Arran,Arran,North Ayrshire
+GarnockV,Garnock Valley,North Ayrshire
+Irvine,Irvine,North Ayrshire
+Kilw,Kilwinning,North Ayrshire
+NorthCst,North Coast & Cumbraes,North Ayrshire
+3Towns,Three Towns,North Ayrshire
 AirdrieC,Airdrie Central,North Lanarkshire
 AirdrieN,Airdrie North,North Lanarkshire
 AirdrieS,Airdrie South,North Lanarkshire
@@ -230,8 +230,8 @@ Gartcosh,"Gartcosh, Glenboig and Moodiesburn",North Lanarkshire
 Kilsyth,Kilsyth,North Lanarkshire
 MossendH,Mossend and Holytown,North Lanarkshire
 MotherwN,Motherwell North,North Lanarkshire
-MothSEaR,Motherwell South East and Ravenscraig,
-MotherwW,Motherwell West,
+MothSEaR,Motherwell South East and Ravenscraig,North Lanarkshire
+MotherwW,Motherwell West,North Lanarkshire
 Murdosto,Murdostoun,North Lanarkshire
 SteppsCh,"Stepps, Chryston and Muirhead",North Lanarkshire
 Thorniew,Thorniewood,North Lanarkshire
@@ -259,13 +259,13 @@ Erskinel,Erskine and Inchinnan,Renfrewshire
 HoustonC,"Houston, Crosslee and Linwood",Renfrewshire
 JohNKHaL,"Johnstone North, Kilbarchan, Howwood and Lochwinnoch",Renfrewshire
 JohnsSaE,Johnstone South and Elderslie,Renfrewshire
-PaisleyE,Paisley East and Central,
-PaislNaR,Paisley Northeast and Ralston,
-PaisleyN,Paisley Northwest,
-PaisleSE,Paisley Southeast,
-PaisleSW,Paisley Southwest,
-RenfrewN,Renfrew North and Braehead,
-RenfrewS,Renfrew South and Gallowhill,
+PaisleyE,Paisley East and Central,Renfrewshire
+PaislNaR,Paisley Northeast and Ralston,Renfrewshire
+PaisleyN,Paisley Northwest,Renfrewshire
+PaisleSE,Paisley Southeast,Renfrewshire
+PaisleSW,Paisley Southwest,Renfrewshire
+RenfrewN,Renfrew North and Braehead,Renfrewshire
+RenfrewS,Renfrew South and Gallowhill,Renfrewshire
 EastBerw,East Berwickshire,Scottish Borders
 Galashie,Galashiels and District,Scottish Borders
 HawickaD,Hawick and Denholm,Scottish Borders
@@ -295,33 +295,33 @@ Coylton,Coylton,South Ayrshire
 DalmCrai,Dalmilling and Craigie,South Ayrshire
 DundLoan,Dundonald and Loans,South Ayrshire
 Girvan,Girvan,South Ayrshire
-Hthfield,Heathfield,
-HolmFore,Holmston and Forehill,
+Hthfield,Heathfield,South Ayrshire
+HolmFore,Holmston and Forehill,South Ayrshire
 LsBhdWls,Lochside Braehead and Whitletts,South Ayrshire
 Maybole,Maybole,South Ayrshire
 Muirhead,Muirhead,South Ayrshire
-NewtonN,Newton North,
-NCkVillg,North Carrick Villages,
+NewtonN,Newton North,South Ayrshire
+NCkVillg,North Carrick Villages,South Ayrshire
 PwkApMkt,Prestwick Airport and Monkton,South Ayrshire
 PwkEast,Prestwick East,South Ayrshire
 PwkWest,Prestwick West,South Ayrshire
 SCkVillg,South Carrick Villages,South Ayrshire
 Symingtn,Symington,South Ayrshire
 Troon,Troon,South Ayrshire
-BLANTYRE,BLANTYRE,South Lanarkshire
-BOTHWELL,BOTHWELL,South Lanarkshire
-CAMBSLNG,CAMBUSLANG,South Lanarkshire
-CARLUKE,CARLUKE,South Lanarkshire
-CLYDSDLE,CLYDESDALE EAST,South Lanarkshire
-EASTKILB,EAST KILBRIDE,South Lanarkshire
-HAMILTON,HAMILTON,South Lanarkshire
-LANARK,LANARK,South Lanarkshire
-LARKHALL,LARKHALL,South Lanarkshire
-LESMHGOW,LESMAHAGOW,South Lanarkshire
-RUTHRGLN,RUTHERGLEN,South Lanarkshire
-STONEHSE,STONEHOUSE,South Lanarkshire
-STRATHVN,STRATHAVEN,South Lanarkshire
-UDDNGSTN,UDDINGSTON,South Lanarkshire
+BLANTYRE,Blantyre,South Lanarkshire
+BOTHWELL,Bothwell,South Lanarkshire
+CAMBSLNG,Cambuslang,South Lanarkshire
+CARLUKE,Carluke,South Lanarkshire
+CLYDSDLE,Clydesdale East,South Lanarkshire
+EASTKILB,East Kilbride,South Lanarkshire
+HAMILTON,Hamilton,South Lanarkshire
+LANARK,Lanark,South Lanarkshire
+LARKHALL,Larkhall,South Lanarkshire
+LESMHGOW,Lesmahagow,South Lanarkshire
+RUTHRGLN,Rutherglen,South Lanarkshire
+STONEHSE,Stonehouse,South Lanarkshire
+STRATHVN,Strathaven,South Lanarkshire
+UDDNGSTN,Uddingston,South Lanarkshire
 Bannockb,Bannockburn,Stirling
 Dunblane,Dunblane and Bridge of Allan,Stirling
 ForthEnd,Forth and Endrick,Stirling
