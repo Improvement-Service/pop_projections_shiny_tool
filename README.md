@@ -17,6 +17,15 @@ https://github.com/Improvement-Service/Covid-Economic-Impact
 Code in this tool will follow the Tidyverse style guide which can be viewed here
 https://style.tidyverse.org/index.html
 
+# Lookup File
+In order to combine the projections data with the shape files a lookup was created to match the short area names in the projections data with the long area names in the shape files. 
+
+The lookup was made by creating a list of short area names and long area names from what was used in the POPGROUP files.
+
+However there was some inconsistencies between the names in this lookup file and the names in the projections data and shape files data. 
+
+The lookup has now been updated so the names are consistent. In the resources folder the text file Lookup Changes explains how these changes were made. The excel file Lookup Changes lists the names in the lookup file that had errors and what these names were changed to.
+
 # Working Together
 At the beginning of the project the tasks for the global file have already been complete so that the data needed elsewhere is ready to use. Some packages will still need to be loaded in the global. 
 
