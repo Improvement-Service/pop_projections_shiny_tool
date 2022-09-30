@@ -64,6 +64,12 @@ server <- function(input, output) {
       left_join(lookup, by = c("Area.Name" = "ShortName", "Council.Name" = "Council"))
     data[is.na(data$LongName), "LongName"] <- data[is.na(data$LongName), "Area.Name"]
     
+    data <- data %>% 
+      pivot_longer(cols = `Total.Population`:`Sex.Ratio`, 
+                   names_to = "Measure", 
+                   values_to = "Value"
+      )
+    
     return(data)
   }
   
