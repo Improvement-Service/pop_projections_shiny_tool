@@ -215,10 +215,11 @@ server <- function(input, output) {
                                   )
     # Filter this data based on council and year
     council_map_data <- filter(indexed_data, 
-                               Year == input$year_choice_tab_1 & 
-                                 Council.Name == input$la_choice_tab_1
+                               Council.Name == input$la_choice_tab_1,
+                               Level == "Small Area",
+                               Year == input$year_choice_tab_1,
+                               Measure == "Total.Population"
                                ) %>%
-      filter(., Level == "Small Area") %>%
       ungroup()
     
     # Filter shape file to selected council before combining with data
@@ -251,7 +252,7 @@ server <- function(input, output) {
     # Set colours for the map
     map_colours <- brewer.pal(8, "Blues")
     # Assign colours to quintiles
-    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1$Total.Population, n = 8)
+    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1$Value, n = 8)
     
     # Create a leaflet object using small area shapefiles
     leaflet(map_data_tab_1) %>%
@@ -264,7 +265,7 @@ server <- function(input, output) {
                   layerId = ~SubCouncil,
                   color = "black", 
                   # colour of polygons should map to population quintiles
-                  fillColor = ~map_colour_quintiles(Total.Population),
+                  fillColor = ~map_colour_quintiles(Value),
                   # Use HTML to create popover labels with all the selected info
                   label = (sprintf(
                     "<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
@@ -272,7 +273,7 @@ server <- function(input, output) {
                     map_data_tab_1$Year,
                     age_label,
                     selected_gender_tab_1,
-                    map_data_tab_1$Total.Population)
+                    map_data_tab_1$Value)
                     %>% lapply(htmltools::HTML)
                     ),
                   # Creates a white border on the polygon where the mouse hovers
