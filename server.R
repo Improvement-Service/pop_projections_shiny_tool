@@ -244,7 +244,7 @@ server <- function(input, output) {
     # Set colours for the map
     map_colours <- brewer.pal(8, "Blues")
     # Assign colours to quintiles
-    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1@data$Total.Population, n = 8)
+    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1$Total.Population, n = 8)
     
     # Create a leaflet object using small area shapefiles
     leaflet(map_data_tab_1) %>%
@@ -254,18 +254,18 @@ server <- function(input, output) {
       addPolygons(smoothFactor = 1, 
                   weight = 1.5, 
                   fillOpacity = 0.8,
-                  layerId = ~LongName,
+                  layerId = ~SubCouncil,
                   color = "black", 
                   # colour of polygons should map to population quintiles
                   fillColor = ~map_colour_quintiles(Total.Population),
                   # Use HTML to create popover labels with all the selected info
                   label = (sprintf(
                     "<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
-                    map_data_tab_1@data$LongName, 
-                    map_data_tab_1@data$Year,
+                    map_data_tab_1$SubCouncil, 
+                    map_data_tab_1$Year,
                     age_label,
                     selected_gender_tab_1,
-                    map_data_tab_1@data$Total.Population)
+                    map_data_tab_1$Total.Population)
                     %>% lapply(htmltools::HTML)
                     ),
                   # Creates a white border on the polygon where the mouse hovers
