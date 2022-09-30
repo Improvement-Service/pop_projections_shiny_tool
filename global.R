@@ -19,16 +19,12 @@ small_area_lookup <- projection_data %>%
   select(Council.Name, Area.Name) %>%
   distinct()
 
-#replace "and" with ampersand in shapefiles - this is to allow merging with projection_data
-shape_data$`Sub-Council Area Name` <- gsub(" and ", " & ", shape_data$`Sub-Council Area Name`)
-
 #load shortname lookups
 lookup <- read_csv("Data files/ShortNameLookup.csv")
 lookup$ShortName <- str_trim(lookup$ShortName)
 small_area_lookup <- small_area_lookup %>% left_join(lookup, by = c("Area.Name" = "ShortName", "Council.Name" = "Council"))
 
 #split out council and sub-council in shape_data for merging
-shape_data[shape_data$`Sub-Council Area Name` == "Annbank Mossblown & Tarbolton - the Coalfields - South Ayrshire", "Sub-Council Area Name"] <- "Annbank Mossblown & Tarbolton: the Coalfields - South Ayrshire"
 shape_data <- shape_data %>% separate(`Sub-Council Area Name`, into = c("SubCouncil", "Council"), sep = " - ", remove = FALSE)
 
 #merge projection data with long names for sub-councils
