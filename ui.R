@@ -40,7 +40,7 @@ ui <- navbarPage(
                     checkboxGroupInput(
                       inputId = "gender_choice_tab_1",
                       label = "Select genders to include:",
-                      choices = c("Male", "Female"),
+                      choices = c("Males", "Females"),
                       selected = c("Males", "Females"),
                       inline = FALSE
                     )
