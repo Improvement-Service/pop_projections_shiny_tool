@@ -60,7 +60,9 @@ server <- function(input, output) {
     
     data <- left_join(total_pop_data, index_data) %>%
       left_join(dependency_data) %>% 
-      left_join(sex_data)
+      left_join(sex_data) %>%
+      left_join(lookup, by = c("Area.Name" = "ShortName", "Council.Name" = "Council"))
+    data[is.na(data$LongName), "LongName"] <- data[is.na(data$LongName), "Area.Name"]
     
     return(data)
   }
