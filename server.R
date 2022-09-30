@@ -212,7 +212,8 @@ server <- function(input, output) {
                                Year == input$year_choice_tab_1 & 
                                  Council.Name == input$la_choice_tab_1
                                ) %>%
-      filter(., Level == "Small Area")
+      filter(., Level == "Small Area") %>%
+      ungroup()
     
     # Filter shape file to selected council before combining with data
     filtered_shape <- filter(shape_data, Council == input$la_choice_tab_1)
