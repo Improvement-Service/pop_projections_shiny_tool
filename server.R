@@ -89,29 +89,29 @@ server <- function(input, output) {
       }
     
       data <- data %>% mutate(Line.Colours = "grey") 
-      data$Line.Colours <- if_else(data$Area.Name == council_selection, 
+      data$Line.Colours <- if_else(data$LongName == council_selection, 
                                    "skyblue",
-                                   if_else(data$Area.Name == "Scotland",
+                                   if_else(data$LongName == "Scotland",
                                            "dimgrey",
-                                           if_else(data$Area.Name == small_area_selection,
+                                           if_else(data$LongName == small_area_selection,
                                                    "steelblue",
                                                    "grey"
                                                    )
                                            )
                                    )
     
-      all_area_names <- unique(data$Area.Name)
+      all_area_names <- unique(data$LongName)
       area_factors <- if(length(all_area_names) > 3) {
-        area_factors <- data %>% filter(Area.Name != small_area_selection) 
-        area_factors <- c(small_area_selection, unique(area_factors$Area.Name))
+        area_factors <- data %>% filter(LongName != small_area_selection) 
+        area_factors <- c(small_area_selection, unique(area_factors$LongName))
         } else {
           area_factors <- c(small_area_selection, council_selection, "Scotland")
         }
     
-      data$Area.Name <- factor(data$Area.Name, levels = area_factors)
-      data <- data %>% arrange(Area.Name)
+      data$LongName <- factor(data$LongName, levels = area_factors)
+      data <- data %>% arrange(LongName)
       area_colours <- data %>% 
-        group_by(Council.Name, Level, Area.Name) %>% 
+        group_by(Council.Name, Level, LongName) %>% 
         filter(row_number()== 1) 
       area_colours <- area_colours$Line.Colours
     
@@ -120,9 +120,9 @@ server <- function(input, output) {
           aes(
           x = Year, 
           y = Value, 
-          group = Area.Name, 
-          colour = Area.Name,
-          text = paste("Area Name:",`Area.Name`, "<br>", 
+          group = LongName, 
+          colour = LongName,
+          text = paste("Area Name:",`LongName`, "<br>", 
                        "Year:", `Year`,"<br>",
                        "Measure:", `Title`, "<br>", 
                        "Value:",`Value`)
@@ -175,7 +175,7 @@ server <- function(input, output) {
     req(input$la_choice_tab_2)
     small_areas_subset <- small_area_lookup %>%
           filter(Council.Name == input$la_choice_tab_2) %>%
-           pull(Area.Name)
+           pull(LongName)
     return(small_areas_subset)
     
   })
@@ -212,9 +212,8 @@ server <- function(input, output) {
                                ) %>%
       filter(., Level == "Small Area")
     # Combine map data with shape file 
-    combined_data <- left_join(council_map_data, 
-                               shape_data, 
-                               by = c("Area.Name" = "Sub-Council Area Name")
+    combined_data <- left_join(council_map_data, shape_data, 
+                               by = c("LongName" = "SubCouncil", "Council.Name" = "Council")
                                )
   })
 
@@ -249,14 +248,14 @@ server <- function(input, output) {
       addPolygons(smoothFactor = 1, 
                   weight = 1.5, 
                   fillOpacity = 0.8,
-                  layerId = ~Area.Name,
+                  layerId = ~LongName,
                   color = "black", 
                   # colour of polygons should map to population quintiles
                   fillColor = ~map_colour_quintiles(Total.Population),
                   # Use HTML to create popover labels with all the selected info
                   label = (sprintf(
                     "<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
-                    map_data_tab_1@data$Area.Name, 
+                    map_data_tab_1@data$LongName, 
                     map_data_tab_1@data$Year,
                     age_label,
                     selected_gender_tab_1,
