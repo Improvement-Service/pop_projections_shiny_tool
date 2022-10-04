@@ -287,6 +287,14 @@ server <- function(input, output) {
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
   
   # Run create_line_plot - outputID = within_areas_plot_tab_1
+  output$within_areas_plot_tab_1 <- renderPlotly({
+    plot <- create_line_plot(dataset = within_areas_data_tab_1(), 
+                             council_selection = input$la_choice_tab_1, 
+                             small_area_selection = selected_small_area_tab_1(), 
+                             measure_selection = "Total Population",
+                             graph_type = "Within Council Areas"
+    )
+  })
   
   
 # Code for Similar Areas Tab (Tab 2) ---------------------------------------------
