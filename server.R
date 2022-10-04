@@ -280,12 +280,17 @@ server <- function(input, output) {
   
   # Create observe event to update selected_small_area_tab_1
   
+  # Create an overall title for the graphs on tab 1
+  output$tab_1_plots_title <- renderText({
+    "Indexed Change"
+  })
+  
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
   
   # Run create_line_plot - outputID = across_areas_plot_tab_1
   
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
-  
+
   # Run create_line_plot - outputID = within_areas_plot_tab_1
   output$within_areas_plot_tab_1 <- renderPlotly({
     plot <- create_line_plot(dataset = within_areas_data_tab_1(), 
