@@ -76,90 +76,101 @@ server <- function(input, output) {
   # Function to create line graphs - function name = create_line_plot
   create_line_plot <- function(dataset, council_selection, small_area_selection, measure_selection){
     
-    x <- renderPlotly({
-      
-      data <- if(measure_selection == "Total Population") {
-        filter(dataset, Measure == "Population.Index")
+    # Measure names in drop down differ from those in data, use this to match them up
+    data <- if(measure_selection == "Total Population") {
+      filter(dataset, Measure == "Population.Index")
       } else {
         if(measure_selection == "Dependency Ratio") {
-         filter(dataset, Measure  == "Dependency.Ratio")
-        } else {
-          if(measure_selection == "Sex Ratio") {
-            filter(dataset, Measure  == "Sex.Ratio")
+          filter(dataset, Measure  == "Dependency.Ratio")
+          } else {
+            if(measure_selection == "Sex Ratio") {
+              filter(dataset, Measure  == "Sex.Ratio")
+            }
           }
         }
-      }
     
-      Title <- if(measure_selection == "Total Population") {
-        "Total Population Index"
+    # This will set the measure title for the graphs
+    # The graphs use population index data but the drop down is labelled total population so 
+    # use this to match them
+    Title <- if(measure_selection == "Total Population") {
+      "Total Population Index"
       } else {
         measure_selection
-      }
-    
-      data <- data %>% mutate(Line.Colours = "grey") 
-      data$Line.Colours <- if_else(data$LongName == council_selection, 
-                                   "skyblue",
-                                   if_else(data$LongName == "Scotland",
-                                           "dimgrey",
-                                           if_else(data$LongName == small_area_selection,
-                                                   "steelblue",
-                                                   "grey"
-                                                   )
-                                           )
-                                   )
-    
-      all_area_names <- unique(data$LongName)
-      area_factors <- if(length(all_area_names) > 3) {
-        area_factors <- data %>% filter(LongName != small_area_selection) 
-        area_factors <- c(small_area_selection, unique(area_factors$LongName))
-        } else {
-          area_factors <- c(small_area_selection, council_selection, "Scotland")
         }
     
-      data$LongName <- factor(data$LongName, levels = area_factors)
-      data <- data %>% arrange(LongName)
-      area_colours <- data %>% 
-        group_by(Council.Name, Level, LongName) %>% 
-        filter(row_number()== 1) 
-      area_colours <- area_colours$Line.Colours
+    # Adds a column to the data with line colours
+    # Sets the line colours dependent on the area
+    data <- data %>% mutate(Line.Colours = "grey") 
+    data$Line.Colours <- if_else(data$LongName == council_selection, 
+                                 "skyblue",
+                                 if_else(data$LongName == "Scotland",
+                                         "dimgrey",
+                                         if_else(data$LongName == small_area_selection,
+                                                 "steelblue",
+                                                 "grey"
+                                                 )
+                                         )
+                                 )
     
-      plot <- ggplot(data = data) +
-        geom_line(
-          aes(
-          x = Year, 
-          y = Value, 
-          group = LongName, 
-          colour = LongName,
-          text = paste("Area Name:",`LongName`, "<br>", 
-                       "Year:", `Year`,"<br>",
-                       "Measure:", `Title`, "<br>", 
-                       "Value:",`Value`)
-          ), 
-          size = 0.7
-        ) +
-        scale_color_manual(values = area_colours) +
-        labs(title = Title) +
-        theme(
-          plot.title = element_text(size = 11), 
-          legend.title = element_blank(),
-          panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(), 
-          panel.background = element_blank(), 
-          axis.line = element_line(colour = "black"),
-          axis.text.x = element_text(vjust = 0.3, angle = 20),
-          axis.text.y = element_text(size = 7),
-          axis.title.x = element_blank(),
-          axis.title.y = element_blank()
-        ) +
-        scale_x_continuous(breaks = 2018:2030)
-      ggplotly(plot, tooltip = c("text")) %>% 
-        config(displayModeBar = F) %>% 
-        layout(xaxis = list(fixedrange = TRUE)) %>% 
-        layout(yaxis = list(fixedrange = TRUE)) %>%
-        layout(legend = list(x = 0, y = 1))
-    })
+    # The area names need to be stored as a factor so that the order of the areas can be set
+    # If this is not done the areas will be ordered alphabetically and the colours will be out of order
+    # This stores the levels if statement stores the levels for the factor
+    # Across areas graph will show selected small area, selected council and Scotland - in this order
+    # Within areas graph will show selected small area, all other small areas within that council - in this order
+    # For within areas graph more than 3 areas will be in the data 
+    # If statement tests whether there are more than 3 areas, if so levels for factor are set in line with within areas graph
+    # If not levels for factor are set in line with across areas graph
+    all_area_names <- unique(data$LongName)
+    area_factors <- if(length(all_area_names) > 3) {
+      area_factors <- data %>% filter(LongName != small_area_selection) 
+      area_factors <- c(small_area_selection, unique(area_factors$LongName))
+      } else {
+        area_factors <- c(small_area_selection, council_selection, "Scotland")
+      }
     
-    return(x)
+    data$LongName <- factor(data$LongName, levels = area_factors)
+    data <- data %>% arrange(LongName)
+    # Store the line colours arranged in order of how they should be mapped
+    area_colours <- data %>% 
+      group_by(Council.Name, Level, LongName) %>% 
+      filter(row_number()== 1) 
+    area_colours <- area_colours$Line.Colours
+      
+    # Create plot object
+    plot <- ggplot(data = data) +
+      geom_line(
+        aes(
+        x = Year, 
+        y = Value, 
+        group = LongName, 
+        colour = LongName,
+        # Creates text for hoverover label
+        text = paste("Area Name:",`LongName`, "<br>", 
+                     "Year:", `Year`,"<br>",
+                     "Measure:", `Title`, "<br>", 
+                     "Value:",`Value`)
+        ), 
+        size = 0.7
+      ) +
+      scale_color_manual(values = area_colours) +
+      labs(title = Title) +
+      theme(
+        plot.title = element_text(size = 9), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(vjust = 0.3, angle = 20, size = 6),
+        axis.text.y = element_text(size = 7),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()
+      ) +
+      scale_x_continuous(breaks = 2018:2030)
+    ggplotly(plot, tooltip = c("text")) %>% 
+      config(displayModeBar = F) %>% 
+      layout(xaxis = list(fixedrange = TRUE)) %>% 
+      layout(yaxis = list(fixedrange = TRUE)) %>%
+      layout(legend = list(orientation = 'h', title = "", font = list(size = 8)))
   }
 
 # Reactive expressions (and UI output) for input selections -------------------------------------------
@@ -288,7 +299,7 @@ server <- function(input, output) {
   })
   
   # Create observe event to update selected_small_area_tab_1
-  
+ 
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
   
   # Run create_line_plot - outputID = across_areas_plot_tab_1
