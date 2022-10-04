@@ -68,7 +68,11 @@ server <- function(input, output) {
   }
   
   # Function to create line graphs - function name = create_line_plot
-  create_line_plot <- function(dataset, council_selection, small_area_selection, measure_selection){
+  create_line_plot <- function(dataset, 
+                               council_selection, 
+                               small_area_selection, 
+                               measure_selection,
+                               graph_type){
     
     x <- renderPlotly({
       
@@ -82,12 +86,6 @@ server <- function(input, output) {
             filter(dataset, Measure  == "Sex.Ratio")
           }
         }
-      }
-    
-      Title <- if(measure_selection == "Total Population") {
-        "Total Population Index"
-      } else {
-        measure_selection
       }
     
       data <- data %>% mutate(Line.Colours = "grey") 
@@ -132,7 +130,7 @@ server <- function(input, output) {
           size = 0.7
         ) +
         scale_color_manual(values = area_colours) +
-        labs(title = Title) +
+        labs(title = graph_type) +
         theme(
           plot.title = element_text(size = 11), 
           legend.title = element_blank(),
