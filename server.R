@@ -1,4 +1,4 @@
-server <- function(input, output) {
+server <- function(input, output, session) {
   
 # Functions ----------------------------------------------------------------------
   
@@ -227,7 +227,48 @@ server <- function(input, output) {
   # RenderLeaflet for council level map - output name = la_map_tab_1
   output$la_map_tab_1 <- renderLeaflet({
     
-    # Call reactive map data
+    # Set colours for the map
+    map_colours <- brewer.pal(8, "Blues")
+#    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1$Total.Population, n = 8)
+    
+    ##create base polygons
+    la_poly <- filter(shape_data, Council == input$la_choice_tab_1)
+    
+    # Create a leaflet object using small area shapefiles
+    leaflet(la_poly) %>%
+      # Create background map - OpenStreetMap by default
+      addTiles() %>%
+      # Add polygons for small areas
+      addPolygons(smoothFactor = 1, 
+                  weight = 1.5, 
+                  fillOpacity = 0.8,
+                  layerId = ~SubCouncil,
+                  color = "black" 
+#                  fillColor = ~map_colour_quintiles(Total.Population),
+#                  # Use HTML to create popover labels with all the selected info
+#                 label = (sprintf(
+#                    "<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
+#                    map_data_tab_1$SubCouncil, 
+#                    map_data_tab_1$Year,
+#                    age_label,
+#                    selected_gender_tab_1,
+#                    map_data_tab_1$Total.Population)
+#                    %>% lapply(htmltools::HTML)
+#                   ) %>%
+#                  # Creates a white border on the polygon where the mouse hovers
+#                  highlightOptions = highlightOptions(color = "white", weight = 3, bringToFront = TRUE)
+                  ) %>%
+      addLegend("bottomleft", 
+                colors = map_colours,
+                labels = c("Smallest Population", "","","","","","","Largest Population"),
+                title = "",
+                opacity = 1
+      )
+  })
+  
+  #observe event to change colour of polygons
+  observe({
+    req(input$la_choice_tab_1, input$year_choice_tab_1)
     map_data_tab_1 <- map_data_tab_1()
     
     # store selected age
@@ -238,46 +279,34 @@ server <- function(input, output) {
     } else {
       selected_age_tab_1
     }
-
+    
     # Store selected gender
     selected_gender_tab_1 <- selected_gender_tab_1()
     
-    # Set colours for the map
-    map_colours <- brewer.pal(8, "Blues")
     # Assign colours to quintiles
+    map_colours <- brewer.pal(8, "Blues")
     map_colour_quintiles <- colorBin(map_colours, map_data_tab_1$Total.Population, n = 8)
     
-    # Create a leaflet object using small area shapefiles
-    leaflet(map_data_tab_1) %>%
-      # Create background map - OpenStreetMap by default
-      addTiles() %>%
-      # Add polygons for small areas
+    leafletProxy("la_map_tab_1", data = map_data_tab_1) %>%
       addPolygons(smoothFactor = 1, 
                   weight = 1.5, 
                   fillOpacity = 0.8,
                   layerId = ~SubCouncil,
                   color = "black", 
-                  # colour of polygons should map to population quintiles
                   fillColor = ~map_colour_quintiles(Total.Population),
-                  # Use HTML to create popover labels with all the selected info
-                  label = (sprintf(
-                    "<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
-                    map_data_tab_1$SubCouncil, 
-                    map_data_tab_1$Year,
-                    age_label,
-                    selected_gender_tab_1,
-                    map_data_tab_1$Total.Population)
-                    %>% lapply(htmltools::HTML)
-                    ),
-                  # Creates a white border on the polygon where the mouse hovers
-                  highlightOptions = highlightOptions(color = "white", weight = 3, bringToFront = TRUE)
-                  ) %>%
-      addLegend("bottomleft", 
-                colors = map_colours,
-                labels = c("Smallest Population", "","","","","","","Largest Population"),
-                title = "",
-                opacity = 1
-                ) 
+                     label = (sprintf(
+                        "<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
+                        map_data_tab_1$SubCouncil, 
+                        map_data_tab_1$Year,
+                        age_label,
+                        selected_gender_tab_1,
+                        map_data_tab_1$Total.Population)
+                        %>% lapply(htmltools::HTML)
+            ),
+ #    Creates a white border on the polygon where the mouse hovers
+                      highlightOptions = highlightOptions(color = "white", weight = 3, bringToFront = TRUE)
+                      )
+      
   })
   
   # Create observe event to update selected_small_area_tab_1
