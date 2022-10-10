@@ -283,6 +283,12 @@ server <- function(input, output) {
   # Create observe event to update selected_small_area_tab_1
   
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
+  across_areas_data_tab_1 <- reactive({
+#run function to add index to data then filter to selected Council and small area
+    across_data <- add_pop_index(gender_selection= selected_gender_tab_1(), age_selection= input$age_choice_tab_1) %>%
+      filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") && 
+               Area.Name %in% c(input$la_choice_tab_1, "Scotland",selected_small_area_tab_1) )
+  })
   
   # Run create_line_plot - outputID = across_areas_plot_tab_1
   
