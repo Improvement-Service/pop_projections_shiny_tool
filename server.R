@@ -293,7 +293,11 @@ server <- function(input, output) {
     filter(Council.Name == input$la_choice_tab_1() && 
              Area.Name == selected_small_area_tab_1())
    })
-  
+ 
+ Level = small areas 
+ pull data
+   
+ 
   # Run create_line_plot - outputID = within_areas_plot_tab_1
   
   
