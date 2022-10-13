@@ -291,12 +291,11 @@ server <- function(input, output) {
  within_areas_data_tab_1 <- reactive({
    x <- add_pop_index(gender_selection= selected_gender_tab_1(), age_selection= input$age_choice_tab_1) %>%
     filter(Council.Name == input$la_choice_tab_1() && 
-             Area.Name == selected_small_area_tab_1())
+             Level == input$la_choice_tab_1())
+   return(x)
    })
  
- Level = small areas 
- pull data
-   
+
  
   # Run create_line_plot - outputID = within_areas_plot_tab_1
   
