@@ -64,101 +64,126 @@ server <- function(input, output) {
       left_join(lookup, by = c("Area.Name" = "ShortName", "Council.Name" = "Council"))
     data[is.na(data$LongName), "LongName"] <- data[is.na(data$LongName), "Area.Name"]
     
+    data <- data %>% 
+      pivot_longer(cols = `Total.Population`:`Sex.Ratio`, 
+                   names_to = "Measure", 
+                   values_to = "Value"
+      )
+    
     return(data)
   }
   
   # Function to create line graphs - function name = create_line_plot
-  create_line_plot <- function(dataset, council_selection, small_area_selection, measure_selection){
+  create_line_plot <- function(dataset, 
+                               council_selection, 
+                               small_area_selection, 
+                               measure_selection,
+                               graph_type) {
     
-    x <- renderPlotly({
-      
-      data <- if(measure_selection == "Total Population") {
-        filter(dataset, Measure == "Population.Index")
+    # Measure names in drop down differ from those in data, use this to match them up
+    data <- if(measure_selection == "Total Population") {
+      filter(dataset, Measure == "Population.Index")
       } else {
         if(measure_selection == "Dependency Ratio") {
-         filter(dataset, Measure  == "Dependency.Ratio")
-        } else {
-          if(measure_selection == "Sex Ratio") {
-            filter(dataset, Measure  == "Sex.Ratio")
+          filter(dataset, Measure  == "Dependency.Ratio")
+          } else {
+            if(measure_selection == "Sex Ratio") {
+              filter(dataset, Measure  == "Sex.Ratio")
+            }
           }
-        }
       }
     
-      Title <- if(measure_selection == "Total Population") {
-        "Total Population Index"
+    # This will set the measure title for the graphs
+    # The graphs use population index data but the drop down is labelled total population so 
+    # use this to match them
+    measure_title <- if(measure_selection == "Total Population") {
+      "Total Population Index"
+    } else {
+      measure_selection
+    }
+    
+    # Adds a column to the data with line colours
+    # Sets the line colours dependent on the area
+    data <- data %>% mutate(Line.Colours = "grey") 
+    data$Line.Colours <- if_else(data$LongName == council_selection, 
+                                 "skyblue",
+                                 if_else(data$LongName == "Scotland",
+                                         "dimgrey",
+                                         if_else(data$LongName == small_area_selection,
+                                                 "steelblue",
+                                                 "grey"
+                                                 )
+                                         )
+                                 )
+
+    # The area names need to be stored as a factor so that the order of the areas can be set
+    # If this is not done the areas will be ordered alphabetically and the colours will be out of order
+    # This stores the levels if statement stores the levels for the factor
+    # Across areas graph will show selected small area, selected council and Scotland - in this order
+    # Within areas graph will show selected small area, all other small areas within that council - in this order
+    # For within areas graph more than 3 areas will be in the data 
+    # If statement tests whether there are more than 3 areas, if so levels for factor are set in line with within areas graph
+    # If not levels for factor are set in line with across areas graph
+    all_area_names <- unique(data$LongName)
+    area_factors <- if(length(all_area_names) > 3) {
+      area_factors <- data %>% filter(LongName != small_area_selection) 
+      area_factors <- c(small_area_selection, unique(area_factors$LongName))
       } else {
-        measure_selection
+        area_factors <- c(small_area_selection, council_selection, "Scotland")
       }
     
-      data <- data %>% mutate(Line.Colours = "grey") 
-      data$Line.Colours <- if_else(data$LongName == council_selection, 
-                                   "skyblue",
-                                   if_else(data$LongName == "Scotland",
-                                           "dimgrey",
-                                           if_else(data$LongName == small_area_selection,
-                                                   "steelblue",
-                                                   "grey"
-                                                   )
-                                           )
-                                   )
-    
-      all_area_names <- unique(data$LongName)
-      area_factors <- if(length(all_area_names) > 3) {
-        area_factors <- data %>% filter(LongName != small_area_selection) 
-        area_factors <- c(small_area_selection, unique(area_factors$LongName))
-        } else {
-          area_factors <- c(small_area_selection, council_selection, "Scotland")
-        }
-    
-      data$LongName <- factor(data$LongName, levels = area_factors)
-      data <- data %>% arrange(LongName)
-      area_colours <- data %>% 
-        group_by(Council.Name, Level, LongName) %>% 
-        filter(row_number()== 1) 
-      area_colours <- area_colours$Line.Colours
-    
-      plot <- ggplot(data = data) +
-        geom_line(
-          aes(
-          x = Year, 
-          y = Value, 
-          group = LongName, 
-          colour = LongName,
-          text = paste("Area Name:",`LongName`, "<br>", 
-                       "Year:", `Year`,"<br>",
-                       "Measure:", `Title`, "<br>", 
-                       "Value:",`Value`)
-          ), 
-          size = 0.7
-        ) +
-        scale_color_manual(values = area_colours) +
-        labs(title = Title) +
-        theme(
-          plot.title = element_text(size = 11), 
-          legend.title = element_blank(),
-          panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(), 
-          panel.background = element_blank(), 
-          axis.line = element_line(colour = "black"),
-          axis.text.x = element_text(vjust = 0.3, angle = 20),
-          axis.text.y = element_text(size = 7),
-          axis.title.x = element_blank(),
-          axis.title.y = element_blank()
-        ) +
-        scale_x_continuous(breaks = 2018:2030)
-      ggplotly(plot, tooltip = c("text")) %>% 
-        config(displayModeBar = F) %>% 
-        layout(xaxis = list(fixedrange = TRUE)) %>% 
-        layout(yaxis = list(fixedrange = TRUE)) %>%
-        layout(legend = list(x = 0, y = 1))
-    })
-    
-    return(x)
+    data$LongName <- factor(data$LongName, levels = area_factors)
+    data <- data %>% arrange(LongName)
+    # Store the line colours arranged in order of how they should be mapped
+    area_colours <- data %>% 
+      group_by(Council.Name, Level, LongName) %>% 
+      filter(row_number()== 1) 
+    area_colours <- area_colours$Line.Colours
+      
+    # Create plot object
+    plot <- ggplot(data = data) +
+      geom_line(
+        aes(
+        x = Year, 
+        y = Value, 
+        group = LongName, 
+        colour = LongName,
+        # Creates text for hoverover label
+        text = paste("Area Name:",`LongName`, "<br>", 
+                     "Year:", `Year`,"<br>",
+                     "Measure:", `measure_title`, "<br>", 
+                     "Value:",`Value`)
+        ), 
+        size = 0.7
+      ) +
+      scale_color_manual(values = area_colours) +
+      labs(title = graph_type) +
+      theme(
+        plot.title = element_text(size = 9), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(vjust = 0.3, angle = 20, size = 6),
+        axis.text.y = element_text(size = 7),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()
+      ) +
+      scale_x_continuous(breaks = 2018:2030)
+    ggplotly(plot, tooltip = c("text")) %>% 
+      config(displayModeBar = F) %>% 
+      layout(xaxis = list(fixedrange = TRUE)) %>% 
+      layout(yaxis = list(fixedrange = TRUE)) %>%
+      layout(legend = list(orientation = 'h', title = "", font = list(size = 8)))
   }
 
 # Reactive expressions (and UI output) for input selections -------------------------------------------
   
   # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
+  
+   #this will be initialised when the use selects an LA and will be updated
+   #either when a new LA is selected or the user clicks on the map
+  selected_small_area_tab_1 <- reactiveVal()
   
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
   selected_gender_tab_1 <- reactive({
@@ -209,10 +234,11 @@ server <- function(input, output) {
                                   )
     # Filter this data based on council and year
     council_map_data <- filter(indexed_data, 
-                               Year == input$year_choice_tab_1 & 
-                                 Council.Name == input$la_choice_tab_1
+                               Council.Name == input$la_choice_tab_1,
+                               Level == "Small Area",
+                               Year == input$year_choice_tab_1,
+                               Measure == "Total.Population"
                                ) %>%
-      filter(., Level == "Small Area") %>%
       ungroup()
     
     # Filter shape file to selected council before combining with data
@@ -245,7 +271,7 @@ server <- function(input, output) {
     # Set colours for the map
     map_colours <- brewer.pal(8, "Blues")
     # Assign colours to quintiles
-    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1$Total.Population, n = 8)
+    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1$Value, n = 8)
     
     # Create a leaflet object using small area shapefiles
     leaflet(map_data_tab_1) %>%
@@ -258,7 +284,7 @@ server <- function(input, output) {
                   layerId = ~SubCouncil,
                   color = "black", 
                   # colour of polygons should map to population quintiles
-                  fillColor = ~map_colour_quintiles(Total.Population),
+                  fillColor = ~map_colour_quintiles(Value),
                   # Use HTML to create popover labels with all the selected info
                   label = (sprintf(
                     "<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
@@ -266,7 +292,7 @@ server <- function(input, output) {
                     map_data_tab_1$Year,
                     age_label,
                     selected_gender_tab_1,
-                    map_data_tab_1$Total.Population)
+                    map_data_tab_1$Value)
                     %>% lapply(htmltools::HTML)
                     ),
                   # Creates a white border on the polygon where the mouse hovers
@@ -281,24 +307,69 @@ server <- function(input, output) {
   })
   
   # Create observe event to update selected_small_area_tab_1
+  observe({
+    event <- input$la_map_tab_1_shape_click
+    if(is.null(event)){
+      return()} 
+    selected_small_area_tab_1(event$id)
+  })
+  
+  observe({
+    event <- input$la_choice_tab_1
+    if(is.null(event)){
+      return()} 
+    small_area_options <- small_area_lookup %>%
+      filter(Council.Name == input$la_choice_tab_1) %>%
+      pull(LongName)
+    default_area <- small_area_options[1]
+    selected_small_area_tab_1(default_area)
+    })
+
+  # Create an overall title for the graphs on tab 1
+  output$tab_1_plots_title <- renderText({
+    "Indexed Change"
+  })
   
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
+  across_areas_data_tab_1 <- reactive({
+    # run function to add index to data then filter to selected Council and small area
+    across_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
+                                 age_selection = input$age_choice_tab_1
+                                 ) %>%
+      filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") && 
+               LongName %in% c(input$la_choice_tab_1, "Scotland", selected_small_area_tab_1())
+             )
+    return(across_data)
+  })
   
   # Run create_line_plot - outputID = across_areas_plot_tab_1
+  output$across_areas_plot_tab_1 <- renderPlotly({
+    plot <- create_line_plot(dataset = across_areas_data_tab_1(), 
+                             council_selection = input$la_choice_tab_1, 
+                             small_area_selection = selected_small_area_tab_1(), 
+                             measure_selection = "Total Population",
+                             graph_type = "Across Areas"
+    )
+  })
   
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
-  
- within_areas_data_tab_1 <- reactive({
-   x <- add_pop_index(gender_selection= selected_gender_tab_1(), age_selection= input$age_choice_tab_1) %>%
-    filter(Council.Name == input$la_choice_tab_1 && 
-             Level == "Small Area"
-             )
+  within_areas_data_tab_1 <- reactive({
+   x <- add_pop_index(gender_selection = selected_gender_tab_1(), 
+                      age_selection= input$age_choice_tab_1
+                      ) %>%
+                      filter(Council.Name == input$la_choice_tab_1 && Level == "Small Area")
    return(x)
    })
- 
 
- 
   # Run create_line_plot - outputID = within_areas_plot_tab_1
+  output$within_areas_plot_tab_1 <- renderPlotly({
+    plot <- create_line_plot(dataset = within_areas_data_tab_1(), 
+                             council_selection = input$la_choice_tab_1, 
+                             small_area_selection = selected_small_area_tab_1(), 
+                             measure_selection = "Total Population",
+                             graph_type = "Within Council Areas"
+    )
+  })
   
   
 # Code for Similar Areas Tab (Tab 2) ---------------------------------------------
