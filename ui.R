@@ -70,8 +70,8 @@ ui <- navbarPage(
                                             width = 330, 
                                             height = "auto",
                                             textOutput("tab_1_plots_title"),
+                                            plotlyOutput("across_areas_plot_tab_1", height = "300px"),
                                             plotlyOutput("within_areas_plot_tab_1", height = "300px")
-                                            plotlyOutput("across_areas_plot_tab_1", height = "300px")
                                             )
                               )
              # This will include absolute panel with across areas graph and within areas graph;
