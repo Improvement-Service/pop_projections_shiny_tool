@@ -353,6 +353,13 @@ server <- function(input, output) {
   })
   
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
+  within_areas_data_tab_1 <- reactive({
+   x <- add_pop_index(gender_selection = selected_gender_tab_1(), 
+                      age_selection= input$age_choice_tab_1
+                      ) %>%
+                      filter(Council.Name == input$la_choice_tab_1 && Level == "Small Area")
+   return(x)
+   })
 
   # Run create_line_plot - outputID = within_areas_plot_tab_1
   output$within_areas_plot_tab_1 <- renderPlotly({
