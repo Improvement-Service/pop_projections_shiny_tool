@@ -160,6 +160,10 @@ server <- function(input, output) {
   
   # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
   
+   #this will be initialised when the use selects an LA and will be updated
+   #either when a new LA is selected or the user clicks on the map
+  selected_small_area_tab_1 <- reactiveVal()
+  
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
   selected_gender_tab_1 <- reactive({
     # Length greater than 1 means both male and female are selected so should return "Persons"
@@ -281,6 +285,23 @@ server <- function(input, output) {
   })
   
   # Create observe event to update selected_small_area_tab_1
+  observe({
+    event <- input$la_map_tab_1_shape_click
+    if(is.null(event)){
+      return()} 
+    selected_small_area_tab_1(event$id)
+  })
+  
+  observe({
+    event <- input$la_choice_tab_1
+    if(is.null(event)){
+      return()} 
+    small_area_options <- small_area_lookup %>%
+      filter(Council.Name == input$la_choice_tab_1) %>%
+      pull(LongName)
+    default_area <- small_area_options[1]
+    selected_small_area_tab_1(default_area)
+  })
   
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
   
