@@ -308,7 +308,7 @@ server <- function(input, output) {
   
   # Create observe event to update selected_small_area_tab_1
   observe({
-    event <- input$scot_map_tab_1_shape_click
+    event <- input$la_map_tab_1_shape_click
     if(is.null(event)){
       return()} 
     selected_small_area_tab_1(event$id)
