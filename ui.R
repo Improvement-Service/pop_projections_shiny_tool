@@ -49,7 +49,11 @@ ui <- navbarPage(
            fluidRow(
              # Add conditionalPanel, if council input is blank show Scotland map - outputID = scot_map_tab_1
              # This will not include absolute panel with across areas graph and within areas graph
-             
+             conditionalPanel(condition = "input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
+                              leafletOutput("scot_map_tab_1", width = "100%") %>%
+                                # Creates a loading spinner
+                                withSpinner(type = 6)
+             ),
              # Add 2nd conditionalPanel, if council input is not blank show council map - outputID = la_map_tab_1
              conditionalPanel(condition = "input.la_choice_tab_1 != `` && input.year_choice_tab_1 != ``",
                               leafletOutput("la_map_tab_1", width = "100%") %>%
