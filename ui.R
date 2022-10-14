@@ -40,8 +40,8 @@ ui <- navbarPage(
                     checkboxGroupInput(
                       inputId = "gender_choice_tab_1",
                       label = "Select genders to include:",
-                      choices = c("Male", "Female"),
-                      selected = c("Male", "Female"),
+                      choices = c("Males", "Females"),
+                      selected = c("Males", "Females"),
                       inline = FALSE
                     )
              )
@@ -51,7 +51,7 @@ ui <- navbarPage(
              # This will not include absolute panel with across areas graph and within areas graph
              
              # Add 2nd conditionalPanel, if council input is not blank show council map - outputID = la_map_tab_1
-             conditionalPanel(condition = "input.la_choice_tab_1 != ``",
+             conditionalPanel(condition = "input.la_choice_tab_1 != `` && input.year_choice_tab_1 != ``",
                               leafletOutput("la_map_tab_1", width = "100%") %>%
                                 # Creates a loading spinner
                                 withSpinner(type = 6),

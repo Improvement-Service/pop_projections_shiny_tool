@@ -60,7 +60,9 @@ server <- function(input, output) {
     
     data <- left_join(total_pop_data, index_data) %>%
       left_join(dependency_data) %>% 
-      left_join(sex_data)
+      left_join(sex_data) %>%
+      left_join(lookup, by = c("Area.Name" = "ShortName", "Council.Name" = "Council"))
+    data[is.na(data$LongName), "LongName"] <- data[is.na(data$LongName), "Area.Name"]
     
     return(data)
   }
@@ -89,29 +91,29 @@ server <- function(input, output) {
       }
     
       data <- data %>% mutate(Line.Colours = "grey") 
-      data$Line.Colours <- if_else(data$Area.Name == council_selection, 
+      data$Line.Colours <- if_else(data$LongName == council_selection, 
                                    "skyblue",
-                                   if_else(data$Area.Name == "Scotland",
+                                   if_else(data$LongName == "Scotland",
                                            "dimgrey",
-                                           if_else(data$Area.Name == small_area_selection,
+                                           if_else(data$LongName == small_area_selection,
                                                    "steelblue",
                                                    "grey"
                                                    )
                                            )
                                    )
     
-      all_area_names <- unique(data$Area.Name)
+      all_area_names <- unique(data$LongName)
       area_factors <- if(length(all_area_names) > 3) {
-        area_factors <- data %>% filter(Area.Name != small_area_selection) 
-        area_factors <- c(small_area_selection, unique(area_factors$Area.Name))
+        area_factors <- data %>% filter(LongName != small_area_selection) 
+        area_factors <- c(small_area_selection, unique(area_factors$LongName))
         } else {
           area_factors <- c(small_area_selection, council_selection, "Scotland")
         }
     
-      data$Area.Name <- factor(data$Area.Name, levels = area_factors)
-      data <- data %>% arrange(Area.Name)
+      data$LongName <- factor(data$LongName, levels = area_factors)
+      data <- data %>% arrange(LongName)
       area_colours <- data %>% 
-        group_by(Council.Name, Level, Area.Name) %>% 
+        group_by(Council.Name, Level, LongName) %>% 
         filter(row_number()== 1) 
       area_colours <- area_colours$Line.Colours
     
@@ -120,9 +122,9 @@ server <- function(input, output) {
           aes(
           x = Year, 
           y = Value, 
-          group = Area.Name, 
-          colour = Area.Name,
-          text = paste("Area Name:",`Area.Name`, "<br>", 
+          group = LongName, 
+          colour = LongName,
+          text = paste("Area Name:",`LongName`, "<br>", 
                        "Year:", `Year`,"<br>",
                        "Measure:", `Title`, "<br>", 
                        "Value:",`Value`)
@@ -156,48 +158,30 @@ server <- function(input, output) {
 
 # Reactive expressions (and UI output) for input selections -------------------------------------------
   
-  # Reactive expression to store selection from la_choice_tab_1 - variable name = selected_la_tab_1
-  selected_la_tab_1 <- reactive({
-    LA <- input$la_choice_tab_1
-    return(LA)
-  })  
-  
   # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
-    #this will be initialised when the use selects an LA and will be updated
-    #either when a new LA is selected or the user clicks on the map
+  
+   #this will be initialised when the use selects an LA and will be updated
+   #either when a new LA is selected or the user clicks on the map
   selected_small_area_tab_1 <- reactiveVal()
-  
-
-  # Reactive expression to store selection from year_choice_tab_1 - variable name = selected_year_tab_1
-  selected_year_tab_1 <- reactive({
-    Y <- input$year_choice_tab_1
-    return(Y)
-  })  
-  
-  # Reactive expression to store selection from age_choice_tab_1 - variable name = selected_age_tab_1
-  selected_age_tab_1 <- reactive({
-    A <- input$age_choice_tab_1
-    return(A)
-  })   
   
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
   selected_gender_tab_1 <- reactive({
-    G <- input$gender_choice_tab_1
+    # Length greater than 1 means both male and female are selected so should return "Persons"
+    # so the data can be filtered as such
+    G <- if(length(input$gender_choice_tab_1) > 1){
+      "Persons"
+    } else {
+      input$gender_choice_tab_1
+    }
     return(G)
   })   
-  
-  # Reactive expression to store selection from la_choice_tab_2 - variable name = selected_la_tab_2
-  selected_la_tab_2 <- reactive({
-    LA <- input$la_choice_tab_2
-    return(LA)
-  }) 
   
   # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
   small_area_choices_tab_2 <- reactive({
     req(input$la_choice_tab_2)
     small_areas_subset <- small_area_lookup %>%
           filter(Council.Name == input$la_choice_tab_2) %>%
-           pull(Area.Name)
+           pull(LongName)
     return(small_areas_subset)
     
   })
@@ -213,51 +197,45 @@ server <- function(input, output) {
     )
   })
   
-  # Reactive expression to store selection from small_area_output_tab_2 - variable name = selected_small_area_tab_2
-  selected_small_area_tab_2 <- reactive({
-  small_area <-  input$small_area_choice_tab_2
-  return(small_area)
-})
-
-  # Reactive expression to store selection from year_choice_tab_2 - variable name = selected_year_tab_2
-  selected_year_tab_2 <- reactive({
-    Y <- input$year_choice_tab_2
-    return(Y)
-  }) 
-  
-  # Reactive expression to store selection from measure_choice_tab_2 - variable name = selected_measure_tab_2
-  selected_measure_tab_2 <- reactive({
-    M <- input$measure_choice_tab_2
-    return(M)
-  })  
-  
 # Code for Population Size Tab (Tab 1) -------------------------------------------
 
   # Run create_scot_map - variable name = scot_map_tab_1
   
-  scot_map_tab_1 <- create_scot_map()
+  output$scot_map_tab_1 <- renderLeaflet({
+    create_scot_map()
+  })
   
-  # Run add_pop_index - variable name = indexed_data_tab_1
-  
-  # Create data for council level map - variable name = map_data_tab_1
+  # Create reactive data for map - variable name = map_data_tab_1
   map_data_tab_1 <- reactive({
-    indexed_data_tab_1 <- indexed_data_tab_1()
-    #filter this data based on council and year
-    council_map_data <- filter(indexed_data_tab_1, Year ==selected_year_tab_1() & Council.Name == selected_la_tab_1()) %>%
-      filter(., Level == "Small Area")
-    })
-
-  # Combine map data with shape file - variable name = map_data_tab_1
-  map_data_tab_1 <- reactive({
-    map_data_tab_1 <- map_data_tab_1()
-    left_join(map_data_tab_1, shape_data, by = c("Area.Name"="Sub-Council Area Name"))
+    # Run add_pop_index using input values
+    indexed_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
+                                  age_selection = input$age_choice_tab_1
+                                  )
+    # Filter this data based on council and year
+    council_map_data <- filter(indexed_data, 
+                               Year == input$year_choice_tab_1 & 
+                                 Council.Name == input$la_choice_tab_1
+                               ) %>%
+      filter(., Level == "Small Area") %>%
+      ungroup()
+    
+    # Filter shape file to selected council before combining with data
+    filtered_shape <- filter(shape_data, Council == input$la_choice_tab_1)
+    # Combine map data with shape file 
+    combined_data <- left_join(filtered_shape, 
+                               council_map_data,
+                               by = c("SubCouncil" = "LongName")
+    )
   })
 
   # RenderLeaflet for council level map - output name = la_map_tab_1
   output$la_map_tab_1 <- renderLeaflet({
     
+    # Call reactive map data
+    map_data_tab_1 <- map_data_tab_1()
+    
     # store selected age
-    selected_age_tab_1 <- selected_age_tab_1()
+    selected_age_tab_1 <- input$age_choice_tab_1
     # label of the ages included, if more than 1 age is selected is will be presented as "16-64"
     age_label <- if(length(selected_age_tab_1) > 1) { 
       paste(first(selected_age_tab_1), "-", last(selected_age_tab_1))
@@ -271,7 +249,7 @@ server <- function(input, output) {
     # Set colours for the map
     map_colours <- brewer.pal(8, "Blues")
     # Assign colours to quintiles
-    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1@data$Total.Population, n = 8)
+    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1$Total.Population, n = 8)
     
     # Create a leaflet object using small area shapefiles
     leaflet(map_data_tab_1) %>%
@@ -281,18 +259,18 @@ server <- function(input, output) {
       addPolygons(smoothFactor = 1, 
                   weight = 1.5, 
                   fillOpacity = 0.8,
-                  layerId = ~Area.Name,
+                  layerId = ~SubCouncil,
                   color = "black", 
                   # colour of polygons should map to population quintiles
                   fillColor = ~map_colour_quintiles(Total.Population),
                   # Use HTML to create popover labels with all the selected info
                   label = (sprintf(
                     "<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
-                    map_data_tab_1@data$Area.Name, 
-                    map_data_tab_1@data$Year,
+                    map_data_tab_1$SubCouncil, 
+                    map_data_tab_1$Year,
                     age_label,
                     selected_gender_tab_1,
-                    map_data_tab_1@data$Total.Population)
+                    map_data_tab_1$Total.Population)
                     %>% lapply(htmltools::HTML)
                     ),
                   # Creates a white border on the polygon where the mouse hovers
@@ -324,6 +302,7 @@ server <- function(input, output) {
     default_area <- small_area_options[1]
     selected_small_area_tab_1(default_area)
   })
+  
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
   
   # Run create_line_plot - outputID = across_areas_plot_tab_1

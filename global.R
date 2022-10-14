@@ -5,6 +5,7 @@ library(leaflet)
 library(plotly)
 library(RColorBrewer)
 library(shinycssloaders)
+library(sf)
 
 projection_data <- read.csv("Data files/Population Projections With Aggregations.csv")
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
@@ -17,3 +18,15 @@ small_area_lookup <- projection_data %>%
   filter(Level == "Small Area") %>%
   select(Council.Name, Area.Name) %>%
   distinct()
+
+# load shortname lookups
+lookup <- read_csv("Data files/ShortNameLookup.csv")
+small_area_lookup <- small_area_lookup %>% 
+  left_join(lookup, by = c("Area.Name" = "ShortName", "Council.Name" = "Council"))
+
+# split out council and sub-council in shape_data for merging
+shape_data <- shape_data %>% 
+  separate(`Sub-Council Area Name`, into = c("SubCouncil", "Council"), sep = " - ", remove = TRUE)
+
+# replace "and" with ampersand in shapefiles - this is to allow merging with projection_data
+shape_data$Council <- gsub(" and ", " & ", shape_data$Council)

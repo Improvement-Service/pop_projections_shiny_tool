@@ -1,0 +1,12 @@
+Stage 1 - Ensure short names in population projection file match with short name in lookup file created by Nick (this file was created by taking the short names and long names used in the POPGroup files)
+	Step 1 - Copy the small area names from the population projections files into the lookup file.
+	Step 2 - Compare the small area names from the 2 data sets
+	Step 3 - filter to anywhere where the match is FALSE
+	Step 4 - Replace these names in lookup file so they match what has come form the population projection file. Most errors are spaces after the name (there are a few names where technically the short name form the population projections looks incorrect, but this is what has been published so easier to stick with this and potentially review in the future. It's only the short name so it will never be seen anywhere in the tool anyway)
+	Step 5 - Remove population projections name
+Stage 2 - Ensure long names in shape file lookup match with look up file Nick created
+	Step 1 - Copy the long names from the shape file lookup file into the lookup file.
+	Step 2 - Compare the long area names from the 2 data sets
+	Step 3 - filter to anywhere where the match is FALSE
+	Step 4 - Replace these names in lookup file so they match what has come from the shape file lookup file. Most errors are spaces after the name and "and" instead of "&" 
+	Step 5 - Remove shape file lookup names
