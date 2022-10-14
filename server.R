@@ -91,7 +91,16 @@ server <- function(input, output) {
               filter(dataset, Measure  == "Sex.Ratio")
             }
           }
-        }
+      }
+    
+    # This will set the measure title for the graphs
+    # The graphs use population index data but the drop down is labelled total population so 
+    # use this to match them
+    measure_title <- if(measure_selection == "Total Population") {
+      "Total Population Index"
+    } else {
+      measure_selection
+    }
     
     # Adds a column to the data with line colours
     # Sets the line colours dependent on the area
@@ -142,7 +151,7 @@ server <- function(input, output) {
         # Creates text for hoverover label
         text = paste("Area Name:",`LongName`, "<br>", 
                      "Year:", `Year`,"<br>",
-                     "Measure:", `Title`, "<br>", 
+                     "Measure:", `measure_title`, "<br>", 
                      "Value:",`Value`)
         ), 
         size = 0.7
@@ -338,7 +347,8 @@ server <- function(input, output) {
     plot <- create_line_plot(dataset = across_areas_data_tab_1(), 
                              council_selection = input$la_choice_tab_1, 
                              small_area_selection = selected_small_area_tab_1(), 
-                             measure_selection = "Total Population"
+                             measure_selection = "Total Population",
+                             graph_type = "Across Areas"
     )
   })
   
