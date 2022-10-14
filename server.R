@@ -320,7 +320,7 @@ server <- function(input, output) {
       return()} 
     small_area_options <- small_area_lookup %>%
       filter(Council.Name == input$la_choice_tab_1) %>%
-      pull(Area.Name)
+      pull(LongName)
     default_area <- small_area_options[1]
     selected_small_area_tab_1(default_area)
   })
