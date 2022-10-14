@@ -291,6 +291,7 @@ server <- function(input, output) {
       filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") && 
                Area.Name %in% c(input$la_choice_tab_1, "Scotland", selected_small_area_tab_1())
                )
+  return(across_data)
   })
   
   # Run create_line_plot - outputID = across_areas_plot_tab_1
