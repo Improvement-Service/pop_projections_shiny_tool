@@ -67,8 +67,10 @@ ui <- navbarPage(
                                             left = "auto", 
                                             right = 20, 
                                             bottom = "auto",
-                                            width = 400, 
+                                            width = 330, 
                                             height = "auto",
+                                            textOutput("tab_1_plots_title"),
+                                            plotlyOutput("within_areas_plot_tab_1", height = "300px")
                                             plotlyOutput("across_areas_plot_tab_1", height = "300px")
                                             )
                               )

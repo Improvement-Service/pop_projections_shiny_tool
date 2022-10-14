@@ -74,7 +74,11 @@ server <- function(input, output) {
   }
   
   # Function to create line graphs - function name = create_line_plot
-  create_line_plot <- function(dataset, council_selection, small_area_selection, measure_selection){
+  create_line_plot <- function(dataset, 
+                               council_selection, 
+                               small_area_selection, 
+                               measure_selection,
+                               graph_type) {
     
     # Measure names in drop down differ from those in data, use this to match them up
     data <- if(measure_selection == "Total Population") {
@@ -87,15 +91,6 @@ server <- function(input, output) {
               filter(dataset, Measure  == "Sex.Ratio")
             }
           }
-        }
-    
-    # This will set the measure title for the graphs
-    # The graphs use population index data but the drop down is labelled total population so 
-    # use this to match them
-    Title <- if(measure_selection == "Total Population") {
-      "Total Population Index"
-      } else {
-        measure_selection
         }
     
     # Adds a column to the data with line colours
@@ -111,7 +106,7 @@ server <- function(input, output) {
                                                  )
                                          )
                                  )
-    
+
     # The area names need to be stored as a factor so that the order of the areas can be set
     # If this is not done the areas will be ordered alphabetically and the colours will be out of order
     # This stores the levels if statement stores the levels for the factor
@@ -153,7 +148,7 @@ server <- function(input, output) {
         size = 0.7
       ) +
       scale_color_manual(values = area_colours) +
-      labs(title = Title) +
+      labs(title = graph_type) +
       theme(
         plot.title = element_text(size = 9), 
         panel.grid.major = element_blank(), 
@@ -303,7 +298,6 @@ server <- function(input, output) {
   })
   
   # Create observe event to update selected_small_area_tab_1
-  
   observe({
     event <- input$la_map_tab_1_shape_click
     if(is.null(event)){
@@ -320,6 +314,11 @@ server <- function(input, output) {
       pull(LongName)
     default_area <- small_area_options[1]
     selected_small_area_tab_1(default_area)
+    })
+
+  # Create an overall title for the graphs on tab 1
+  output$tab_1_plots_title <- renderText({
+    "Indexed Change"
   })
   
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
@@ -344,8 +343,16 @@ server <- function(input, output) {
   })
   
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
-  
+
   # Run create_line_plot - outputID = within_areas_plot_tab_1
+  output$within_areas_plot_tab_1 <- renderPlotly({
+    plot <- create_line_plot(dataset = within_areas_data_tab_1(), 
+                             council_selection = input$la_choice_tab_1, 
+                             small_area_selection = selected_small_area_tab_1(), 
+                             measure_selection = "Total Population",
+                             graph_type = "Within Council Areas"
+    )
+  })
   
   
 # Code for Similar Areas Tab (Tab 2) ---------------------------------------------
