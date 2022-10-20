@@ -375,6 +375,9 @@ server <- function(input, output) {
 # Code for Similar Areas Tab (Tab 2) ---------------------------------------------
   
   # Run create_scot_map - variable name = scot_map_tab_2
+  output$scot_map_tab_2 <- renderLeaflet({
+    create_scot_map()
+  })
   
   # Run add_pop_index - variable name = indexed_data_tab_2
   
