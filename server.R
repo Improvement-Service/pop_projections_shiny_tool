@@ -381,6 +381,20 @@ server <- function(input, output) {
   # Create ranked small area data set - variable name - ranked_data_tab_2
   
   # Create data for similar area map - variable name = map_data_tab_2
+  map_data_tab_2 <- reactive({
+    data <- ranked_data_tab_2()
+    # set default shape colour to grey
+    data <- data %>% 
+     filter(Year == input$year_choice_tab_2) %>%
+      mutate(Shape.Colour = "grey")
+    
+    # set shape colour to dark blue for selected small area
+    data$Shape.Colour[data$LongName == input$small_area_choice_tab_2] <- "#034e7b"
+    # set shape colour to light blue for similar areas
+    data$Shape.Colour[data$similarArea == "Similar"] <- "#a6bddb"
+    
+    return(data)
+  })
   
   # Combine map data with shape file - variable name = map_data_tab_2
   
