@@ -56,7 +56,7 @@ server <- function(input, output, session) {
       arrange(Age) %>%
       filter(row_number()==1) %>%
       ungroup() %>%
-      select(Council.Name, Level, Area.Name, Year, Dependency.Ratio)
+      select(Council.Name, Level, Area.Name, Year, `Dependency Ratio`)
     
     data <- left_join(total_pop_data, index_data) %>%
       left_join(dependency_data) %>% 
@@ -268,7 +268,7 @@ server <- function(input, output, session) {
                                Council.Name == input$la_choice_tab_1,
                                Level == "Small Area",
                                Year == input$year_choice_tab_1,
-                               Measure == "Total.Population"
+                               Measure == "Total Population"
                                ) %>%
       ungroup()
     
