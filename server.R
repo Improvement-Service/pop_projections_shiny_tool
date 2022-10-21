@@ -390,6 +390,9 @@ server <- function(input, output) {
   })
   
   # Run add_pop_index - variable name = indexed_data_tab_2
+  indexed_data_tab_2 <- add_pop_index(gender_selection = "Persons", 
+                                  age_selection = c(0:90))
+
   
   # Create ranked small area data set - variable name - ranked_data_tab_2
   
