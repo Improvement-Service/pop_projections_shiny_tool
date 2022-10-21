@@ -29,11 +29,11 @@ server <- function(input, output, session) {
     total_pop_data <- projection_data %>% 
       filter(Sex == gender_selection & Age %in% age_selection) %>%
       group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-      summarise(Total.Population = sum(Population)) %>%
+      summarise(`Total Population` = sum(Population)) %>%
       select(-Sex)
     
     index_data <- total_pop_data %>% 
-      pivot_wider(names_from = Year, values_from = Total.Population) %>% 
+      pivot_wider(names_from = Year, values_from = `Total Population`) %>% 
       mutate(across(`2019`:`2030`, ~ .x / `2018`)) %>%
       mutate(across(`2018`, ~ .x / `2018`))
     index_data <- index_data %>% 
@@ -44,12 +44,12 @@ server <- function(input, output, session) {
     sex_data <- projection_data %>% 
       filter(Age %in% age_selection) %>%
       group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-      summarise(Total.Population = sum(Population)) %>%
-      pivot_wider(names_from = Sex, values_from = Total.Population) %>%
-      mutate(Sex.Ratio = round((Males / Females) * 100, 1)) %>%
-      pivot_longer(cols = `Females`:`Persons`, names_to = "Sex", values_to = "Total.Population") %>%
+      summarise(`Total Population` = sum(Population)) %>%
+      pivot_wider(names_from = Sex, values_from = `Total Population`) %>%
+      mutate(`Gender Ratio` = round((Males / Females) * 100, 1)) %>%
+      pivot_longer(cols = `Females`:`Persons`, names_to = "Sex", values_to = "Total Population") %>%
       filter(Sex == gender_selection) %>%
-      select(Council.Name, Level, Area.Name, Year, Sex.Ratio)
+      select(Council.Name, Level, Area.Name, Year, `Gender Ratio`)
     
     dependency_data <- projection_data %>% filter(Sex == gender_selection & Age %in% age_selection) %>%
       group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
@@ -65,7 +65,7 @@ server <- function(input, output, session) {
     data[is.na(data$LongName), "LongName"] <- data[is.na(data$LongName), "Area.Name"]
     
     data <- data %>% 
-      pivot_longer(cols = `Total.Population`:`Sex.Ratio`, 
+      pivot_longer(cols = `Total Population`:`Gender Ratio`, 
                    names_to = "Measure", 
                    values_to = "Value"
       )
@@ -105,19 +105,14 @@ server <- function(input, output, session) {
                                measure_selection,
                                graph_type) {
     
-    # Measure names in drop down differ from those in data, use this to match them up
+    # Graphs use population index but measure selection is called Total Population
+    # Need these to match 
     data <- if(measure_selection == "Total Population") {
       filter(dataset, Measure == "Population.Index")
       } else {
-        if(measure_selection == "Dependency Ratio") {
-          filter(dataset, Measure  == "Dependency.Ratio")
-          } else {
-            if(measure_selection == "Sex Ratio") {
-              filter(dataset, Measure  == "Sex.Ratio")
-            }
-          }
-      }
-    
+        filter(dataset, Measure  == measure_selection)
+        }
+          
     # This will set the measure title for the graphs
     # The graphs use population index data but the drop down is labelled total population so 
     # use this to match them
