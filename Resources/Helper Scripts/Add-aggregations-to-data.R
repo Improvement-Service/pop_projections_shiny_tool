@@ -38,7 +38,7 @@ dependent_age_totals <- projections_data_with_scot_and_persons %>%
   summarise(Dependent.Population = sum(Population))
 
 dependency_ratio_data <- left_join(working_age_totals, dependent_age_totals) %>%
-  mutate(Dependency.Ratio = round((Dependent.Population / WA.Population) * 100,1)) %>%
+  mutate(`Dependency Ratio` = round((Dependent.Population / WA.Population) * 100,1)) %>%
   select(-WA.Population, -Dependent.Population)
 
 projection_data_complete <- left_join(projections_data_with_scot_and_persons, dependency_ratio_data) %>%
