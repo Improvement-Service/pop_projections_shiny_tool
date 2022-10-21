@@ -73,14 +73,15 @@ server <- function(input, output) {
     return(data)
   }
   
-  # Function to identify four small areas (by Long Name) which area most similar to 
-    # the user-selected similar area for the selected year and measure
+  # Function to identify four small areas (by Long Name) which are most similar 
+  # to the user-selected similar area for the selected year and measure
   find_similar_areas <- function(data, selectedSmallArea, yr, msr) {
     
     small_area_data <- data %>%
-      filter(Level== "Small Area",
+      filter(Level == "Small Area",
              Measure == msr,
-             Year == yr) %>%
+             Year == yr
+             ) %>%
       arrange(desc(Value))
     
     index <- which(small_area_data$LongName == selectedSmallArea)
@@ -415,18 +416,22 @@ server <- function(input, output) {
   
   # Run add_pop_index - variable name = indexed_data_tab_2
   indexed_data_tab_2 <- add_pop_index(gender_selection = "Persons", 
-                                  age_selection = c(0:90))
+                                      age_selection = c(0:90)
+                                      )
 
   
   # Create ranked small area data set - variable name - ranked_data_tab_2
   # Step 1: call find_similar_areas() function  to return four areas most similar to 
-    # selected small area based on other selections
+  # selected small area based on other selections
 
-  similar_areas <- find_similar_areas(indexed_data_tab_2, input$small_area_choice_tab_2, input$year_choice_tab_2, input$measure_choice_tab_2)
-  
-  #Step 2: create a new dataset (inherited from 
-  # indexed_data_tab_2) with a new column which "tags"
-  # similar area names (and the selected area name) 
+  similar_areas <- find_similar_areas(data = indexed_data_tab_2, 
+                                      selectedSmallArea = input$small_area_choice_tab_2, 
+                                      yr = input$year_choice_tab_2, 
+                                      msr = input$measure_choice_tab_2
+                                      )
+
+  # Step 2: create a new dataset (inherited from indexed_data_tab_2) with a new column 
+  # which "tags" similar area names (and the selected area name) 
   # with keywords "Selected" or "Similar" or else " ".
   ranked_data_tab_2 <- indexed_data_tab_2 %>%
     mutate(similarArea = " ")
