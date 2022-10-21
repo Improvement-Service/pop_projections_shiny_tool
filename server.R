@@ -435,6 +435,7 @@ server <- function(input, output) {
   
   # Create data for similar area map - variable name = map_data_tab_2
   map_data_tab_2 <- reactive({
+  
     data <- ranked_data_tab_2()
     # set default shape colour to grey
     data <- data %>% 
@@ -446,11 +447,11 @@ server <- function(input, output) {
     # set shape colour to light blue for similar areas
     data$Shape.Colour[data$similarArea == "Similar"] <- "#a6bddb"
     
-    return(data)
-  })
-  
   # Combine map data with shape file - variable name = map_data_tab_2
+  combined_data <- left_join(shape_data, data, by = c("SubCouncil" = "LongName"))
   
+  return(combined_data)
+  })
   # RenderLeaflet for similar area map - output name = la_map_tab_2
   
   # Create observe event to update selected_small_area_tab_2
