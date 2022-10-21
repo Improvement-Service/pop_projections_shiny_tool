@@ -246,7 +246,8 @@ server <- function(input, output) {
     selectizeInput(inputId = "small_area_choice_tab_2", 
                   choices = small_area_choices_tab_2(),
                   label = NULL,
-                  options = list(placeholder = 'Select Area',
+                  options = list(placeholder = "Select Small Area",
+                                 #placeholder = small_area_choices_tab_2()[1],
                                  onInitialize = I('function() { this.setValue(""); }')
                   )
     )
@@ -454,7 +455,14 @@ server <- function(input, output) {
   })
   # RenderLeaflet for similar area map - output name = la_map_tab_2
   
-  # Create observe event to update selected_small_area_tab_2
+  # Create observe event to update small area drop-down (id = small_area_choice_tab_2)
+  # to reflect value of small area clicked 
+  observe({
+    event <- input$la_map_tab_2_shape_click
+    if(is.null(event)){
+      return()} 
+    updateSelectizeInput(session, inputId = "small_area_choice_tab_2", selected = event$id)
+  })
   
   # Filter data for across areas graph - variable name = across_areas_data_tab_2
   
