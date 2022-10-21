@@ -438,6 +438,53 @@ server <- function(input, output, session) {
   })
   
   # RenderLeaflet for similar area map - output name = la_map_tab_2
+  output$la_map_tab_2 <- renderLeaflet({
+    
+    # Call reactive map data
+    map_data_tab_2 <- ranked_data_tab_2()
+    
+    # Filter data to selected year and selected measure
+    map_data_tab_2 <- map_data_tab_2 %>% 
+      filter(Year == input$year_choice_tab_2, Measure == input$measure_choice_tab_2)
+    
+    # Combine map data with shape file
+    map_data_tab_2 <- left_join(shape_data, 
+                                map_data_tab_2, 
+                                by = c("SubCouncil" = "LongName")
+    )
+    
+    # Create a leaflet object using small area shapefiles
+    leaflet(map_data_tab_2) %>%
+      # Create background map - OpenStreetMap by default
+      addTiles() %>%
+      # Add polygons for small areas
+      addPolygons(smoothFactor = 1, 
+                  weight = 1.5, 
+                  fillOpacity = 0.8,
+                  layerId = ~SubCouncil,
+                  color = "black", 
+                  # colour of polygons should map to Shape.Colour column
+                  fillColor = ~Shape.Colour,
+                  # Use HTML to create popover labels with all the selected info
+                  label = (sprintf(
+                    "<strong>%s</strong><br/>Council: %s<br/>Year: %s<br/>Measure: %s<br/>Value: %s",
+                    map_data_tab_2$SubCouncil, 
+                    map_data_tab_2$Council,
+                    map_data_tab_2$Year,
+                    map_data_tab_2$Measure,
+                    map_data_tab_2$Value)
+                    %>% lapply(htmltools::HTML)
+                  ),
+                  # Creates a white border on the polygon where the mouse hovers
+                  highlightOptions = highlightOptions(color = "white", weight = 3, bringToFront = TRUE)
+      ) %>%
+      addLegend("bottomleft", 
+                colors = c("#034e7b","#a6bddb","grey"),
+                labels = c(input$small_area_choice_tab_2, "Similar Areas", "All Other Areas"),
+                title = "",
+                opacity = 1
+      ) 
+  })
   
   # Create observe event to update small area drop-down (id = small_area_choice_tab_2)
   # to reflect value of small area clicked 
