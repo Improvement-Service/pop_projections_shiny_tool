@@ -73,6 +73,30 @@ server <- function(input, output) {
     return(data)
   }
   
+  # Function to identify four small areas (by Long Name) which area most similar to 
+    # the user-selected similar area for the selected year and measure
+  find_similar_areas <- function(data, selectedSmallArea, yr, msr) {
+    
+    small_area_data <- data %>%
+      filter(Level== "Small Area",
+             Measure == msr,
+             Year == yr) %>%
+      arrange(desc(Value))
+    
+    index <- which(small_area_data$LongName == selectedSmallArea)
+    value <- small_area_data$Value[index]
+    
+    ranked_data <- small_area_data %>%
+      mutate(Difference = abs(Value - value)) %>%
+      arrange(Difference)
+    
+    similar_areas <- ranked_data[1:5,] %>% 
+      filter(LongName != selectedSmallArea) %>%
+      pull(LongName)
+    
+    return(similar_areas)
+  }
+  
   # Function to create line graphs - function name = create_line_plot
   create_line_plot <- function(dataset, 
                                council_selection, 
@@ -197,6 +221,16 @@ server <- function(input, output) {
     return(G)
   })   
   
+  # Reactive expression to store selection from age_choice_tab_1 - variable name = selected_age_tab_1
+  selected_age_tab_1 <- reactive({
+    # slider input only returns first and last values so need to create a vector with all values
+    first_age <- input$age_choice_tab_1[1]
+    last_age <- input$age_choice_tab_1[2]
+    full_range <- c(first_age:last_age)
+
+    return(full_range)
+  })   
+  
   # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
   small_area_choices_tab_2 <- reactive({
     req(input$la_choice_tab_2)
@@ -230,7 +264,7 @@ server <- function(input, output) {
   map_data_tab_1 <- reactive({
     # Run add_pop_index using input values
     indexed_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
-                                  age_selection = input$age_choice_tab_1
+                                  age_selection = selected_age_tab_1()
                                   )
     # Filter this data based on council and year
     council_map_data <- filter(indexed_data, 
@@ -257,7 +291,7 @@ server <- function(input, output) {
     map_data_tab_1 <- map_data_tab_1()
     
     # store selected age
-    selected_age_tab_1 <- input$age_choice_tab_1
+    selected_age_tab_1 <- selected_age_tab_1()
     # label of the ages included, if more than 1 age is selected is will be presented as "16-64"
     age_label <- if(length(selected_age_tab_1) > 1) { 
       paste(first(selected_age_tab_1), "-", last(selected_age_tab_1))
@@ -334,9 +368,9 @@ server <- function(input, output) {
   across_areas_data_tab_1 <- reactive({
     # run function to add index to data then filter to selected Council and small area
     across_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
-                                 age_selection = input$age_choice_tab_1
+                                 age_selection = selected_age_tab_1()
                                  ) %>%
-      filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") && 
+      filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") & 
                LongName %in% c(input$la_choice_tab_1, "Scotland", selected_small_area_tab_1())
              )
     return(across_data)
@@ -355,9 +389,9 @@ server <- function(input, output) {
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
   within_areas_data_tab_1 <- reactive({
    x <- add_pop_index(gender_selection = selected_gender_tab_1(), 
-                      age_selection= input$age_choice_tab_1
+                      age_selection = selected_age_tab_1()
                       ) %>%
-                      filter(Council.Name == input$la_choice_tab_1 && Level == "Small Area")
+                      filter(Council.Name == input$la_choice_tab_1 & Level == "Small Area")
    return(x)
    })
 
@@ -375,13 +409,44 @@ server <- function(input, output) {
 # Code for Similar Areas Tab (Tab 2) ---------------------------------------------
   
   # Run create_scot_map - variable name = scot_map_tab_2
+  output$scot_map_tab_2 <- renderLeaflet({
+    create_scot_map()
+  })
   
   # Run add_pop_index - variable name = indexed_data_tab_2
+  indexed_data_tab_2 <- add_pop_index(gender_selection = "Persons", 
+                                  age_selection = c(0:90))
+
   
   # Create ranked small area data set - variable name - ranked_data_tab_2
+  # Step 1: call find_similar_areas() function  to return four areas most similar to 
+    # selected small area based on other selections
+
+  similar_areas <- find_similar_areas(indexed_data_tab_2, input$small_area_choice_tab_2, input$year_choice_tab_2, input$measure_choice_tab_2)
+  
+  #Step 2: create a new dataset (inherited from 
+  # indexed_data_tab_2) with a new column which "tags"
+  # similar area names (and the selected area name) 
+  # with keywords "Selected" or "Similar" or else " ".
+  ranked_data_tab_2 <- indexed_data_tab_2 %>%
+    mutate(similarArea = " ")
+  ranked_data_tab_2$similarArea[ranked_data_tab_2$LongName %in% similar_areas] <- "Similar"
+  ranked_data_tab_2$similarArea[ranked_data_tab_2$LongName == input$small_area_choice_tab_2] <- "Selected"
   
   # Create data for similar area map - variable name = map_data_tab_2
   map_data_tab_2 <- reactive({
+  
+    data <- ranked_data_tab_2()
+    # set default shape colour to grey
+    data <- data %>% 
+     filter(Year == input$year_choice_tab_2) %>%
+      mutate(Shape.Colour = "grey")
+    
+    # set shape colour to dark blue for selected small area
+    data$Shape.Colour[data$LongName == input$small_area_choice_tab_2] <- "#034e7b"
+    # set shape colour to light blue for similar areas
+    data$Shape.Colour[data$similarArea == "Similar"] <- "#a6bddb"
+    
   # Combine map data with shape file - variable name = map_data_tab_2
   combined_data <- left_join(shape_data, data, by = c("SubCouncil" = "LongName"))
   
