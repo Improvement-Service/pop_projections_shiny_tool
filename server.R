@@ -197,6 +197,16 @@ server <- function(input, output) {
     return(G)
   })   
   
+  # Reactive expression to store selection from age_choice_tab_1 - variable name = selected_age_tab_1
+  selected_age_tab_1 <- reactive({
+    # slider input only returns first and last values so need to create a vector with all values
+    first_age <- input$age_choice_tab_1[1]
+    last_age <- input$age_choice_tab_1[2]
+    full_range <- c(first_age:last_age)
+
+    return(full_range)
+  })   
+  
   # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
   small_area_choices_tab_2 <- reactive({
     req(input$la_choice_tab_2)
@@ -230,7 +240,7 @@ server <- function(input, output) {
   map_data_tab_1 <- reactive({
     # Run add_pop_index using input values
     indexed_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
-                                  age_selection = input$age_choice_tab_1
+                                  age_selection = selected_age_tab_1()
                                   )
     # Filter this data based on council and year
     council_map_data <- filter(indexed_data, 
@@ -257,7 +267,7 @@ server <- function(input, output) {
     map_data_tab_1 <- map_data_tab_1()
     
     # store selected age
-    selected_age_tab_1 <- input$age_choice_tab_1
+    selected_age_tab_1 <- selected_age_tab_1()
     # label of the ages included, if more than 1 age is selected is will be presented as "16-64"
     age_label <- if(length(selected_age_tab_1) > 1) { 
       paste(first(selected_age_tab_1), "-", last(selected_age_tab_1))
@@ -334,7 +344,7 @@ server <- function(input, output) {
   across_areas_data_tab_1 <- reactive({
     # run function to add index to data then filter to selected Council and small area
     across_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
-                                 age_selection = input$age_choice_tab_1
+                                 age_selection = selected_age_tab_1()
                                  ) %>%
       filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") && 
                LongName %in% c(input$la_choice_tab_1, "Scotland", selected_small_area_tab_1())
@@ -355,7 +365,7 @@ server <- function(input, output) {
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
   within_areas_data_tab_1 <- reactive({
    x <- add_pop_index(gender_selection = selected_gender_tab_1(), 
-                      age_selection= input$age_choice_tab_1
+                      age_selection = selected_age_tab_1()
                       ) %>%
                       filter(Council.Name == input$la_choice_tab_1 && Level == "Small Area")
    return(x)
