@@ -419,43 +419,34 @@ server <- function(input, output) {
                                       age_selection = c(0:90)
                                       )
 
-  
-  # Create ranked small area data set - variable name - ranked_data_tab_2
-  # Step 1: call find_similar_areas() function  to return four areas most similar to 
-  # selected small area based on other selections
+# Create ranked small area data set - variable name - ranked_data_tab_2
+  ranked_data_tab_2 <- reactive({
+    # Step 1: call find_similar_areas() function  to return four areas most similar to 
+    # selected small area based on other selections
+    similar_areas <- find_similar_areas(data = indexed_data_tab_2, 
+                                        selectedSmallArea = input$small_area_choice_tab_2, 
+                                        yr = input$year_choice_tab_2, 
+                                        msr = input$measure_choice_tab_2
+                                        )
 
-  similar_areas <- find_similar_areas(data = indexed_data_tab_2, 
-                                      selectedSmallArea = input$small_area_choice_tab_2, 
-                                      yr = input$year_choice_tab_2, 
-                                      msr = input$measure_choice_tab_2
-                                      )
-
-  # Step 2: create a new dataset (inherited from indexed_data_tab_2) with a new column 
-  # which "tags" similar area names (and the selected area name) 
-  # with keywords "Selected" or "Similar" or else " ".
-  ranked_data_tab_2 <- indexed_data_tab_2 %>%
-    mutate(similarArea = " ")
-  ranked_data_tab_2$similarArea[ranked_data_tab_2$LongName %in% similar_areas] <- "Similar"
-  ranked_data_tab_2$similarArea[ranked_data_tab_2$LongName == input$small_area_choice_tab_2] <- "Selected"
+    # Step 2: create a new dataset (inherited from indexed_data_tab_2) with a new column 
+    # which assigns similar area names (and the selected area name) 
+    # with a colour Dark Blue or Light Blue or Grey.
+    ranked_data_tab_2 <- indexed_data_tab_2 %>% mutate(Shape.Colour = "grey")
+    ranked_data_tab_2$Shape.Colour[ranked_data_tab_2$LongName %in% similar_areas] <- "#a6bddb"
+    ranked_data_tab_2$Shape.Colour[ranked_data_tab_2$LongName == input$small_area_choice_tab_2] <- "#034e7b"
+    
+    return(ranked_data_tab_2)
+  })
   
   # Create data for similar area map - variable name = map_data_tab_2
   map_data_tab_2 <- reactive({
-  
-    data <- ranked_data_tab_2()
-    # set default shape colour to grey
-    data <- data %>% 
-     filter(Year == input$year_choice_tab_2) %>%
-      mutate(Shape.Colour = "grey")
-    
-    # set shape colour to dark blue for selected small area
-    data$Shape.Colour[data$LongName == input$small_area_choice_tab_2] <- "#034e7b"
-    # set shape colour to light blue for similar areas
-    data$Shape.Colour[data$similarArea == "Similar"] <- "#a6bddb"
-    
-  # Combine map data with shape file - variable name = map_data_tab_2
-  combined_data <- left_join(shape_data, data, by = c("SubCouncil" = "LongName"))
-  
-  return(combined_data)
+    # Combine map data with shape file - variable name = map_data_tab_2
+    combined_data <- left_join(shape_data, 
+                               ranked_data_tab_2(), 
+                               by = c("SubCouncil" = "LongName")
+                               )
+    return(combined_data)
   })
   # RenderLeaflet for similar area map - output name = la_map_tab_2
   
