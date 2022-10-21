@@ -73,6 +73,30 @@ server <- function(input, output) {
     return(data)
   }
   
+  # Function to identify four small areas (by Long Name) which area most similar to 
+    # the user-selected similar area for the selected year and measure
+  find_similar_areas <- function(data, selectedSmallArea, yr, msr) {
+    
+    small_area_data <- data %>%
+      filter(Level== "Small Area",
+             Measure == msr,
+             Year == yr) %>%
+      arrange(desc(Value))
+    
+    index <- which(small_area_data$LongName == selectedSmallArea)
+    value <- small_area_data$Value[index]
+    
+    ranked_data <- small_area_data %>%
+      mutate(Difference = abs(Value - value)) %>%
+      arrange(Difference)
+    
+    similar_areas <- ranked_data[1:5,] %>% 
+      filter(LongName != selectedSmallArea) %>%
+      pull(LongName)
+    
+    return(similar_areas)
+  }
+  
   # Function to create line graphs - function name = create_line_plot
   create_line_plot <- function(dataset, 
                                council_selection, 
@@ -346,7 +370,7 @@ server <- function(input, output) {
     across_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
                                  age_selection = selected_age_tab_1()
                                  ) %>%
-      filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") && 
+      filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") & 
                LongName %in% c(input$la_choice_tab_1, "Scotland", selected_small_area_tab_1())
              )
     return(across_data)
@@ -367,7 +391,7 @@ server <- function(input, output) {
    x <- add_pop_index(gender_selection = selected_gender_tab_1(), 
                       age_selection = selected_age_tab_1()
                       ) %>%
-                      filter(Council.Name == input$la_choice_tab_1 && Level == "Small Area")
+                      filter(Council.Name == input$la_choice_tab_1 & Level == "Small Area")
    return(x)
    })
 
@@ -395,6 +419,19 @@ server <- function(input, output) {
 
   
   # Create ranked small area data set - variable name - ranked_data_tab_2
+  # Step 1: call find_similar_areas() function  to return four areas most similar to 
+    # selected small area based on other selections
+
+  similar_areas <- find_similar_areas(indexed_data_tab_2, input$small_area_choice_tab_2, input$year_choice_tab_2, input$measure_choice_tab_2)
+  
+  #Step 2: create a new dataset (inherited from 
+  # indexed_data_tab_2) with a new column which "tags"
+  # similar area names (and the selected area name) 
+  # with keywords "Selected" or "Similar" or else " ".
+  ranked_data_tab_2 <- indexed_data_tab_2 %>%
+    mutate(similarArea = " ")
+  ranked_data_tab_2$similarArea[ranked_data_tab_2$LongName %in% similar_areas] <- "Similar"
+  ranked_data_tab_2$similarArea[ranked_data_tab_2$LongName == input$small_area_choice_tab_2] <- "Selected"
   
   # Create data for similar area map - variable name = map_data_tab_2
   
