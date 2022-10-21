@@ -390,7 +390,7 @@ server <- function(input, output) {
   # Create observe event to update small area drop-down (id = small_area_choice_tab_2)
   # to reflect value of small area clicked 
   observe({
-    event <- input$scot_map_tab_2_shape_click
+    event <- input$la_map_tab_2_shape_click
     if(is.null(event)){
       return()} 
     updateSelectizeInput(session, inputId = "small_area_choice_tab_2", selected = event$id)
