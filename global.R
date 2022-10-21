@@ -7,7 +7,8 @@ library(RColorBrewer)
 library(shinycssloaders)
 library(sf)
 
-projection_data <- read.csv("Data files/Population Projections With Aggregations.csv")
+projection_data <- read.csv("Data files/Population Projections With Aggregations.csv") %>%
+  rename("Dependency Ratio" = "Dependency.Ratio")
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
 la_shape_data <- read_rds("Data files/LAShps.rds") 
 

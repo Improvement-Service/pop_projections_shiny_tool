@@ -1,4 +1,4 @@
-server <- function(input, output) {
+server <- function(input, output, session) {
   
 # Functions ----------------------------------------------------------------------
   
@@ -29,11 +29,11 @@ server <- function(input, output) {
     total_pop_data <- projection_data %>% 
       filter(Sex == gender_selection & Age %in% age_selection) %>%
       group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-      summarise(Total.Population = sum(Population)) %>%
+      summarise(`Total Population` = sum(Population)) %>%
       select(-Sex)
     
     index_data <- total_pop_data %>% 
-      pivot_wider(names_from = Year, values_from = Total.Population) %>% 
+      pivot_wider(names_from = Year, values_from = `Total Population`) %>% 
       mutate(across(`2019`:`2030`, ~ .x / `2018`)) %>%
       mutate(across(`2018`, ~ .x / `2018`))
     index_data <- index_data %>% 
@@ -44,19 +44,19 @@ server <- function(input, output) {
     sex_data <- projection_data %>% 
       filter(Age %in% age_selection) %>%
       group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-      summarise(Total.Population = sum(Population)) %>%
-      pivot_wider(names_from = Sex, values_from = Total.Population) %>%
-      mutate(Sex.Ratio = round((Males / Females) * 100, 1)) %>%
-      pivot_longer(cols = `Females`:`Persons`, names_to = "Sex", values_to = "Total.Population") %>%
+      summarise(`Total Population` = sum(Population)) %>%
+      pivot_wider(names_from = Sex, values_from = `Total Population`) %>%
+      mutate(`Gender Ratio` = round((Males / Females) * 100, 1)) %>%
+      pivot_longer(cols = `Females`:`Persons`, names_to = "Sex", values_to = "Total Population") %>%
       filter(Sex == gender_selection) %>%
-      select(Council.Name, Level, Area.Name, Year, Sex.Ratio)
+      select(Council.Name, Level, Area.Name, Year, `Gender Ratio`)
     
     dependency_data <- projection_data %>% filter(Sex == gender_selection & Age %in% age_selection) %>%
       group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
       arrange(Age) %>%
       filter(row_number()==1) %>%
       ungroup() %>%
-      select(Council.Name, Level, Area.Name, Year, Dependency.Ratio)
+      select(Council.Name, Level, Area.Name, Year, `Dependency Ratio`)
     
     data <- left_join(total_pop_data, index_data) %>%
       left_join(dependency_data) %>% 
@@ -65,7 +65,7 @@ server <- function(input, output) {
     data[is.na(data$LongName), "LongName"] <- data[is.na(data$LongName), "Area.Name"]
     
     data <- data %>% 
-      pivot_longer(cols = `Total.Population`:`Sex.Ratio`, 
+      pivot_longer(cols = `Total Population`:`Gender Ratio`, 
                    names_to = "Measure", 
                    values_to = "Value"
       )
@@ -105,19 +105,14 @@ server <- function(input, output) {
                                measure_selection,
                                graph_type) {
     
-    # Measure names in drop down differ from those in data, use this to match them up
+    # Graphs use population index but measure selection is called Total Population
+    # Need these to match 
     data <- if(measure_selection == "Total Population") {
       filter(dataset, Measure == "Population.Index")
       } else {
-        if(measure_selection == "Dependency Ratio") {
-          filter(dataset, Measure  == "Dependency.Ratio")
-          } else {
-            if(measure_selection == "Sex Ratio") {
-              filter(dataset, Measure  == "Sex.Ratio")
-            }
-          }
-      }
-    
+        filter(dataset, Measure  == measure_selection)
+        }
+          
     # This will set the measure title for the graphs
     # The graphs use population index data but the drop down is labelled total population so 
     # use this to match them
@@ -273,7 +268,7 @@ server <- function(input, output) {
                                Council.Name == input$la_choice_tab_1,
                                Level == "Small Area",
                                Year == input$year_choice_tab_1,
-                               Measure == "Total.Population"
+                               Measure == "Total Population"
                                ) %>%
       ungroup()
     
@@ -433,23 +428,63 @@ server <- function(input, output) {
     # Step 2: create a new dataset (inherited from indexed_data_tab_2) with a new column 
     # which assigns similar area names (and the selected area name) 
     # with a colour Dark Blue or Light Blue or Grey.
-    ranked_data_tab_2 <- indexed_data_tab_2 %>% mutate(Shape.Colour = "grey")
+    ranked_data_tab_2 <- indexed_data_tab_2 %>% 
+      filter(Level == "Small Area") %>%
+      mutate(Shape.Colour = "grey")
     ranked_data_tab_2$Shape.Colour[ranked_data_tab_2$LongName %in% similar_areas] <- "#a6bddb"
     ranked_data_tab_2$Shape.Colour[ranked_data_tab_2$LongName == input$small_area_choice_tab_2] <- "#034e7b"
     
     return(ranked_data_tab_2)
   })
   
-  # Create data for similar area map - variable name = map_data_tab_2
-  map_data_tab_2 <- reactive({
-    # Combine map data with shape file - variable name = map_data_tab_2
-    combined_data <- left_join(shape_data, 
-                               ranked_data_tab_2(), 
-                               by = c("SubCouncil" = "LongName")
-                               )
-    return(combined_data)
-  })
   # RenderLeaflet for similar area map - output name = la_map_tab_2
+  output$la_map_tab_2 <- renderLeaflet({
+    
+    # Call reactive map data
+    map_data_tab_2 <- ranked_data_tab_2()
+    
+    # Filter data to selected year and selected measure
+    map_data_tab_2 <- map_data_tab_2 %>% 
+      filter(Year == input$year_choice_tab_2, Measure == input$measure_choice_tab_2)
+    
+    # Combine map data with shape file
+    map_data_tab_2 <- left_join(shape_data, 
+                                map_data_tab_2, 
+                                by = c("SubCouncil" = "LongName")
+    )
+    
+    # Create a leaflet object using small area shapefiles
+    leaflet(map_data_tab_2) %>%
+      # Create background map - OpenStreetMap by default
+      addTiles() %>%
+      # Add polygons for small areas
+      addPolygons(smoothFactor = 1, 
+                  weight = 1.5, 
+                  fillOpacity = 0.8,
+                  layerId = ~SubCouncil,
+                  color = "black", 
+                  # colour of polygons should map to Shape.Colour column
+                  fillColor = ~Shape.Colour,
+                  # Use HTML to create popover labels with all the selected info
+                  label = (sprintf(
+                    "<strong>%s</strong><br/>Council: %s<br/>Year: %s<br/>Measure: %s<br/>Value: %s",
+                    map_data_tab_2$SubCouncil, 
+                    map_data_tab_2$Council,
+                    map_data_tab_2$Year,
+                    map_data_tab_2$Measure,
+                    map_data_tab_2$Value)
+                    %>% lapply(htmltools::HTML)
+                  ),
+                  # Creates a white border on the polygon where the mouse hovers
+                  highlightOptions = highlightOptions(color = "white", weight = 3, bringToFront = TRUE)
+      ) %>%
+      addLegend("bottomleft", 
+                colors = c("#034e7b","#a6bddb","grey"),
+                labels = c(input$small_area_choice_tab_2, "Similar Areas", "All Other Areas"),
+                title = "",
+                opacity = 1
+      ) 
+  })
   
   # Create observe event to update small area drop-down (id = small_area_choice_tab_2)
   # to reflect value of small area clicked 
