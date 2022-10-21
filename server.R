@@ -433,22 +433,15 @@ server <- function(input, output) {
     # Step 2: create a new dataset (inherited from indexed_data_tab_2) with a new column 
     # which assigns similar area names (and the selected area name) 
     # with a colour Dark Blue or Light Blue or Grey.
-    ranked_data_tab_2 <- indexed_data_tab_2 %>% mutate(Shape.Colour = "grey")
+    ranked_data_tab_2 <- indexed_data_tab_2 %>% 
+      filter(Level == "Small Area") %>%
+      mutate(Shape.Colour = "grey")
     ranked_data_tab_2$Shape.Colour[ranked_data_tab_2$LongName %in% similar_areas] <- "#a6bddb"
     ranked_data_tab_2$Shape.Colour[ranked_data_tab_2$LongName == input$small_area_choice_tab_2] <- "#034e7b"
     
     return(ranked_data_tab_2)
   })
   
-  # Create data for similar area map - variable name = map_data_tab_2
-  map_data_tab_2 <- reactive({
-    # Combine map data with shape file - variable name = map_data_tab_2
-    combined_data <- left_join(shape_data, 
-                               ranked_data_tab_2(), 
-                               by = c("SubCouncil" = "LongName")
-                               )
-    return(combined_data)
-  })
   # RenderLeaflet for similar area map - output name = la_map_tab_2
   
   # Create observe event to update small area drop-down (id = small_area_choice_tab_2)
