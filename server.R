@@ -460,10 +460,18 @@ server <- function(input, output) {
     updateSelectizeInput(session, inputId = "small_area_choice_tab_2", selected = event$id)
   })
   
-  # Filter data for across areas graph - variable name = across_areas_data_tab_2
-  
   # Run create_line_plot - outputID = across_areas_plot_tab_2
-  
+  output$across_areas_plot_tab_2 <- renderPlotly({
+    
+    # Filter data for across areas graph - variable name = across_areas_data_tab_2
+
+    plot <- create_line_plot(dataset = across_data, 
+                             council_selection = input$la_choice_tab_2, 
+                             small_area_selection = input$small_area_choice_tab_2, 
+                             measure_selection = input$measure_choice_tab_2,
+                             graph_type = "Across Areas"
+    )
+  })
   # Filter data for similar areas graph - variable name = similar_areas_data_tab_2
   
   # Run create_line_plot - outputID = similar_areas_plot_tab_2
