@@ -11,6 +11,7 @@ shapes <- read_rds("C:/Users/cassidy.nicholas/OneDrive - IS/pop_projections_shin
 old_size <- object.size(shapes)
 
 shapes_simp <- rmapshaper::ms_simplify(input = shapes, keep = 0.02) 
+shapes_simp <- shapes_simp %>%rename(`Sub-Council Area Name` = `Sub.Council.Area.Name`)
 object.size(shapes_simp)
 
 tst_shps <- shapes_simp[grep("Argyll and Bute", shapes_simp$`Sub-Council Area Name`),]
