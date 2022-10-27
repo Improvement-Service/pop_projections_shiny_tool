@@ -466,13 +466,12 @@ server <- function(input, output) {
     across_data <- add_pop_index(gender_selection = "Persons", 
                                  age_selection = c(0:90)
     ) %>%
-    # filter to selected Council, small area, and measure
+    # filter to selected Council and small area
       filter(Council.Name %in% c(input$la_choice_tab_2, "Scotland"), 
-             LongName %in% c(input$la_choice_tab_1, 
+             LongName %in% c(input$la_choice_tab_2, 
                              "Scotland", 
                              input$small_area_choice_tab_2
-                             ),
-             Measure == input$measure_choice_tab_2
+                             )
              )
     return(across_data)
   })
