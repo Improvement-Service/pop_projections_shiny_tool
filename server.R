@@ -268,7 +268,7 @@ server <- function(input, output) {
     indexed_data <- add_pop_index(gender_selection = selected_gender_tab_1(), 
                                   age_selection = selected_age_tab_1()
                                   )
-    # Filter this data based on council and year
+    # Filter this data based on council, year and measure
     council_map_data <- filter(indexed_data, 
                                Council.Name == input$la_choice_tab_1,
                                Level == "Small Area",
@@ -461,6 +461,21 @@ server <- function(input, output) {
   })
   
   # Filter data for across areas graph - variable name = across_areas_data_tab_2
+  across_areas_data_tab_2 <- reactive({
+    # run function to add index to data 
+    across_data <- add_pop_index(gender_selection = "Persons", 
+                                 age_selection = c(0:90)
+    ) %>%
+    # filter to selected Council, small area, and measure
+      filter(Council.Name %in% c(input$la_choice_tab_2, "Scotland"), 
+             LongName %in% c(input$la_choice_tab_1, 
+                             "Scotland", 
+                             input$small_area_choice_tab_2
+                             ),
+             Measure == input$measure_choice_tab_2
+             )
+    return(across_data)
+  })
   
   # Run create_line_plot - outputID = across_areas_plot_tab_2
   
