@@ -25,5 +25,5 @@ shapes_simp[shapes_simp$`Sub-Council Area Name` == "Annbank Mossblown and Tarbol
 shapes[shapes$`Sub-Council Area Name` == "Annbank Mossblown and Tarbolton - the Coalfields - South Ayrshire",1] <- "Annbank Mossblown and Tarbolton: the Coalfields - South Ayrshire"
 
 
-saveRDS(shapes_simp, "C:/Users/cassidy.nicholas/OneDrive - IS/pop_projections_shiny_tool/Data files/SCAP_shapefile.rds")
+saveRDS(shapes_simp, "Data files/SCAP_shapefile.rds")
 saveRDS(shapes, "C:/Users/cassidy.nicholas/OneDrive - IS/pop_projections_shiny_tool/Data files/SCAP_shapefile_detailed.rds")
