@@ -26,4 +26,4 @@ shapes[shapes$`Sub-Council Area Name` == "Annbank Mossblown and Tarbolton - the 
 
 
 saveRDS(shapes_simp, "Data files/SCAP_shapefile.rds")
-saveRDS(shapes, "C:/Users/cassidy.nicholas/OneDrive - IS/pop_projections_shiny_tool/Data files/SCAP_shapefile_detailed.rds")
+saveRDS(shapes, "Data files/SCAP_shapefile_detailed.rds")
