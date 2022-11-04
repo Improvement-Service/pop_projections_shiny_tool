@@ -7,7 +7,7 @@ library(sf)
 library(leaflet)
 library(rmapshaper)
 
-shapes <- read_rds("C:/Users/cassidy.nicholas/OneDrive - IS/pop_projections_shiny_tool/Data files/SCAP_shapefile.rds")
+shapes <- read_rds("Data files/SCAP_shapefile.rds")
 old_size <- object.size(shapes)
 
 shapes_simp <- rmapshaper::ms_simplify(input = shapes, keep = 0.02) 
