@@ -6,10 +6,13 @@ If new data is added the script Add-aggregations-to-data.R needs to be run first
 
 # Resources
 
-A mockup of the app has been created in Mockflow. A PDF copy of this can be viewed in the resources folder. 
+A mockup of the app has been created in Mockflow. A PDF copy of this can be viewed in the resources folder. A new version has been added detailing a new version of tab 2.
 
 The following flowchart has been created to demonstrate how different parts of the code are related and the process that will be taken for creating the map
-https://impservihub-my.sharepoint.com/:u:/g/personal/cara_connachan_improvementservice_org_uk/EUdY7VaZNmpJn0vg7LGxw5UBGq5x0hbnHyZIbvGn9UU2vw?e=PRcxBd
+https://impservihub-my.sharepoint.com/:u:/g/personal/cara_connachan_improvementservice_org_uk/EUdY7VaZNmpJn0vg7LGxw5UBGq5x0hbnHyZIbvGn9UU2vw?e=PRcxBd.
+
+The following flowchart is an updated version detailing the new version of tab 2.
+https://impservihub-my.sharepoint.com/:u:/g/personal/cara_connachan_improvementservice_org_uk/ETewPmOaT2ZNuxTVX80e1rQB25pdVoNuXZ0IUG0Vi9EUPQ?e=HZziQI
 
 The app will follow a similar structure to the COVID Economic Impact app and so may use similar code. The code is saved here 
 https://github.com/Improvement-Service/Covid-Economic-Impact
