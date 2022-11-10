@@ -1,5 +1,11 @@
 server <- function(input, output) {
+# Input Validation --------------------------------
+  # initialise an InputValidator object
+  iv <- InputValidator$new()
   
+  # Add validation rules: council and year choice cannot be null
+  iv$add_rule("la_choice_tab_1", sv_required())
+  iv$add_rule("year_choice_tab_1", sv_required())
 # Functions ----------------------------------------------------------------------
   
   # Function to create Scotland level map - function name = create_scot_map
@@ -23,7 +29,6 @@ server <- function(input, output) {
   }
 
   # Function to add total population index to data - function name = add_pop_index
-  
   add_pop_index <- function(gender_selection, age_selection) {
     
     total_pop_data <- projection_data %>% 
@@ -203,8 +208,12 @@ server <- function(input, output) {
   }
 
 # Reactive expressions (and UI output) for input selections -------------------------------------------
+    #show user input validation when submit clicked
+  observeEvent(input$submit_tab_1, {
+    iv$enable()
+  })
   
-  # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
+    # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
   
    #this will be initialised when the use selects an LA and will be updated
    #either when a new LA is selected or the user clicks on the map
@@ -285,9 +294,11 @@ server <- function(input, output) {
                                by = c("SubCouncil" = "LongName")
     )
   })
-
-  # RenderLeaflet for council level map - output name = la_map_tab_1
-  output$la_map_tab_1 <- renderLeaflet({
+  
+  
+  render_la_map_tab_1 <- eventReactive(input$submit_tab_1, {
+    #do not run unless all input present
+    req(iv$is_valid())
     
     # Call reactive map data
     map_data_tab_1 <- map_data_tab_1()
@@ -300,7 +311,7 @@ server <- function(input, output) {
     } else {
       selected_age_tab_1
     }
-
+    
     # Store selected gender
     selected_gender_tab_1 <- selected_gender_tab_1()
     
@@ -330,16 +341,22 @@ server <- function(input, output) {
                     selected_gender_tab_1,
                     map_data_tab_1$Value)
                     %>% lapply(htmltools::HTML)
-                    ),
+                  ),
                   # Creates a white border on the polygon where the mouse hovers
                   highlightOptions = highlightOptions(color = "white", weight = 3, bringToFront = TRUE)
-                  ) %>%
+      ) %>%
       addLegend("bottomleft", 
                 colors = map_colours,
                 labels = c("Smallest Population", "","","","","","","Largest Population"),
                 title = "",
                 opacity = 1
-                ) 
+      ) 
+  })
+
+  # RenderLeaflet for council level map - output name = la_map_tab_1
+  output$la_map_tab_1 <- renderLeaflet({
+   
+    render_la_map_tab_1()
   })
   
   # Create observe event to update selected_small_area_tab_1
@@ -378,14 +395,21 @@ server <- function(input, output) {
     return(across_data)
   })
   
-  # Run create_line_plot - outputID = across_areas_plot_tab_1
-  output$across_areas_plot_tab_1 <- renderPlotly({
+  #reactive will render ONLY when user has clicked 'submit selections'
+  render_across_areas_plot_tab_1 <- eventReactive(list(input$submit_tab_1, input$la_map_tab_1_shape_click),{
+    #do not run unless all input present
+    req(iv$is_valid())
+    
     plot <- create_line_plot(dataset = across_areas_data_tab_1(), 
                              council_selection = input$la_choice_tab_1, 
                              small_area_selection = selected_small_area_tab_1(), 
                              measure_selection = "Total Population",
                              graph_type = "Across Areas"
     )
+  })
+  # Run create_line_plot - outputID = across_areas_plot_tab_1
+  output$across_areas_plot_tab_1 <- renderPlotly({
+   render_across_areas_plot_tab_1()
   })
   
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
@@ -398,13 +422,20 @@ server <- function(input, output) {
    })
 
   # Run create_line_plot - outputID = within_areas_plot_tab_1
-  output$within_areas_plot_tab_1 <- renderPlotly({
+  #will render only when 'Submit Selections' is clicked and no empty selections
+  render_within_areas_plot_tab_1 <- eventReactive(list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
+    #do not run unless all input present
+    req(iv$is_valid())
     plot <- create_line_plot(dataset = within_areas_data_tab_1(), 
                              council_selection = input$la_choice_tab_1, 
                              small_area_selection = selected_small_area_tab_1(), 
                              measure_selection = "Total Population",
                              graph_type = "Within Council Areas"
     )
+  })
+  
+  output$within_areas_plot_tab_1 <- renderPlotly({
+    render_within_areas_plot_tab_1()
   })
   
   
