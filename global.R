@@ -6,8 +6,9 @@ library(plotly)
 library(RColorBrewer)
 library(shinycssloaders)
 library(sf)
+library(vroom)
 
-projection_data <- read.csv("Data files/Population Projections With Aggregations.csv")
+projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", delim = ",", col_names = TRUE)
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
 la_shape_data <- read_rds("Data files/LAShps.rds") 
 
@@ -20,7 +21,7 @@ small_area_lookup <- projection_data %>%
   distinct()
 
 # load shortname lookups
-lookup <- read_csv("Data files/ShortNameLookup.csv")
+lookup <- vroom::vroom("Data files/ShortNameLookup.csv", delim = ",", col_names = TRUE)
 small_area_lookup <- small_area_lookup %>% 
   left_join(lookup, by = c("Area.Name" = "ShortName", "Council.Name" = "Council"))
 
