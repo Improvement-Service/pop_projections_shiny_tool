@@ -7,6 +7,7 @@ library(RColorBrewer)
 library(shinycssloaders)
 library(sf)
 library(vroom)
+library(shinyvalidate)
 
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", delim = ",", col_names = TRUE)
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")

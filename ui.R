@@ -1,5 +1,6 @@
 ui <- navbarPage(
   title = "Small Area Population Projections",
+  
 
 # Population Size Tab (Tab 1)-----------------------------------------------------------  
   
@@ -16,7 +17,7 @@ ui <- navbarPage(
                     )
              ),
              # Add selectize input for year dropdown - inputID = year_choice_tab_1
-             column(3,
+             column(2,
                     selectizeInput(inputId = "year_choice_tab_1", 
                                    choices = years, 
                                    label = NULL,
@@ -36,7 +37,7 @@ ui <- navbarPage(
                                 dragRange = TRUE )
              ),
              # Add checkbox input for gender - inputID = gender_choice_tab_1
-             column(3,
+             column(2,
                     checkboxGroupInput(
                       inputId = "gender_choice_tab_1",
                       label = "Select genders to include:",
@@ -44,18 +45,22 @@ ui <- navbarPage(
                       selected = c("Males", "Females"),
                       inline = FALSE
                     )
-             )
-           ),
+             ),
+             column(2,
+                    actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
+                                 style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                    )
+             ),
            fluidRow(
              # Add conditionalPanel, if council input is blank show Scotland map - outputID = scot_map_tab_1
              # This will not include absolute panel with across areas graph and within areas graph
-             conditionalPanel(condition = "input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
+             conditionalPanel(condition = "input.submit_tab_1 == 0 | input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
                               leafletOutput("scot_map_tab_1", width = "100%") %>%
                                 # Creates a loading spinner
                                 withSpinner(type = 6)
              ),
              # Add 2nd conditionalPanel, if council input is not blank show council map - outputID = la_map_tab_1
-             conditionalPanel(condition = "input.la_choice_tab_1 != `` && input.year_choice_tab_1 != ``",
+             conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ",
                               leafletOutput("la_map_tab_1", width = "100%") %>%
                                 # Creates a loading spinner
                                 withSpinner(type = 6),
