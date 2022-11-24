@@ -86,7 +86,7 @@ ui <- navbarPage(
 
 # Similar Areas Tab (Tab 2) --------------------------------------------------------------------
 
-  tabPanel("Comparison of similar areas",
+  tabPanel("Other Measures", #renamed
            fluidRow(
              # Add selectize input for council dropdown - inputID = la_choice_tab_2
              column(3,
@@ -101,21 +101,14 @@ ui <- navbarPage(
              # Add UiOutput for small area dropdown - outputID = small_area_output_tab_2
              column(3, uiOutput("small_area_output_tab_2")
              ),
-             # Add selectize input for year dropdown - inputID = year_choice_tab_2
-             column(3,
-                    selectizeInput(inputId = "year_choice_tab_2", 
-                                   choices = years, 
-                                   label = NULL,
-                                   options = list(placeholder = 'Select Year',
-                                                  onInitialize = I('function() { this.setValue(""); }')
-                                   )
-                    )
-             ),
+             # Deleted select size input for year dropdown - inputID = year_choice_tab_2
+       
+
              # Add selectize input for indicator dropdown - inputID = measure_choice_tab_2
              column(3,
                     selectizeInput(inputId = "measure_choice_tab_2",  
-                                   choices = c("Total Population", "Dependency Ratio", "Gender Ratio"), 
-                                   label = "Show me similar areas based on:",
+                                   choices = c("Total Population", "Net Migration", "Sex Ratio", "Dependency Ratio", "Standardised Mortality Ratio", "Total Fertility Rate"), 
+                                   label = "Select measure",
                                    options = list(placeholder = 'Select measure',
                                                   onInitialize = I('function() { this.setValue(""); }')
                                                   )
