@@ -69,7 +69,7 @@ ClackmaC,Clackmannanshire Central,Clackmannanshire
 ClackmaE,Clackmannanshire East,Clackmannanshire
 ClackmaN,Clackmannanshire North,Clackmannanshire
 ClackmaS,Clackmannanshire South,Clackmannanshire
-ClackamW,Clackmannanshire West,Clackmannanshire
+ClackmaW,Clackmannanshire West,Clackmannanshire
 Abbey,Abbey,Dumfries & Galloway
 AnnandaE,Annandale East and Eskdale,Dumfries & Galloway
 AnnandaN,Annandale North,Dumfries & Galloway
@@ -98,7 +98,7 @@ IrvineVa,Irvine Valley,East Ayrshire
 KilmaEaH,Kilmarnock East and Hurlford,East Ayrshire
 KilmarnN,Kilmarnock North,East Ayrshire
 KilmarnS,Kilmarnock South,East Ayrshire
-KilmarnWaC,Kilmarnock West and Crosshouse,East Ayrshire
+KilmaWaC,Kilmarnock West and Crosshouse,East Ayrshire
 BearsdN,Bearsden North,East Dunbartonshire
 BearsdS,Bearsden South,East Dunbartonshire
 BishoNaC,Bishopbriggs North and Campsie,East Dunbartonshire
@@ -117,7 +117,7 @@ Lev_Vall,Levern Valley,East Renfrewshire
 N_Mearns,Newton Mearns,East Renfrewshire
 BonessBn,Bo'ness and Blackness,Falkirk
 Bonnybri,Bonnybridge and Larbert,Falkirk
-Careskin,"Carse, Kinnaird and Tryst",Falkirk
+CarseKin,"Carse, Kinnaird and Tryst",Falkirk
 Dennyand,Denny and Banknock,Falkirk
 FalkirkN,Falkirk North,Falkirk
 FalkirkS,Falkirk South,Falkirk
@@ -163,7 +163,7 @@ Linn,Linn,Glasgow City
 Maryhill,Maryhill,Glasgow City
 Newlands,Newlands/Auldburn,Glasgow City
 NorthEaG,North East,Glasgow City
-PatrickE,Partick East/Kelvindale,Glasgow City
+PartickE,Partick East/Kelvindale,Glasgow City
 Polloksh,Pollokshields,Glasgow City
 Shettles,Shettleston,Glasgow City
 SouthsiC,Southside Central,Glasgow City
@@ -218,7 +218,7 @@ NorthCst,North Coast & Cumbraes,North Ayrshire
 AirdrieC,Airdrie Central,North Lanarkshire
 AirdrieN,Airdrie North,North Lanarkshire
 AirdrieS,Airdrie South,North Lanarkshire
-Bellshill,Bellshill,North Lanarkshire
+Bellshil,Bellshill,North Lanarkshire
 CoatbriN,Coatbridge North,North Lanarkshire
 CoatbriS,Coatbridge South,North Lanarkshire
 CoatbriW,Coatbridge West,North Lanarkshire
@@ -239,7 +239,7 @@ Wishaw,Wishaw,North Lanarkshire
 EastMain,"East Mainland, South Ronaldsay and Burray",Orkney Islands
 KirkwalE,Kirkwall East,Orkney Islands
 KirkwaWO,Kirkwall West and Orphir,Orkney Islands
-NorthlsO,North Isles,Orkney Islands
+NorthIsO,North Isles,Orkney Islands
 Stromnes,Stromness and South Isles,Orkney Islands
 WestMain,West Mainland,Orkney Islands
 Almondan,Almond and Earn,Perth & Kinross
@@ -250,12 +250,12 @@ Kinrosss,Kinross-shire,Perth & Kinross
 PerthCC,Perth City Centre,Perth & Kinross
 PerthCN,Perth City North,Perth & Kinross
 PerthCS,Perth City South,Perth & Kinross
-Srathal,Strathallan,Perth & Kinross
+Strathal,Strathallan,Perth & Kinross
 Strathea,Strathearn,Perth & Kinross
 Strathmo,Strathmore,Perth & Kinross
 Strathta,Strathtay,Perth & Kinross
 Bishopto,"Bishopton, Bridge of Weir and Langbank",Renfrewshire
-Erskinel,Erskine and Inchinnan,Renfrewshire
+ErskineI,Erskine and Inchinnan,Renfrewshire
 HoustonC,"Houston, Crosslee and Linwood",Renfrewshire
 JohNKHaL,"Johnstone North, Kilbarchan, Howwood and Lochwinnoch",Renfrewshire
 JohnsSaE,Johnstone South and Elderslie,Renfrewshire
