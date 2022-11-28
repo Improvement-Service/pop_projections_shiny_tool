@@ -29,110 +29,39 @@ server <- function(input, output) {
   }
 
   # Function to add total population index to data - function name = add_pop_index
-  add_pop_index <- function(data, gender_selection, age_selection){
+  add_pop_index <- function(data, gender_selection, age_selection) {
     setDT(data)
     setkey(data, Council.Name, Area.Name, Year, Sex, Age)
     setDT(lookup)
     setkey(lookup, ShortName, Council)
     total_pop_data <- data[Sex == gender_selection & Age %in% age_selection, 
-                                .(Total.Population = sum(Population)), 
-                                by = .(Council.Name, Level, Area.Name, Year, Sex)
-    ][,Sex:=NULL
-    ][, Population.Index :=lapply(.SD, function(x) round((x/x[1])*100,1)), 
-      by = .(Council.Name, Level, Area.Name), 
-      .SDcols = c("Total.Population")
-    ][lookup, on =.(Area.Name = ShortName), LongName := i.LongName
-    ] %>%
+                           .(Total.Population = sum(Population)), 
+                           by = .(Council.Name, Level, Area.Name, Year, Sex)
+                           ][, Sex:= NULL
+                             ][, 
+                               Population.Index := lapply(.SD, function(x) round((x/x[1])*100,1)), 
+                               by = .(Council.Name, Level, Area.Name), 
+                               .SDcols = c("Total.Population")
+                               ][lookup, on =.(Area.Name = ShortName), LongName := i.LongName
+                                 ] %>%
       melt(total_pop_data, 
            id.vars = c("Council.Name", "Level", "Area.Name", "LongName", "Year"),
            measure.vars = c("Total.Population", "Population.Index"),
            variable.name = "Measure",
-           value.name = "Value")
+           value.name = "Value"
+           )
     
     total_pop_data$LongName[is.na(total_pop_data$LongName)] <- total_pop_data$Council.Name[is.na(total_pop_data$LongName)]
     return(total_pop_data)
   }
-  
-  # add_pop_index <- function(data, gender_selection, age_selection) {
-  #   
-  #   total_pop_data <- data %>% 
-  #     filter(Sex == gender_selection & Age %in% age_selection) %>%
-  #     group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-  #     summarise(Total.Population = sum(Population)) %>%
-  #     select(-Sex)
-  #   
-  #   index_data <- total_pop_data %>% 
-  #     pivot_wider(names_from = Year, values_from = Total.Population) %>% 
-  #     mutate(across(`2019`:`2030`, ~ .x / `2018`)) %>%
-  #     mutate(across(`2018`, ~ .x / `2018`))
-  #   index_data <- index_data %>% 
-  #     mutate(across(`2018`:`2030`, ~ round(.x * 100, 1))) %>%
-  #     pivot_longer(cols = `2018`:`2030`, names_to = "Year", values_to = "Population.Index")
-  #   index_data$Year <- as.numeric(index_data$Year)
-  #   
-  #   sex_data <- projection_data %>% 
-  #     filter(Age %in% age_selection) %>%
-  #     group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-  #     summarise(Total.Population = sum(Population)) %>%
-  #     pivot_wider(names_from = Sex, values_from = Total.Population) %>%
-  #     mutate(Sex.Ratio = round((Males / Females) * 100, 1)) %>%
-  #     pivot_longer(cols = `Females`:`Persons`, names_to = "Sex", values_to = "Total.Population") %>%
-  #     filter(Sex == gender_selection) %>%
-  #     select(Council.Name, Level, Area.Name, Year, Sex.Ratio)
-  #   
-  #   dependency_data <- projection_data %>% filter(Sex == gender_selection & Age %in% age_selection) %>%
-  #     group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-  #     arrange(Age) %>%
-  #     filter(row_number()==1) %>%
-  #     ungroup() %>%
-  #     select(Council.Name, Level, Area.Name, Year, Dependency.Ratio)
-  #   
-  #   data <- left_join(total_pop_data, index_data) %>%
-  #     left_join(dependency_data) %>% 
-  #     left_join(sex_data) %>%
-  #     left_join(lookup, by = c("Area.Name" = "ShortName", "Council.Name" = "Council"))
-  #   data[is.na(data$LongName), "LongName"] <- data[is.na(data$LongName), "Area.Name"]
-  #   
-  #   data <- data %>% 
-  #     pivot_longer(cols = `Total.Population`:`Sex.Ratio`, 
-  #                  names_to = "Measure", 
-  #                  values_to = "Value"
-  #     )
-  #   
-  #   return(data)
-  # }
-  
-  # Function to identify four small areas (by Long Name) which are most similar 
-  # to the user-selected similar area for the selected year and measure
-  # find_similar_areas <- function(data, selectedSmallArea, yr, msr) {
-  #   
-  #   small_area_data <- data %>%
-  #     filter(Level == "Small Area",
-  #            Measure == msr,
-  #            Year == yr
-  #            ) %>%
-  #     arrange(desc(Value))
-  #   
-  #   index <- which(small_area_data$LongName == selectedSmallArea)
-  #   value <- small_area_data$Value[index]
-  #   
-  #   ranked_data <- small_area_data %>%
-  #     mutate(Difference = abs(Value - value)) %>%
-  #     arrange(Difference)
-  #   
-  #   similar_areas <- ranked_data[1:5,] %>% 
-  #     filter(LongName != selectedSmallArea) %>%
-  #     pull(LongName)
-  #   
-  #   return(similar_areas)
-  # }
   
   # Function to create line graphs - function name = create_line_plot
   create_line_plot <- function(dataset, 
                                council_selection, 
                                small_area_selection, 
                                measure_selection,
-                               graph_type) {
+                               graph_type
+                               ) {
     
     measure_title <- "Total Population Index"
     
@@ -483,63 +412,5 @@ server <- function(input, output) {
   
   
 # Code for Similar Areas Tab (Tab 2) ---------------------------------------------
-#   
-#   # Run create_scot_map - variable name = scot_map_tab_2
-#   output$scot_map_tab_2 <- renderLeaflet({
-#     create_scot_map()
-#   })
-#   
-#   # Run add_pop_index - variable name = indexed_data_tab_2
-#   indexed_data_tab_2 <- add_pop_index(projection_data, gender_selection = "Persons", 
-#                                       age_selection = c(0:90)
-#                                       )
-# 
-# # Create ranked small area data set - variable name - ranked_data_tab_2
-#   ranked_data_tab_2 <- reactive({
-#     # Step 1: call find_similar_areas() function  to return four areas most similar to 
-#     # selected small area based on other selections
-#     similar_areas <- find_similar_areas(data = indexed_data_tab_2, 
-#                                         selectedSmallArea = input$small_area_choice_tab_2, 
-#                                         yr = input$year_choice_tab_2, 
-#                                         msr = input$measure_choice_tab_2
-#                                         )
-# 
-#     # Step 2: create a new dataset (inherited from indexed_data_tab_2) with a new column 
-#     # which assigns similar area names (and the selected area name) 
-#     # with a colour Dark Blue or Light Blue or Grey.
-#     ranked_data_tab_2 <- indexed_data_tab_2 %>% mutate(Shape.Colour = "grey")
-#     ranked_data_tab_2$Shape.Colour[ranked_data_tab_2$LongName %in% similar_areas] <- "#a6bddb"
-#     ranked_data_tab_2$Shape.Colour[ranked_data_tab_2$LongName == input$small_area_choice_tab_2] <- "#034e7b"
-#     
-#     return(ranked_data_tab_2)
-#   })
-#   
-#   # Create data for similar area map - variable name = map_data_tab_2
-#   map_data_tab_2 <- reactive({
-#     # Combine map data with shape file - variable name = map_data_tab_2
-#     combined_data <- left_join(shape_data, 
-#                                ranked_data_tab_2(), 
-#                                by = c("SubCouncil" = "LongName")
-#                                )
-#     return(combined_data)
-#   })
-#   # RenderLeaflet for similar area map - output name = la_map_tab_2
-#   
-#   # Create observe event to update small area drop-down (id = small_area_choice_tab_2)
-#   # to reflect value of small area clicked 
-#   observe({
-#     event <- input$la_map_tab_2_shape_click
-#     if(is.null(event)){
-#       return()} 
-#     updateSelectizeInput(session, inputId = "small_area_choice_tab_2", selected = event$id)
-#   })
-#   
-#   # Filter data for across areas graph - variable name = across_areas_data_tab_2
-#   
-#   # Run create_line_plot - outputID = across_areas_plot_tab_2
-#   
-#   # Filter data for similar areas graph - variable name = similar_areas_data_tab_2
-#   
-#   # Run create_line_plot - outputID = similar_areas_plot_tab_2
-#   
+
  }
