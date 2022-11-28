@@ -63,6 +63,8 @@ server <- function(input, output) {
                                graph_type
                                ) {
     
+    measure_title <- measure_selection
+    
     all_area_names <- unique(dataset$LongName)
     
     line_colours <- c("steelblue", "skyblue", "dimgrey")
@@ -338,22 +340,22 @@ server <- function(input, output) {
     default_area <- small_area_options[1]
     selected_small_area_tab_1(default_area)
     })
-
-  # Create an overall title for the graphs on tab 1
-  output$tab_1_plots_title <- renderText({
-    "Indexed Change"
-  })
   
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
   across_areas_data_tab_1 <- reactive({
-    # run function to add index to data then filter to selected Council and small area
+    # use indexed data then filter to selected Council and small area
     across_data <- total_population_index_data() %>%
       filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") & 
-               LongName %in% c(input$la_choice_tab_1, "Scotland", selected_small_area_tab_1())
+               LongName %in% c(input$la_choice_tab_1, 
+                               "Scotland", 
+                               selected_small_area_tab_1()
+                               )
              )
+    # The area names need to be stored as a factor so that the order of the areas can be set
+    # If this is not done the areas will be ordered alphabetically and the colours will be out of order
     across_data$LongName <- factor(across_data$LongName, 
-                                   levels = c(input$la_choice_tab_1, 
-                                              selected_small_area_tab_1(), 
+                                   levels = c(selected_small_area_tab_1(), 
+                                              input$la_choice_tab_1, 
                                               "Scotland"),
                                    ordered = TRUE
                                    )
@@ -361,17 +363,20 @@ server <- function(input, output) {
   })
   
   #reactive will render ONLY when user has clicked 'submit selections'
-  render_across_areas_plot_tab_1 <- eventReactive(list(input$submit_tab_1, input$la_map_tab_1_shape_click),{
+  render_across_areas_plot_tab_1 <- eventReactive(
+    list(input$submit_tab_1, input$la_map_tab_1_shape_click),{
     #do not run unless all input present
     req(iv$is_valid())
     
     plot <- create_line_plot(dataset = across_areas_data_tab_1(), 
                              council_selection = input$la_choice_tab_1, 
                              small_area_selection = selected_small_area_tab_1(), 
-                             measure_selection = "Total Population",
+                             measure_selection = "Total Population Index",
                              graph_type = "Across Areas"
     )
-  })
+  }
+  )
+  
   # Run create_line_plot - outputID = across_areas_plot_tab_1
   output$across_areas_plot_tab_1 <- renderPlotly({
    render_across_areas_plot_tab_1()
@@ -382,6 +387,8 @@ server <- function(input, output) {
    data <- total_population_index_data() %>%
      filter(Council.Name == input$la_choice_tab_1 & Level == "Small Area")
    council_small_areas <- unique(data$LongName)
+   # The area names need to be stored as a factor so that the order of the areas can be set
+   # If this is not done the areas will be ordered alphabetically and the colours will be out of order
    area_factors <- c(selected_small_area_tab_1(), 
                       council_small_areas[!council_small_areas == selected_small_area_tab_1()])
    data$LongName <- factor(data$LongName, levels = area_factors, ordered = TRUE)
@@ -389,14 +396,14 @@ server <- function(input, output) {
    })
 
   # Run create_line_plot - outputID = within_areas_plot_tab_1
-  #will render only when 'Submit Selections' is clicked and no empty selections
+  # will render only when 'Submit Selections' is clicked and no empty selections
   render_within_areas_plot_tab_1 <- eventReactive(list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
     #do not run unless all input present
     req(iv$is_valid())
     plot <- create_line_plot(dataset = within_areas_data_tab_1(), 
                              council_selection = input$la_choice_tab_1, 
                              small_area_selection = selected_small_area_tab_1(), 
-                             measure_selection = "Total Population",
+                             measure_selection = "Total Population Index",
                              graph_type = "Within Council Areas"
     )
   })
