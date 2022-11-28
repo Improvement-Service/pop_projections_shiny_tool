@@ -208,26 +208,26 @@ server <- function(input, output) {
   })   
   
   # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
-  # small_area_choices_tab_2 <- reactive({
-  #   req(input$la_choice_tab_2)
-  #   small_areas_subset <- small_area_lookup %>%
-  #         filter(Council.Name == input$la_choice_tab_2) %>%
-  #          pull(LongName)
-  #   return(small_areas_subset)
-  #   
-  # })
-  # 
-  # # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
-  # output$small_area_output_tab_2 <- renderUI({
-  #   selectizeInput(inputId = "small_area_choice_tab_2", 
-  #                 choices = small_area_choices_tab_2(),
-  #                 label = NULL,
-  #                 options = list(placeholder = "Select Small Area",
-  #                                #placeholder = small_area_choices_tab_2()[1],
-  #                                onInitialize = I('function() { this.setValue(""); }')
-  #                 )
-  #   )
-  # })
+   small_area_choices_tab_2 <- reactive({
+     req(input$la_choice_tab_2)
+     small_areas_subset <- small_area_lookup %>%
+           filter(Council.Name == input$la_choice_tab_2) %>%
+            pull(LongName)
+     return(small_areas_subset)
+     
+   })
+   
+  # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
+   output$small_area_output_tab_2 <- renderUI({
+     selectizeInput(inputId = "small_area_choice_tab_2", 
+                   choices = small_area_choices_tab_2(),
+                   label = NULL,
+                   options = list(placeholder = "Select Small Area",
+                                  #placeholder = small_area_choices_tab_2()[1],
+                                  onInitialize = I('function() { this.setValue(""); }')
+                   )
+     )
+   })
   
 # Code for Population Size Tab (Tab 1) -------------------------------------------
 
