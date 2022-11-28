@@ -33,13 +33,13 @@ projections_data_with_scot_and_persons <- projections_data_with_scot %>%
 
 # Create dependency ratio ----------------------------------------------------------
 working_age_totals <- projections_data_with_scot_and_persons %>% 
-  filter(Sex == "Persons" & Age %in% 16:64) %>%
+  filter(Level == "Small Area", Sex == "Persons" & Age %in% 16:64) %>%
   group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
   summarise(WA.Population = sum(Population)) %>%
   ungroup()
 
 dependent_age_totals <- projections_data_with_scot_and_persons %>% 
-  filter(Sex == "Persons" & Age %in% c(0:15, 65:90)) %>%
+  filter(Level == "Small Area", Sex == "Persons" & Age %in% c(0:15, 65:90)) %>%
   group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
   summarise(Dependent.Population = sum(Population)) %>%
   ungroup()
@@ -60,7 +60,7 @@ dependency_ratio_data <- left_join(working_age_totals, dependent_age_totals) %>%
 dummy_path <- "C:/Users/connachan.cara/IS/Research - Population Projections/X/SCAP2001Y_out/reports_Continuity_SNPP.xls"
 
 # Create list of council names
-councils <- unique(projection_data_complete$Council.Name)
+councils <- unique(projections_data_with_scot_and_persons$Council.Name)
 councils <- councils[councils != "Scotland"]
 # need to change these names to match with the folder names
 # will want to change these back once the full dataset is created
@@ -126,7 +126,6 @@ read_files <- function(list1, list2, sheet_name){
 # and combine the results into a single data frame
 # The function will need to be run each time for the different data sets by
 # changing the sheet name
-test_df <- map2_df(councils, folders, read_files, sheet = "All Persons")
 
 all_persons <- map2_df(councils, folders, read_files, sheet = "All Persons")
 net_migration <- map2_df(councils, folders, read_files, sheet = "Net Migration")
