@@ -3,13 +3,15 @@ library(dplyr)
 library(readxl)
 library(tidyverse)
 
+# Read in projection data -------------------------------------------------------
 projection_data <- read.csv("Data files/All Councils - Detailed Projections - Male & Female.csv")
 
-#transform age variable to numeric
+# transform age variable to numeric
 projection_data <- projection_data %>% filter(Age != "All ages")
 projection_data$Age[projection_data$Age == "90+"] <- "90"
 projection_data$Age <- as.numeric(projection_data$Age)
 
+# Create aggregated values ------------------------------------------------------
 # aggregate data to Scotland level data and append to projection_data
 projections_data_with_scot <- projection_data %>% 
   filter(Level == "Council") %>%
@@ -29,6 +31,7 @@ projections_data_with_scot_and_persons <- projections_data_with_scot %>%
   select(Council.Name, Level, Area.Name, Year, Sex, Age, Population) %>%
   rbind(., projections_data_with_scot)
 
+# Create dependency ratio ----------------------------------------------------------
 working_age_totals <- projections_data_with_scot_and_persons %>% 
   filter(Age %in% 16:64) %>%
   group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
@@ -45,8 +48,6 @@ dependency_ratio_data <- left_join(working_age_totals, dependent_age_totals) %>%
 
 projection_data_complete <- left_join(projections_data_with_scot_and_persons, dependency_ratio_data) %>%
   arrange(Council.Name, Year, Age)
-
-write.csv(projection_data_complete, "Data files/Population Projections With Aggregations.csv", row.names = FALSE)
 
 # Read in additional data ----------------------------------------------------------------
 
@@ -124,3 +125,12 @@ read_files <- function(list1, list2, sheet_name){
 # The function will need to be run each time for the different data sets by
 # changing the sheet name
 test_df <- map2_df(councils, folders, read_files, sheet = "All Persons")
+
+all_persons <- map2_df(councils, folders, read_files, sheet = "All Persons")
+net_migration <- map2_df(councils, folders, read_files, sheet = "Net Migration")
+sex_ratio <- map2_df(councils, folders, read_files, sheet = "Sex Ratio")
+mortality_ratio <- map2_df(councils, folders, read_files, sheet = "SMR")
+fertility_rate <- map2_df(councils, folders, read_files, sheet = "TFR")
+
+# Write the data to a csv ---------------------------
+write.csv(projection_data_complete, "Data files/Population Projections With Aggregations.csv", row.names = FALSE)
