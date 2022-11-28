@@ -58,35 +58,37 @@ ui <- navbarPage(
                               leafletOutput("scot_map_tab_1", width = "100%") %>%
                                 # Creates a loading spinner
                                 withSpinner(type = 6)
-             ),
+                              ),
              # Add 2nd conditionalPanel, if council input is not blank show council map - outputID = la_map_tab_1
-             conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ",
-                              leafletOutput("la_map_tab_1", width = "100%") %>%
-                                # Creates a loading spinner
-                                withSpinner(type = 6),
-                              absolutePanel(# Gives the panel a border
-                                            class = "panel panel-default",
-                                            fixed = TRUE,
-                                            draggable = FALSE, 
-                                            top = 160, 
-                                            left = "auto", 
-                                            right = 20, 
-                                            bottom = "auto",
-                                            width = 330, 
-                                            height = "auto",
-                                            textOutput("tab_1_plots_title"),
-                                            plotlyOutput("across_areas_plot_tab_1", height = "300px"),
-                                            plotlyOutput("within_areas_plot_tab_1", height = "300px")
-                                            )
-                              )
-             # This will include absolute panel with across areas graph and within areas graph;
-             # across areas graph - outputID = across_areas_plot_tab_1
-             # within areas graph - outputID = within_areas_plot_tab_1
+             column(6,
+                    conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ",
+                                     leafletOutput("la_map_tab_1", width = "100%") %>%
+                                       withSpinner(type = 6))),
+             column(6,
+                    conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ",# Gives the panel a border
+                      tabsetPanel(type = "tabs",
+                                  tabPanel("Population Index Across Scotland", 
+                                           span(textOutput("across_scotland_text"), 
+                                                style = "color:#526470; font-size = 12px"), 
+                                           plotlyOutput("across_areas_plot_tab_1", 
+                                                        height = "360px") %>% 
+                                             withSpinner(type = 6)
+                                           ),
+                                  tabPanel("Population Index Within Council Areas", 
+                                           plotlyOutput("within_areas_plot_tab_1", 
+                                                        height = "360px") %>% 
+                                             withSpinner(type = 6), 
+                                           span(textOutput("within_la_text"), 
+                                                style = "color:#526470; font-size = 12px")
+                                           )
+                                  )
+                      )
+                    )
            )),
 
 # Similar Areas Tab (Tab 2) --------------------------------------------------------------------
 
-  tabPanel("Other Measures", #renamed
+  tabPanel("Other Measures", 
            fluidRow(
              # Add selectize input for council dropdown - inputID = la_choice_tab_2
              column(3,
@@ -101,8 +103,6 @@ ui <- navbarPage(
              # Add UiOutput for small area dropdown - outputID = small_area_output_tab_2
              column(3, uiOutput("small_area_output_tab_2")
              ),
-             # Deleted select size input for year dropdown - inputID = year_choice_tab_2
-       
 
              # Add selectize input for indicator dropdown - inputID = measure_choice_tab_2
              column(3,

@@ -1,5 +1,7 @@
 library(magrittr)
 library(dplyr)
+library(readxl)
+library(tidyverse)
 
 projection_data <- read.csv("Data files/All Councils - Detailed Projections - Male & Female.csv")
 
@@ -45,3 +47,80 @@ projection_data_complete <- left_join(projections_data_with_scot_and_persons, de
   arrange(Council.Name, Year, Age)
 
 write.csv(projection_data_complete, "Data files/Population Projections With Aggregations.csv", row.names = FALSE)
+
+# Read in additional data ----------------------------------------------------------------
+
+# Create a dummy file path 
+# (Folder: Research - Population Projections, has been synced to personal drive)
+# X replaces the council name
+# Y replaces the folder name
+dummy_path <- "C:/Users/connachan.cara/IS/Research - Population Projections/X/SCAP2001Y_out/reports_Continuity_SNPP.xls"
+
+# Create list of council names
+councils <- unique(projection_data_complete$Council.Name)
+councils <- councils[councils != "Scotland"]
+# need to change these names to match with the folder names
+# will want to change these back once the full dataset is created
+councils[councils == "Glasgow City"] <- "Glasgow"
+councils[councils == "Perth & Kinross"] <- "Perth and Kinross"
+
+# Create list of folder names
+# (these are the council name with the area type, these are not consistent so
+# need to be listed out)
+folders <- c("Aberdeen CityMMW",
+             "AberdeenshireMMW",
+             "AngusMMW",
+             "ArgyllandButeHMA",
+             "City of EdinburghMMW",
+             "ClackmannanshireMMW",
+             "Dumfries and GallowayMMW",
+             "Dundee CityMMW",
+             "East AyrshireMMW",
+             "East DunbartonshireMMW",
+             "East LothianMMW",
+             "East RenfrewshireHMA",
+             "FalkirkMMW",
+             "FifeMMW",
+             "GlasgowMMW",
+             "HighlandHMA",
+             "InverclydeMMW",
+             "MidlothianMMW",
+             "MorayMMW",
+             "Na h-Eileanan SiarMMW",
+             "North Ayrshire",
+             "North LanarkshireMMW",
+             "Orkney IslandsMMW",
+             "Perth and KinrossMMW",
+             "RenfrewshireMMW",
+             "Scottish BordersMMW",
+             "Shetland IslandsMMW",
+             "South Ayrshire",
+             "South LanarkshireCommAreas",
+             "StirlingMMW",
+             "West DunbartonshireMMW",
+             "West LothianMMW"
+             )
+
+# Create a function for running through each file
+# list1 will be used for the council names, list 2 will be used for the folder names
+read_files <- function(list1, list2, sheet_name){
+  # This replaces the council name and folder name in the dummy path  with the name from the iteration in the lists
+  complete_path <- gsub("X", list1, dummy_path)
+  complete_path <- gsub("Y", list2, complete_path)
+  read_excel(path = complete_path, sheet = sheet_name, range = "A199:AE240") %>%
+    pivot_longer(cols = 2:31, names_to = "Year", values_to = "Data") %>%
+    # This converts financial years to calendar years
+    separate(Year, "Year", "-", fill = "left") %>%
+    filter(Year %in% c(2018:2030)) %>%
+    mutate(Council.Name = list1) %>%
+    mutate(Measure = sheet_name) %>%
+    rename(Area.Name = ...1) %>%
+    na.omit()
+}
+
+# The read_files function needs to be run within map2_df 
+# This will look through the list through the function for each file
+# and combine the results into a single data frame
+# The function will need to be run each time for the different data sets by
+# changing the sheet name
+test_df <- map2_df(councils, folders, read_files, sheet = "All Persons")
