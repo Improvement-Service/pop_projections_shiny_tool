@@ -63,11 +63,9 @@ server <- function(input, output) {
                                graph_type
                                ) {
     
-    measure_title <- "Total Population Index"
-    
     all_area_names <- unique(dataset$LongName)
     
-    line_colours <- c("skyblue", "steelblue","dimgrey")
+    line_colours <- c("steelblue", "skyblue", "dimgrey")
     if(length(all_area_names) > 3) {
       line_colours <- c("steelblue", rep("grey", 23))
     }
@@ -75,8 +73,7 @@ server <- function(input, output) {
     if(length(all_area_names) > 3) {
       alpha_settings <- c(1, rep(0.5, 23))
     }
-    
-    
+
     # Create plot object
     plot <- ggplot(data = dataset) +
       geom_line(
@@ -109,53 +106,51 @@ server <- function(input, output) {
         axis.text.x = element_text(vjust = 0.3, angle = 20, size = 6),
         axis.text.y = element_text(size = 7),
         axis.title.x = element_blank(),
-        axis.title.y = element_blank()#,
-        #legend.position = "none"
+        axis.title.y = element_blank()
       ) +
       scale_x_continuous(breaks = 2018:2030)
       ggplotly(plot, tooltip = c("text")) %>% 
       config(displayModeBar = F) %>% 
       layout(xaxis = list(fixedrange = TRUE)) %>% 
       layout(yaxis = list(fixedrange = TRUE)) %>%
-      layout(legend = list(orientation = 'v', title = ""))#, font = list(size = 8)))
+      layout(legend = list(orientation = 'v', title = ""))
   }
 
 # Reactive expressions (and UI output) for input selections -------------------------------------------
-    #'turn on' user input validation when submit clicked for first time - missing fields will then show error
+  #'turn on' user input validation when submit clicked for first time - missing fields will then show error
   observeEvent(input$submit_tab_1, {
     iv$enable()
   })
   
-  #
-  render_across_scotland_text <- eventReactive(list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
-    req(iv$is_valid())
-    paste0("This graph shows projected population change for ", 
-           selected_small_area_tab_1(),
-           ", for ",
-           input$la_choice_tab_1, 
-           ", and for Scotland as a whole. Change the small area shown by clicking on the map.")
-    
-  })
+  render_across_scotland_text <- eventReactive(
+    list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
+      req(iv$is_valid())
+      paste0("This graph shows projected population change for ", 
+             selected_small_area_tab_1(),
+             ", for ",
+             input$la_choice_tab_1, 
+             ", and for Scotland as a whole. Change the small area shown by clicking on the map."
+             )
+      }
+    )
   
-  output$across_scotland_text <- renderText({
-    render_across_scotland_text()
-  })
+  output$across_scotland_text <- renderText({render_across_scotland_text()})
   
-  render_within_la_text <- eventReactive(list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
+  render_within_la_text <- eventReactive(
+    list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
     req(iv$is_valid())
     paste0("This graph shows population change for ", 
            selected_small_area_tab_1(),
            " compared to other small areas in ",
            input$la_choice_tab_1,
            ". Hover over map or click on small areas in the legend to explore the data."
+           )
+    }
     )
-  })
   
-  output$within_la_text <- renderText({
-    render_within_la_text()
-    })
+  output$within_la_text <- renderText({render_within_la_text()})
   
-  #calculate population index based on user input for gender and age
+  # Calculate population index based on user input for gender and age
   pop_index_data <- reactive({
     data <- projection_data %>% 
       add_pop_index(gender_selection = selected_gender_tab_1(),
@@ -170,8 +165,8 @@ server <- function(input, output) {
     return(filtered_data)
   })
   
-  #the first time submit is clicked with all inputs, show a notification 
-  #which signposts less obvious dashboard functionality
+  # The first time submit is clicked with all inputs, show a notification 
+  # which signposts less obvious dashboard functionality
   observeEvent(input$submit_tab_1, {
     req(iv$is_valid())
     showNotification(
@@ -181,13 +176,13 @@ server <- function(input, output) {
       type = "warning",
       session = getDefaultReactiveDomain()
       )
-  }, once = TRUE)
+  }, once = TRUE
+  )
   
+  # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
   
-    # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
-  
-   #this will be initialised when the use selects an LA and will be updated
-   #either when a new LA is selected or the user clicks on the map
+  # This will be initialised when the use selects an LA and will be updated
+  # either when a new LA is selected or the user clicks on the map
   selected_small_area_tab_1 <- reactiveVal()
   
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
