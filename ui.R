@@ -67,12 +67,23 @@ ui <- navbarPage(
              column(6,
                     conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ",# Gives the panel a border
                       tabsetPanel(type = "tabs",
-                                  tabPanel("Population Index Across Scotland", span(textOutput("across_scotland_text"), style = "color:#526470; font-size = 12px"), plotlyOutput("across_areas_plot_tab_1", height = "360px") %>% withSpinner(type = 6)),
-                                  tabPanel("Population Index Within Council Areas", plotlyOutput("within_areas_plot_tab_1", height = "360px") %>% withSpinner(type = 6), span(textOutput("within_la_text"), style = "color:#526470; font-size = 12px"))
-                      
+                                  tabPanel("Population Index Across Scotland", 
+                                           span(textOutput("across_scotland_text"), 
+                                                style = "color:#526470; font-size = 12px"), 
+                                           plotlyOutput("across_areas_plot_tab_1", 
+                                                        height = "360px") %>% 
+                                             withSpinner(type = 6)
+                                           ),
+                                  tabPanel("Population Index Within Council Areas", 
+                                           plotlyOutput("within_areas_plot_tab_1", 
+                                                        height = "360px") %>% 
+                                             withSpinner(type = 6), 
+                                           span(textOutput("within_la_text"), 
+                                                style = "color:#526470; font-size = 12px")
+                                           )
+                                  )
                       )
                     )
-             )
            )),
 
 # Similar Areas Tab (Tab 2) --------------------------------------------------------------------
@@ -80,48 +91,39 @@ ui <- navbarPage(
   tabPanel("Comparison of similar areas",
             fluidRow(
            #   # Add selectize input for council dropdown - inputID = la_choice_tab_2
-           #   column(3,
-           #          selectizeInput(inputId = "la_choice_tab_2", 
-           #                         choices = councils, 
-           #                         label = NULL,
-           #                         options = list(placeholder = 'Select Council',
-           #                                        onInitialize = I('function() { this.setValue(""); }')
-           #                         )
-           #          )
-           #   ),
-           #   # Add UiOutput for small area dropdown - outputID = small_area_output_tab_2
-           #   column(3, uiOutput("small_area_output_tab_2")
-           #   ),
-           #   # Add selectize input for year dropdown - inputID = year_choice_tab_2
-           #   column(3,
-           #          selectizeInput(inputId = "year_choice_tab_2", 
-           #                         choices = years, 
-           #                         label = NULL,
-           #                         options = list(placeholder = 'Select Year',
-           #                                        onInitialize = I('function() { this.setValue(""); }')
-           #                         )
-           #          )
-           #   ),
-           #   # Add selectize input for indicator dropdown - inputID = measure_choice_tab_2
-           #   column(3,
-           #          selectizeInput(inputId = "measure_choice_tab_2",  
-           #                         choices = c("Total Population", "Dependency Ratio", "Gender Ratio"), 
-           #                         label = "Show me similar areas based on:",
-           #                         options = list(placeholder = 'Select measure',
-           #                                        onInitialize = I('function() { this.setValue(""); }')
-           #                                        )
-           #                         )
-           #          )
-           #   ),
-           # fluidRow(
-           #   # Add conditionalPanel, if council and small area input are blank show Scotland map - outputID = scot_map_tab_2
-           #   # This will not include absolute panel with across areas graph and similar areas graph
-           #   
-           #   # Add 2nd conditionalPanel, if council and small area input are not blank show council map - outputID = la_map_tab_2
-           #   # This will include absolute panel with across areas graph and similar areas graph;
-           #   # across areas graph - outputID = across_areas_plot_tab_2
-           #   # similar areas graph - outputID = similar_areas_plot_tab_2
-            )
+              column(3,
+                     selectizeInput(inputId = "la_choice_tab_2", 
+                                    choices = councils, 
+                                    label = NULL,
+                                    options = list(placeholder = 'Select Council',
+                                                   onInitialize = I('function() { this.setValue(""); }')
+                                    )
+                     )
+              ),
+              # Add UiOutput for small area dropdown - outputID = small_area_output_tab_2
+              column(3, uiOutput("small_area_output_tab_2")
+              ),
+              # Add selectize input for year dropdown - inputID = year_choice_tab_2
+              column(3,
+                     selectizeInput(inputId = "year_choice_tab_2", 
+                                    choices = years, 
+                                    label = NULL,
+                                    options = list(placeholder = 'Select Year',
+                                                   onInitialize = I('function() { this.setValue(""); }')
+                                    )
+                     )
+              ),
+              # Add selectize input for indicator dropdown - inputID = measure_choice_tab_2
+              column(3,
+                     selectizeInput(inputId = "measure_choice_tab_2",  
+                                    choices = c("Total Population", "Dependency Ratio", "Gender Ratio"), 
+                                    label = "Show me similar areas based on:",
+                                    options = list(placeholder = 'Select measure',
+                                                   onInitialize = I('function() { this.setValue(""); }')
+                                                   )
+                                    )
+                     )
+              )
            )
            
 )
