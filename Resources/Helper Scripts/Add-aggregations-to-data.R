@@ -33,21 +33,23 @@ projections_data_with_scot_and_persons <- projections_data_with_scot %>%
 
 # Create dependency ratio ----------------------------------------------------------
 working_age_totals <- projections_data_with_scot_and_persons %>% 
-  filter(Age %in% 16:64) %>%
+  filter(Sex == "Persons" & Age %in% 16:64) %>%
   group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-  summarise(WA.Population = sum(Population)) 
+  summarise(WA.Population = sum(Population)) %>%
+  ungroup()
 
 dependent_age_totals <- projections_data_with_scot_and_persons %>% 
-  filter(Age %in% c(0:15, 65:90)) %>%
+  filter(Sex == "Persons" & Age %in% c(0:15, 65:90)) %>%
   group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-  summarise(Dependent.Population = sum(Population))
+  summarise(Dependent.Population = sum(Population)) %>%
+  ungroup()
 
 dependency_ratio_data <- left_join(working_age_totals, dependent_age_totals) %>%
   mutate(Dependency.Ratio = round((Dependent.Population / WA.Population) * 100,1)) %>%
-  select(-WA.Population, -Dependent.Population)
-
-projection_data_complete <- left_join(projections_data_with_scot_and_persons, dependency_ratio_data) %>%
-  arrange(Council.Name, Year, Age)
+  select(-Level, -Sex, -WA.Population, -Dependent.Population) %>%
+  mutate(Measure = "Dependency Ratio") %>%
+  rename(Data = "Dependency.Ratio") %>%
+  select(Council.Name, Area.Name, Year, Measure, Data)
 
 # Read in additional data ----------------------------------------------------------------
 
@@ -132,5 +134,24 @@ sex_ratio <- map2_df(councils, folders, read_files, sheet = "Sex Ratio")
 mortality_ratio <- map2_df(councils, folders, read_files, sheet = "SMR")
 fertility_rate <- map2_df(councils, folders, read_files, sheet = "TFR")
 
+# Combined other measures data
+other_measures <- rbind(all_persons, net_migration) 
+other_measures <- rbind(other_measures, sex_ratio) 
+other_measures <- rbind(other_measures, mortality_ratio) 
+other_measures <- rbind(other_measures, fertility_rate)
+other_measures <- other_measures %>%
+  select(Council.Name, Area.Name, Year, Measure, Data)
+other_measures <- rbind(other_measures, dependency_ratio_data)
+
+# Change names of measures
+other_measures$Measure[other_measures$Measure == "All Persons"] <- "Total Population"
+other_measures$Measure[other_measures$Measure == "SMR"] <- "Standardised Mortality Ratio"
+other_measures$Measure[other_measures$Measure == "TFR"] <- "Total Fertility Rate"
+
+# Change council names back to match with lookup data
+other_measures$Council.Name[other_measures$Council.Name == "Glasgow"] <- "Glasgow City"
+other_measures$Council.Name[other_measures$Council.Name == "Perth and Kinross"] <- "Perth & Kinross"
+
 # Write the data to a csv ---------------------------
-write.csv(projection_data_complete, "Data files/Population Projections With Aggregations.csv", row.names = FALSE)
+write.csv(projections_data_with_scot_and_persons, "Data files/Population Projections With Aggregations.csv", row.names = FALSE)
+write.csv(other_measures, "Data files/Other measures data.csv", row.names = FALSE)
