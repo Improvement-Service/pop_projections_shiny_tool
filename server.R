@@ -67,13 +67,17 @@ server <- function(input, output) {
     
     all_area_names <- unique(dataset$LongName)
     
-    line_colours <- c("steelblue", "skyblue", "dimgrey")
-    if(length(all_area_names) > 3) {
-      line_colours <- c("steelblue", rep("grey", 23))
-    }
-    alpha_settings <- c(1,1,1)
-    if(length(all_area_names) > 3) {
-      alpha_settings <- c(1, rep(0.5, 23))
+    #default aesthetic for within areas plots
+      #renders the first area (by factor level) blue and the rest grey
+    line_colours <- c("steelblue", rep("grey", 23))
+      #renders the first area (by factor level) as normal and the rest as more opaque
+      # this prevents the selected small area line being hidden by overlapping lines
+    alpha_settings <- c(1, rep(0.5, 23))
+    
+    
+    if(graph_type == "Within Areas") {
+      line_colours <- c("steelblue", "skyblue", "dimgrey")
+      alpha_settings <- c(1,1,1)
     }
 
     # Create plot object
