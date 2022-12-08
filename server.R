@@ -75,7 +75,7 @@ server <- function(input, output) {
     alpha_settings <- c(1, rep(0.5, 23))
     
     
-    if(graph_type == "Within Areas") {
+    if(graph_type == "Across Areas") {
       line_colours <- c("steelblue", "skyblue", "dimgrey")
       alpha_settings <- c(1,1,1)
     }
