@@ -12,6 +12,7 @@ library(stringr)
 library(data.table)
 
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", delim = ",", col_names = TRUE)
+measures_data <- vroom::vroom("Data files/Other measures data.csv", delim = ",", col_names = TRUE)
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
 la_shape_data <- read_rds("Data files/LAShps.rds") 
 
@@ -30,6 +31,9 @@ lookup <- vroom::vroom("Data files/ShortNameLookup.csv", delim = ",", col_names 
 lookup$LongName <- str_wrap(lookup$LongName, 13)
 small_area_lookup <- small_area_lookup %>% 
   left_join(lookup, by = c("Area.Name" = "ShortName", "Council.Name" = "Council"))
+
+# combine measures_data with lookup file
+measures_data <- left_join(measures_data, small_area_lookup)
 
 # split out council and sub-council in shape_data for merging
 shape_data <- shape_data %>% 
