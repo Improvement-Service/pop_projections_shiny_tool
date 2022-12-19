@@ -48,8 +48,8 @@ dependency_ratio_data <- left_join(working_age_totals, dependent_age_totals) %>%
   mutate(Dependency.Ratio = round((Dependent.Population / WA.Population) * 100,1)) %>%
   select(-Level, -Sex, -WA.Population, -Dependent.Population) %>%
   mutate(Measure = "Dependency Ratio") %>%
-  rename(Data = "Dependency.Ratio") %>%
-  select(Council.Name, Area.Name, Year, Measure, Data)
+  rename(Value = "Dependency.Ratio") %>%
+  select(Council.Name, Area.Name, Year, Measure, Value)
 
 # Read in additional data ----------------------------------------------------------------
 
@@ -111,7 +111,7 @@ read_files <- function(list1, list2, sheet_name){
   complete_path <- gsub("X", list1, dummy_path)
   complete_path <- gsub("Y", list2, complete_path)
   read_excel(path = complete_path, sheet = sheet_name, range = "A199:AE240") %>%
-    pivot_longer(cols = 2:31, names_to = "Year", values_to = "Data") %>%
+    pivot_longer(cols = 2:31, names_to = "Year", values_to = "Value") %>%
     # This converts financial years to calendar years
     separate(Year, "Year", "-", fill = "left") %>%
     filter(Year %in% c(2018:2030)) %>%
@@ -139,7 +139,7 @@ other_measures <- rbind(other_measures, sex_ratio)
 other_measures <- rbind(other_measures, mortality_ratio) 
 other_measures <- rbind(other_measures, fertility_rate)
 other_measures <- other_measures %>%
-  select(Council.Name, Area.Name, Year, Measure, Data)
+  select(Council.Name, Area.Name, Year, Measure, Value)
 other_measures <- rbind(other_measures, dependency_ratio_data)
 
 # Change names of measures
