@@ -94,7 +94,7 @@ ui <- navbarPage(
              column(3,
                     selectizeInput(inputId = "la_choice_tab_2", 
                                    choices = councils, 
-                                   label = NULL,
+                                   label = "Select Local Authority:",
                                    options = list(placeholder = 'Select Council',
                                                   onInitialize = I('function() { this.setValue(""); }')
                                    )
@@ -108,20 +108,23 @@ ui <- navbarPage(
              column(3,
                     selectizeInput(inputId = "measure_choice_tab_2",  
                                    choices = c("Total Population", "Net Migration", "Sex Ratio", "Dependency Ratio", "Standardised Mortality Ratio", "Total Fertility Rate"), 
-                                   label = "Select measure",
-                                   options = list(placeholder = 'Select measure',
+                                   label = "Select measure:",
+                                   options = list(placeholder = 'Select measure:',
                                                   onInitialize = I('function() { this.setValue(""); }')
                                                   )
                                    )
-                    )
-             ),
+                    ),
+             column(3,
+                    actionButton("download_pop_up", " Download Data", styleclass = "", size = "", block = T,
+                                 icon = icon("file-arrow-down", class = NULL, lib = "font-awesome"), 
+                                 style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                    ),
+           ),
            fluidRow(
-             # Add conditionalPanel, if council and small area input are blank show Scotland map - outputID = scot_map_tab_2
-             # This will not include absolute panel with across areas graph and similar areas graph
-             
-             # Add 2nd conditionalPanel, if council and small area input are not blank show council map - outputID = la_map_tab_2
-             # This will include absolute panel with across areas graph and similar areas graph;
-             # across areas graph - outputID = across_areas_plot_tab_2
-             # similar areas graph - outputID = similar_areas_plot_tab_2
+             conditionalPanel(condition = "input.la_choice_tab_2 != 0 | input.measure_choice_tab_2 != 0",
+                              plotlyOutput("within_areas_plot_tab_2", width = "100%") %>%
+                                # Creates a loading spinner
+                                withSpinner(type = 6)
+             )
            ))
 )
