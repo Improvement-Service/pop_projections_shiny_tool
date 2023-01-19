@@ -213,27 +213,7 @@ server <- function(input, output) {
     return(full_range)
   })   
   
-  # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
-   small_area_choices_tab_2 <- reactive({
-     req(input$la_choice_tab_2)
-     small_areas_subset <- small_area_lookup %>%
-           filter(Council.Name == input$la_choice_tab_2) %>%
-            pull(LongName)
-     return(small_areas_subset)
-     
-   })
-   
-  # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
-   output$small_area_output_tab_2 <- renderUI({
-     selectizeInput(inputId = "small_area_choice_tab_2", 
-                   choices = small_area_choices_tab_2(),
-                   label = NULL,
-                   options = list(placeholder = "Select Small Area",
-                                  #placeholder = small_area_choices_tab_2()[1],
-                                  onInitialize = I('function() { this.setValue(""); }')
-                   )
-     )
-   })
+  
   
 # Code for Population Size Tab (Tab 1) -------------------------------------------
 
@@ -418,5 +398,83 @@ server <- function(input, output) {
   
   
 # Code for Similar Areas Tab (Tab 2) ---------------------------------------------
+  
+  # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
+  small_area_choices_tab_2 <- eventReactive(input$la_choice_tab_2, {
+    small_areas_subset <- small_area_lookup %>%
+      filter(Council.Name == input$la_choice_tab_2) %>%
+      pull(LongName)
+    return(small_areas_subset)
+  })
+  
+  # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
+  output$small_area_output_tab_2 <- renderUI({
+    req(input$la_choice_tab_2)
+    selectizeInput(inputId = "small_area_choice_tab_2", 
+                   choices = small_area_choices_tab_2(),
+                   label = "Select Small Area:"
+    )
+  })
+  
+  # Filters measure_data by selected council and measure. Is updated when either changes.
+    # Additionally changes factor levels so that the selected council is first followed by the rest
+    # alphabetically. This allows the selected council to have a different line colour - controlled
+    # by create_line_graph function.
+  measures_data_tab_2 <- reactive({
+    measures_data <- measures_data  %>%
+      filter(Council.Name == input$la_choice_tab_2 &
+               Measure == input$measure_choice_tab_2)
+    council_small_areas <- unique(measures_data$LongName)
+    area_factors <- c(input$small_area_choice_tab_2, 
+                      council_small_areas[!council_small_areas == input$small_area_choice_tab_2])
+    measures_data$LongName <- factor(measures_data$LongName, levels = area_factors, ordered = TRUE)
+    return(measures_data)
+  })
+  
+  #once council and input measure is given, render line plot using reactive data object: measures_data_tab_2()
+  output$within_areas_plot_tab_2 <- renderPlotly({
+    req(input$la_choice_tab_2, input$measure_choice_tab_2)
+    plot <- create_line_plot(dataset = measures_data_tab_2(), 
+                             council_selection = input$la_choice_tab_2, 
+                             small_area_selection = input$small_area_choice_tab_2, 
+                             measure_selection = input$measure_choice_tab_2,
+                             graph_type = "Within Areas"
+    )
+  })
+  
+  #when Download Data button (Ui title) is clicked, pop up appears and gives two download options
+  observeEvent(input$download_pop_up, {
+    showModal(modalDialog(
+      title = "Download",
+      paste0("To download ", input$measure_choice_tab_2, " data for ", input$la_choice_tab_2, 
+      " (currently shown on the graph), click 'Download Selected Data'. Or for all measures for all councils, select 'Download All Data'."),
+      footer = tagList(
+        downloadButton(outputId = "download_selected_data", "Download Selected Data"),
+        downloadButton(outputId = "download_all_data", "Download All Data"),
+        modalButton("Cancel")
+      ),
+      easyClose = TRUE
+    ))
+  })
+  
+  #code to handle downloading selected data
+  output$download_selected_data <- downloadHandler(
+    filename = paste0(input$measure_choice_tab_2 ," data - ", input$la_choice_tab_2, ".csv"),
+    content = function(con){
+      on.exit(removeModal())
+      data.table::fwrite(measures_data_tab_2(), con)
+    }
+  )
+  
+  #handles download of entire dataset
+  output$download_all_data <- downloadHandler(
+    filename = paste0("population projections data.csv"),
+    content = function(con){
+      on.exit(removeModal())
+      data.table::fwrite(measures_data, con)
+    }
+  )
+}
 
- }
+
+
