@@ -126,5 +126,57 @@ ui <- navbarPage(
                                 # Creates a loading spinner
                                 withSpinner(type = 6)
              )
-           ))
+           )),
+
+# Data Table / Data Download (Tab 3)--------------------------------------------
+  tabPanel("Data Download",
+           fluidRow(
+             # Add selectize input for council dropdown - inputID = la_choice_tab_3
+             column(3,
+                    selectizeInput(inputId = "la_choice_tab_3", 
+                                   choices = councils, 
+                                   label = NULL,
+                                   multiple = TRUE,
+                                   options = list(placeholder = 'Select Council',
+                                                  onInitialize = I('function() { this.setValue(""); }')
+                                   )
+                    )
+             ),
+             # Add selectize input for year dropdown - inputID = year_choice_tab_3
+             column(2,
+                    selectizeInput(inputId = "year_choice_tab_3", 
+                                   choices = years, 
+                                   label = NULL,
+                                   multiple = TRUE,
+                                   options = list(placeholder = 'Select Year',
+                                                  onInitialize = I('function() { this.setValue(""); }')
+                                   )
+                    )
+             ),
+             # Add sliderinput for age range - inputID = age_choice_tab_3
+             column(3,
+                    sliderInput(inputId = "age_choice_tab_3", 
+                                label = "Select ages to include:", 
+                                min = 0, 
+                                max = 90, 
+                                step = 1, 
+                                value = c(0,90), 
+                                dragRange = TRUE )
+             ),
+             # Add checkbox input for gender - inputID = gender_choice_tab_3
+             column(2,
+                    checkboxGroupInput(
+                      inputId = "gender_choice_tab_3",
+                      label = "Select genders to include:",
+                      choices = c("Males", "Females"),
+                      selected = c("Males", "Females"),
+                      inline = FALSE
+                    )
+             ),
+             column(2,
+                    actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
+                                 style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+             )
+           )
+           )
 )
