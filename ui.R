@@ -55,9 +55,18 @@ ui <- navbarPage(
              # Add conditionalPanel, if council input is blank show Scotland map - outputID = scot_map_tab_1
              # This will not include absolute panel with across areas graph and within areas graph
              conditionalPanel(condition = "input.submit_tab_1 == 0 | input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
-                              leafletOutput("scot_map_tab_1", width = "100%") %>%
-                                # Creates a loading spinner
-                                withSpinner(type = 6)
+                              # leafletOutput("scot_map_tab_1", width = "100%") %>%
+                              #   # Creates a loading spinner
+                              #   withSpinner(type = 6)
+                             
+                               h1("How to use the app:"),
+                              h4("Select Local Authority area and year of interest, (alter default gender and age inputs as required.)"),
+                               img(src="tab-1-selections-smaller.gif", align = "left"),
+                              br(),
+                              div("Hover over small areas to see populations based on selections. Click on small area to update population index line graph.", align = "left"),
+                               img(src="tab-1-map-functionality.gif", align = "left")
+                              # #img(src="within area plot tab 1.gif", align = "left")
+                              # 
                               ),
              # Add 2nd conditionalPanel, if council input is not blank show council map - outputID = la_map_tab_1
              column(6,

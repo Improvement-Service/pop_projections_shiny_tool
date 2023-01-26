@@ -290,7 +290,7 @@ server <- function(input, output) {
                     %>% lapply(htmltools::HTML)
                   ),
                   # Creates a white border on the polygon where the mouse hovers
-                  highlightOptions = highlightOptions(color = "white", weight = 3, bringToFront = TRUE)
+                  highlightOptions = highlightOptions(color = "white", weight = 5, bringToFront = F)
       ) %>%
       addLegend("bottomleft", 
                 colors = map_colours,
@@ -312,6 +312,33 @@ server <- function(input, output) {
     if(is.null(event)){
       return()} 
     selected_small_area_tab_1(event$id)
+  })
+  
+  #highight polygon experiment ------------
+  proxy <- leafletProxy("la_map_tab_1")
+  
+  observe({
+    event <- input$la_map_tab_1_shape_click
+    if(is.null(event)){
+      return()}
+      #get the selected polygon and extract the label point 
+      selected_polygon <- shape_data %>% filter(SubCouncil == selected_small_area_tab_1()) %>% pull(geometry)
+      #polygon_labelPt <- selected_polygon@polygons[[1]]@labpt
+      
+      #remove any previously highlighted polygon
+      proxy %>%  clearGroup("highlighted_polygon")
+      
+      #center the view on the polygon 
+      #proxy %>% setView(lng=polygon_labelPt[1],lat=polygon_labelPt[2],zoom=7)
+      
+      #add a slightly thicker red polygon on top of the selected one
+      proxy %>% addPolylines(stroke=TRUE, 
+                             weight = 3,
+                             color="yellow",
+                             opacity = 0.7,
+                             data=selected_polygon, 
+                             group="highlighted_polygon")
+    
   })
   
   observe({
