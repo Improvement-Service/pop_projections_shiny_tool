@@ -10,6 +10,7 @@ library(vroom)
 library(shinyvalidate)
 library(stringr)
 library(data.table)
+library(DT)
 
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", delim = ",", col_names = TRUE)
 measures_data <- vroom::vroom("Data files/Other measures data.csv", delim = ",", col_names = TRUE)
