@@ -10,7 +10,7 @@ ui <- navbarPage(
              column(3,
                     selectizeInput(inputId = "la_choice_tab_1", 
                                    choices = councils, 
-                                   label = NULL,
+                                   label = "Select Local Authority:",
                                    options = list(placeholder = 'Select Council',
                                                   onInitialize = I('function() { this.setValue(""); }')
                                    )
@@ -20,7 +20,7 @@ ui <- navbarPage(
              column(2,
                     selectizeInput(inputId = "year_choice_tab_1", 
                                    choices = years, 
-                                   label = NULL,
+                                   label = "Select year:",
                                    options = list(placeholder = 'Select Year',
                                                   onInitialize = I('function() { this.setValue(""); }')
                                    )
@@ -50,32 +50,32 @@ ui <- navbarPage(
                     actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
                                  style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
                     )
-             ),
+             ), # end of fluidRow,
            fluidRow(
-             # Add conditionalPanel, if council input is blank show Scotland map - outputID = scot_map_tab_1
-             # This will not include absolute panel with across areas graph and within areas graph
              conditionalPanel(condition = "input.submit_tab_1 == 0 | input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
-                              # leafletOutput("scot_map_tab_1", width = "100%") %>%
-                              #   # Creates a loading spinner
-                              #   withSpinner(type = 6)
-                             
-                               h1("How to use the app:"),
-                              h4("Select Local Authority area and year of interest, (alter default gender and age inputs as required.)"),
-                               img(src="tab-1-selections-smaller.gif", align = "left"),
-                              br(),
-                              div("Hover over small areas to see populations based on selections. Click on small area to update population index line graph.", align = "left"),
-                               img(src="tab-1-map-functionality.gif", align = "left")
-                              # #img(src="within area plot tab 1.gif", align = "left")
-                              # 
-                              ),
+            # Add conditionalPanel, if council input is blank show Scotland map - outputID = scot_map_tab_1
+             # This will not include absolute panel with across areas graph and within areas graph
+             column(12,
+                    wellPanel(
+                     h1("How to use the app:"),
+                      h4("Select Local Authority area and year of interest (alter default gender and age inputs as required)."),
+                      tags$figure(align = "left",
+                                  tags$image(
+                                    src="greyscale tab 1 selections.gif", 
+                                    alt = "GIF demonstrating selection process"),
+                                  tags$figcaption("")
+                                  )
+                     )
+                    ) #end of WellPanel
+            ), #end of pre-input conditionalPanel
              # Add 2nd conditionalPanel, if council input is not blank show council map - outputID = la_map_tab_1
+            conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ", 
+            
+            column(6,
+                   leafletOutput("la_map_tab_1", width = "100%") %>%
+                                       withSpinner(type = 6)),
              column(6,
-                    conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ",
-                                     leafletOutput("la_map_tab_1", width = "100%") %>%
-                                       withSpinner(type = 6))),
-             column(6,
-                    conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ",# Gives the panel a border
-                      tabsetPanel(type = "tabs",
+                    tabsetPanel(type = "tabs",
                                   tabPanel("Population Index Across Scotland", 
                                            span(textOutput("across_scotland_text"), 
                                                 style = "color:#526470; font-size = 12px"), 
@@ -91,9 +91,28 @@ ui <- navbarPage(
                                                 style = "color:#526470; font-size = 12px")
                                            )
                                   )
-                      )
+                      
+                    ) #end of column
+            ) #end of post-input conditionalPanel
+           ), #end of fluidRow
+           fluidRow(
+             conditionalPanel(condition = "input.submit_tab_1 == 0 | input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
+             column(12,
+                    wellPanel(
+                     h4("Hover over small areas to see populations based on selections. Click on small area to update population index line graph.", align = "left"),
+                      tags$figure(align = "left",
+                                  tags$image(
+                                    src="tab-1-map-functionality.gif",
+                                    alt = "GIF demonstrating selection process"),
+                                  tags$figcaption("")
+                                  )
+                     ) #end of wellPanel
                     )
-           )),
+             ) #end of conditionalPanel
+           )
+
+           ), #end of tabPanel
+    
 
 # Similar Areas Tab (Tab 2) --------------------------------------------------------------------
 
@@ -135,5 +154,6 @@ ui <- navbarPage(
                                 # Creates a loading spinner
                                 withSpinner(type = 6)
              )
-           ))
+           )
+           )
 )
