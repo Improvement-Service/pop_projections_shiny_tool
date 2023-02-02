@@ -260,7 +260,7 @@ server <- function(input, output, session) {
       addLegend("bottomleft", 
                 colors = map_colours,
                 labels = c("Smallest Population", "","","","","","","Largest Population"),
-                title = "",
+                title = paste0("Population, ", input$year_choice_tab_1),
                 opacity = 1
       ) %>%
       addPolylines(stroke=TRUE, 
@@ -386,7 +386,7 @@ server <- function(input, output, session) {
   
   #text to accompany/annotate the 'Population Index Across Scotland' plot
   render_across_scotland_text <- eventReactive(
-    list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
+    list(input$submit_tab_1, input$la_map_tab_1_shape_click, input$la_choice_tab_2, input$small_area_choice_tab_2), {
       req(iv$is_valid())
       HTML(paste0("Showing projected population change for <b>",
              selected_gender_tab_1(),
@@ -408,7 +408,7 @@ server <- function(input, output, session) {
   
   #text to accompany/annotate the 'Population Index Within Council Areas' plot
   render_within_la_text <- eventReactive(
-    list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
+    list(input$submit_tab_1, input$la_map_tab_1_shape_click, input$la_choice_tab_2, input$small_area_choice_tab_2), {
       req(iv$is_valid())
       paste0("Showing projected population change for <b>",
              selected_gender_tab_1(),
@@ -435,24 +435,26 @@ server <- function(input, output, session) {
     iv$enable()
   })
   
+  #when submit is clicked disable the button, this will be enabled when changes have been made to inputs
+  observeEvent(input$submit_tab_1, {
+    # updateActionButton(session, "submit_tab_1", 
+    #                    label = "Change Selections",
+    #                    icon = icon("arrow-left"))
+    shinyjs::disable("submit_tab_1")
+  })
+  
+  #enable submit button to signal to user to click to refresh view
   observeEvent({input$la_choice_tab_1
     input$year_choice_tab_1
     input$age_choice_tab_1
     input$gender_choice_tab_1
       }, 
     {
+      # updateActionButton(session, "submit_tab_1", 
+      #                    label = "Submit Selections",
+      #                    icon = icon("paper-plane"))
     shinyjs::enable("submit_tab_1")
-      updateActionButton(session, "submit_tab_1", 
-                         label = "Submit Selections", 
-                         icon = icon("paper-plane"))
       })
-  
-  observeEvent(input$submit_tab_1, {
-    updateActionButton(session, "submit_tab_1", 
-                       label = "Change Selections",
-                       icon = icon("arrow-left"))
-    shinyjs::disable("submit_tab_1")
-  })
   
   # The first time submit is clicked with all inputs, show a notification 
   # which signposts less obvious dashboard functionality
