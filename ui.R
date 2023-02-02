@@ -2,7 +2,7 @@ ui <- tagList(
   tags$head(useShinyjs()),
   navbarPage(
   
-  title = "Small Area Population Projections",
+  title = "Sub-Council Population Projections",
   
 
 # Population Size Tab (Tab 1)-----------------------------------------------------------  
@@ -80,18 +80,18 @@ ui <- tagList(
                                        withSpinner(type = 6)),
              column(6,
                     tabsetPanel(type = "tabs",
-                                  tabPanel("Population Index Across Scotland", 
-                                           span(textOutput("across_scotland_text"), 
-                                                style = "color:#526470; font-size = 12px"), 
+                                  tabPanel("Population Index Across Scotland",
                                            plotlyOutput("across_areas_plot_tab_1", 
                                                         height = "360px") %>% 
-                                             withSpinner(type = 6)
+                                             withSpinner(type = 6),
+                                           span(htmlOutput("across_scotland_text"), 
+                                                style = "color:#526470; font-size = 12px")
                                            ),
                                   tabPanel("Population Index Within Council Areas", 
                                            plotlyOutput("within_areas_plot_tab_1", 
                                                         height = "360px") %>% 
                                              withSpinner(type = 6), 
-                                           span(textOutput("within_la_text"), 
+                                           span(htmlOutput("within_la_text"), 
                                                 style = "color:#526470; font-size = 12px")
                                            )
                                   )

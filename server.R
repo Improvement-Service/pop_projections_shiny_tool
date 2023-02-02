@@ -1,4 +1,4 @@
-server <- function(input, output) {
+server <- function(input, output, session) {
   
 # Input Validation --------------------------------
   # initialise an InputValidator object
@@ -174,7 +174,7 @@ server <- function(input, output) {
   })
   
   # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
- # This will be initialised when the use selects an LA and will be updated
+ # This will be initialised when the user selects an LA and will be updated
   # either when a new LA is selected or the user clicks on the map
   selected_small_area_tab_1 <- reactiveVal()
   
@@ -230,7 +230,10 @@ server <- function(input, output) {
     
     default_selected_polygon <- shape_data %>% filter(SubCouncil == selected_small_area_tab_1()) %>% pull(geometry)
     # Create a leaflet object using small area shapefiles
-    leaflet(map_data_tab_1) %>%
+    leaflet(data = map_data_tab_1, options = leafletOptions(zoomControl = FALSE)) %>%
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)
+    }") %>%
       # Create background map - OpenStreetMap by default
       addTiles() %>%
       # Add polygons for small areas
@@ -385,12 +388,18 @@ server <- function(input, output) {
   render_across_scotland_text <- eventReactive(
     list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
       req(iv$is_valid())
-      paste0("This graph shows projected population change for ", 
+      HTML(paste0("Showing projected population change for <b>",
+             selected_gender_tab_1(),
+             "</b> aged <b>",
+             input$age_choice_tab_1[1],
+             "-",
+             input$age_choice_tab_1[2],
+             "</b> for <b>",
              selected_small_area_tab_1(),
-             ", for ",
+             "</b>, for <b>",
              input$la_choice_tab_1, 
-             ", and for Scotland as a whole. Change the small area shown by clicking on the map."
-      )
+             "</b>, and for Scotland as a whole."
+      ))
     }
   )
   
@@ -401,11 +410,17 @@ server <- function(input, output) {
   render_within_la_text <- eventReactive(
     list(input$submit_tab_1, input$la_map_tab_1_shape_click), {
       req(iv$is_valid())
-      paste0("This graph shows population change for ", 
+      paste0("Showing projected population change for <b>",
+             selected_gender_tab_1(),
+             "</b> aged <b>",
+             input$age_choice_tab_1[1],
+             "-",
+             input$age_choice_tab_1[2],
+             "</b> in <b>",
              selected_small_area_tab_1(),
-             " compared to other small areas in ",
+             "</b> compared to other small areas in <b>",
              input$la_choice_tab_1,
-             ". Hover over map or click on small areas in the legend to explore the data."
+             "</b>. <br >Click on the map or click on sub-council areas in the legend to explore the data."
       )
     }
   )
@@ -424,29 +439,34 @@ server <- function(input, output) {
     input$year_choice_tab_1
     input$age_choice_tab_1
     input$gender_choice_tab_1
-    }, {
-      runjs(paste0('$("#submit_tab_1").css("background-colour","blue")'))
+      }, 
+    {
     shinyjs::enable("submit_tab_1")
-  })
+      updateActionButton(session, "submit_tab_1", 
+                         label = "Submit Selections", 
+                         icon = icon("paper-plane"))
+      })
   
   observeEvent(input$submit_tab_1, {
-    runjs(paste0('$("#submit_tab_1").css("background-colour","grey")'))
+    updateActionButton(session, "submit_tab_1", 
+                       label = "Change Selections",
+                       icon = icon("arrow-left"))
     shinyjs::disable("submit_tab_1")
   })
   
   # The first time submit is clicked with all inputs, show a notification 
   # which signposts less obvious dashboard functionality
-  observeEvent(input$submit_tab_1, {
-    req(iv$is_valid())
-    showNotification(
-      "Hover over small areas to see population index for the selected year. Click on small areas to update data shown on the graphs.",
-      duration = NA, 
-      closeButton = TRUE,
-      type = "warning",
-      session = getDefaultReactiveDomain()
-    )
-  }, once = TRUE
-  )
+  # observeEvent(input$submit_tab_1, {
+  #   req(iv$is_valid())
+  #   showNotification(
+  #     "Hover over small areas to see population index for the selected year. Click on small areas to update data shown on the graphs.",
+  #     duration = NA, 
+  #     closeButton = TRUE,
+  #     type = "warning",
+  #     session = getDefaultReactiveDomain()
+  #   )
+  # }, once = TRUE
+  # )
   
   # when submit is clicked ensure that any update to selected LA in tab 1 carries over to tab 2
   observeEvent(input$submit_tab_1, {
@@ -477,9 +497,11 @@ server <- function(input, output) {
   #determine default selected small area when LA is selected/changed (responsive to either tab)
   observeEvent({
     input$submit_tab_1
+    input$la_choice_tab_1
     input$la_choice_tab_2
   },
   {
+    req(input$la_choice_tab_1 != "")
     small_area_options <- small_area_lookup %>%
       filter(Council.Name == input$la_choice_tab_1) %>%
       pull(LongName)
