@@ -1,4 +1,5 @@
 server <- function(input, output) {
+  
 # Input Validation --------------------------------
   # initialise an InputValidator object
   iv <- InputValidator$new()
@@ -104,7 +105,35 @@ server <- function(input, output) {
       layout(yaxis = list(fixedrange = TRUE)) %>%
       layout(legend = list(orientation = 'v', title = ""))
   }
-
+#Button experiment -----------------
+  
+  
+  # newInput <- reactiveVal(FALSE)
+  # 
+  # observeEvent({
+  #   input$la_choice_tab_1
+  #   input$year_choice_tab_1
+  #   input$age_choice_tab_1
+  #   input$gender_choice_tab_1
+  # },{
+  #   newInput(TRUE)
+  # })
+  # 
+  # observeEvent(input$submit_tab_1,{
+  #   newInput(FALSE)
+  # })
+  # 
+  # output$button <- renderUI({
+  #   if(newInput() == FALSE) {
+  #   actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
+  #                style="color: #fff; background-color: #808080; border-color: #2e6da4")
+  #   }
+  #   else {
+  #     actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
+  #                  style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+  #   }
+  # })
+  
   #Tab 1: Reactive data objects / selected variables ---------------------
   
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
@@ -391,6 +420,20 @@ server <- function(input, output) {
     iv$enable()
   })
   
+  observeEvent({input$la_choice_tab_1
+    input$year_choice_tab_1
+    input$age_choice_tab_1
+    input$gender_choice_tab_1
+    }, {
+      runjs(paste0('$("#submit_tab_1").css("background-colour","blue")'))
+    shinyjs::enable("submit_tab_1")
+  })
+  
+  observeEvent(input$submit_tab_1, {
+    runjs(paste0('$("#submit_tab_1").css("background-colour","grey")'))
+    shinyjs::disable("submit_tab_1")
+  })
+  
   # The first time submit is clicked with all inputs, show a notification 
   # which signposts less obvious dashboard functionality
   observeEvent(input$submit_tab_1, {
@@ -411,17 +454,7 @@ server <- function(input, output) {
                          selected = input$la_choice_tab_1)
   })
   
-  #when la is changed in tab 2, ensure that this is carried over to tab 1
-  observeEvent(input$la_choice_tab_2, {
-    updateSelectizeInput(inputId = "la_choice_tab_1",
-                         selected = input$la_choice_tab_2)
-    
-  })
-  
-  #ensures that a small area change in tab 2 is reflected in outputs on tab 1
-  observeEvent(input$small_area_choice_tab_2, {
-    selected_small_area_tab_1(input$small_area_choice_tab_2)
-  })
+ 
   
   # Create observe event to update selected_small_area_tab_1
   observeEvent(input$la_map_tab_1_shape_click, {
@@ -454,7 +487,7 @@ server <- function(input, output) {
     selected_small_area_tab_1(default_area)
   })
   
-# Code for Similar Areas Tab (Tab 2) ---------------------------------------------
+# Tab 2: Code for Other Measures Tab ---------------------------------------------
   
   # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
   small_area_choices_tab_2 <- eventReactive(input$la_choice_tab_2, {
@@ -533,6 +566,23 @@ server <- function(input, output) {
       data.table::fwrite(measures_data, con)
     }
   )
+  
+  #Tab 2: Observe Events --------------------
+  #when la is changed in tab 2, ensure that this is carried over to tab 1
+  observeEvent(input$la_choice_tab_2, {
+    updateSelectizeInput(inputId = "la_choice_tab_1",
+                         selected = input$la_choice_tab_2)
+    #because la_choice_tab_1 is updated, this triggers code which enables the submit button
+    #so this needs to be reversed
+    shinyjs::disable("submit_tab_1")
+    
+  })
+
+  #ensures that a small area change in tab 2 is reflected in outputs on tab 1
+  observeEvent(input$small_area_choice_tab_2, {
+    selected_small_area_tab_1(input$small_area_choice_tab_2)
+  })
+  
 }
 
 

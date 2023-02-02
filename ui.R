@@ -1,4 +1,7 @@
-ui <- navbarPage(
+ui <- tagList(
+  tags$head(useShinyjs()),
+  navbarPage(
+  
   title = "Small Area Population Projections",
   
 
@@ -47,9 +50,10 @@ ui <- navbarPage(
                     )
              ),
              column(2,
-                    actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
-                                 style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                    actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"),
+                                style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
                     )
+    
              ), # end of fluidRow,
            fluidRow(
              conditionalPanel(condition = "input.submit_tab_1 == 0 | input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
@@ -156,4 +160,5 @@ ui <- navbarPage(
              )
            )
            )
-)
+) #end of navbar
+) #end of tags$List
