@@ -31,37 +31,16 @@ projections_data_with_scot_and_persons <- projections_data_with_scot %>%
   select(Council.Name, Level, Area.Name, Year, Sex, Age, Population) %>%
   rbind(., projections_data_with_scot)
 
-# Create dependency ratio ----------------------------------------------------------
-working_age_totals <- projections_data_with_scot_and_persons %>% 
-  filter(Level == "Small Area", Sex == "Persons" & Age %in% 16:64) %>%
-  group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-  summarise(WA.Population = sum(Population)) %>%
-  ungroup()
-
-dependent_age_totals <- projections_data_with_scot_and_persons %>% 
-  filter(Level == "Small Area", Sex == "Persons" & Age %in% c(0:15, 65:90)) %>%
-  group_by(Council.Name, Level, Area.Name, Year, Sex) %>%
-  summarise(Dependent.Population = sum(Population)) %>%
-  ungroup()
-
-dependency_ratio_data <- left_join(working_age_totals, dependent_age_totals) %>%
-  mutate(Dependency.Ratio = round((Dependent.Population / WA.Population) * 100,1)) %>%
-  select(-Level, -Sex, -WA.Population, -Dependent.Population) %>%
-  mutate(Measure = "Dependency Ratio") %>%
-  rename(Value = "Dependency.Ratio") %>%
-  select(Council.Name, Area.Name, Year, Measure, Value)
-
 # Read in additional data ----------------------------------------------------------------
 
-# Create a dummy file path 
+# Create a dummy file path to comp_Continuity_SNPP file which contains required data 
 # (Folder: Research - Population Projections, has been synced to personal drive)
 # X replaces the council name
 # Y replaces the folder name
-dummy_path <- "C:/Users/connachan.cara/IS/Research - Population Projections/X/SCAP2001Y_out/reports_Continuity_SNPP.xls"
+dummy_path <- "C:/Users/connachan.cara/IS/Research - Population Projections/X/SCAP2001Y_out/comp_Continuity_SNPP.xls"
 
 # Create list of council names
-councils <- unique(projections_data_with_scot_and_persons$Council.Name)
-councils <- councils[councils != "Scotland"]
+councils <- unique(projection_data$Council.Name)
 # need to change these names to match with the folder names
 # will want to change these back once the full dataset is created
 councils[councils == "Glasgow City"] <- "Glasgow"
@@ -102,55 +81,73 @@ folders <- c("Aberdeen CityMMW",
              "StirlingMMW",
              "West DunbartonshireMMW",
              "West LothianMMW"
-             )
+)
 
-# Create a function for running through each file
-# list1 will be used for the council names, list 2 will be used for the folder names
-read_files <- function(list1, list2, sheet_name){
-  # This replaces the council name and folder name in the dummy path  with the name from the iteration in the lists
-  complete_path <- gsub("X", list1, dummy_path)
-  complete_path <- gsub("Y", list2, complete_path)
-  read_excel(path = complete_path, sheet = sheet_name, range = "A199:AE240") %>%
-    pivot_longer(cols = 2:31, names_to = "Year", values_to = "Value") %>%
-    # This converts financial years to calendar years
-    separate(Year, "Year", "-", fill = "left") %>%
-    filter(Year %in% c(2018:2030)) %>%
-    mutate(Council.Name = list1) %>%
-    mutate(Measure = sheet_name) %>%
-    rename(Area.Name = ...1) %>%
-    na.omit()
+# Function to read in multiple sheets from 1 file
+read_sheets <- function(sheets, path, council){
+  data <- read_xls(path = path, 
+                   sheet = sheets,
+                   range = "A5:AE90",
+                   na = "*"
+                   ) %>%
+    mutate(Council.Name = council) %>%
+    mutate(Area.Name = sheets) %>%
+    filter(`...1` %in% c("Expectation of life: persons", 
+                         "Natural change", 
+                         "Net migration", 
+                         "Total",
+                         "0-15 and 65+ / 16-64",
+                         "Sex ratio males /100 females"
+                         )
+           ) %>%
+    pivot_longer(cols = 3:31, names_to = "Year", values_to = "Value") %>%
+    rename(Measure = ...1) %>%
+    select(3,4,5,1,6)
 }
 
-# The read_files function needs to be run within map2_df 
-# This will look through the list through the function for each file
-# and combine the results into a single data frame
-# The function will need to be run each time for the different data sets by
-# changing the sheet name
+# Function for reading each file
+# list1 will be used for the council names, list 2 will be used for the folder names
+read_files <- function(council_list, folder_list){
+  # This replaces the council name and folder name in the dummy path  with 
+  # the name from the iteration in the lists
+  complete_path <- gsub("X", council_list, dummy_path)
+  complete_path <- gsub("Y", folder_list, complete_path)
+  sheet_names <- excel_sheets(path = complete_path)
+  sheet_names <- sheet_names[! sheet_names == "Notes"]
+  
+  # Runs the read sheets function and combines the sheets into 1 data frame
+  data <- map_df(sheet_names, 
+                 read_sheets,
+                 path = complete_path,
+                 council = council_list
+                 )
+  }
 
-all_persons <- map2_df(councils, folders, read_files, sheet = "All Persons")
-net_migration <- map2_df(councils, folders, read_files, sheet = "Net Migration")
-sex_ratio <- map2_df(councils, folders, read_files, sheet = "Sex Ratio")
-mortality_ratio <- map2_df(councils, folders, read_files, sheet = "SMR")
-fertility_rate <- map2_df(councils, folders, read_files, sheet = "TFR")
+# The read_files function needs to be run within map2_df to allow it
+# to loop through multiple lists - list of councils and list of folder
+# This will then combine the results into a single data frame
+measures_data <- map2_df(councils, folders, read_files)
 
-# Combined other measures data
-other_measures <- rbind(all_persons, net_migration) 
-other_measures <- rbind(other_measures, sex_ratio) 
-other_measures <- rbind(other_measures, mortality_ratio) 
-other_measures <- rbind(other_measures, fertility_rate)
-other_measures <- other_measures %>%
-  select(Council.Name, Area.Name, Year, Measure, Value)
-other_measures <- rbind(other_measures, dependency_ratio_data)
+# Converts financial years to calendar years
+measures_data$Year <- gsub("[0-9]{2}-", "", measures_data$Year)
 
-# Change names of measures
-other_measures$Measure[other_measures$Measure == "All Persons"] <- "Total Population"
-other_measures$Measure[other_measures$Measure == "SMR"] <- "Standardised Mortality Ratio"
-other_measures$Measure[other_measures$Measure == "TFR"] <- "Total Fertility Rate"
+# Changes names of indicators
+measures_data$Measure[measures_data$Measure == "Expectation of life: persons"] <- "Life Expectancy - Persons"
+measures_data$Measure[measures_data$Measure == "Natural change"] <- "Natural Change"
+measures_data$Measure[measures_data$Measure == "Net migration"] <- "Net Migration"
+measures_data$Measure[measures_data$Measure == "Total"] <- "Total Population"
+measures_data$Measure[measures_data$Measure == "0-15 and 65+ / 16-64"] <- "Dependency Ratio"
+measures_data$Measure[measures_data$Measure == "Sex ratio males /100 females"] <- "Sex Ratio"
 
-# Change council names back to match with lookup data
-other_measures$Council.Name[other_measures$Council.Name == "Glasgow"] <- "Glasgow City"
-other_measures$Council.Name[other_measures$Council.Name == "Perth and Kinross"] <- "Perth & Kinross"
+# Converts dependency ratio value to % value
+measures_data$Value[measures_data$Measure == "Dependency Ratio"] <- measures_data$Value[measures_data$Measure == "Dependency Ratio"] * 100
+
+measures_data$Value <- round(measures_data$Value, 1) 
+
+# Convert councils names back to match with lookup data
+measures_data$Council.Name[measures_data$Council.Name == "Glasgow"] <- "Glasgow City"
+measures_data$Council.Name[measures_data$Council.Name == "Perth and Kinross"] <- "Perth & Kinross"
 
 # Write the data to a csv ---------------------------
 write.csv(projections_data_with_scot_and_persons, "Data files/Population Projections With Aggregations.csv", row.names = FALSE)
-write.csv(other_measures, "Data files/Other measures data.csv", row.names = FALSE)
+write.csv(measures_data, "Data files/Other measures data.csv", row.names = FALSE)
