@@ -1,5 +1,9 @@
-ui <- navbarPage(
-  title = "Small Area Population Projections",
+ui <- tagList(
+  tags$head(#useShinyjs(), 
+            withAnim()),
+  navbarPage(
+  
+  title = "Sub-Council Population Projections",
   
 
 # Population Size Tab (Tab 1)-----------------------------------------------------------  
@@ -10,7 +14,7 @@ ui <- navbarPage(
              column(3,
                     selectizeInput(inputId = "la_choice_tab_1", 
                                    choices = councils, 
-                                   label = NULL,
+                                   label = "Select Local Authority:",
                                    options = list(placeholder = 'Select Council',
                                                   onInitialize = I('function() { this.setValue(""); }')
                                    )
@@ -20,7 +24,7 @@ ui <- navbarPage(
              column(2,
                     selectizeInput(inputId = "year_choice_tab_1", 
                                    choices = years, 
-                                   label = NULL,
+                                   label = "Select year:",
                                    options = list(placeholder = 'Select Year',
                                                   onInitialize = I('function() { this.setValue(""); }')
                                    )
@@ -47,44 +51,41 @@ ui <- navbarPage(
                     )
              ),
              column(2,
-                    actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
-                                 style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                    actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"),
+                                style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
                     )
-             ),
+    
+             ), # end of fluidRow,
            fluidRow(
-             # Add conditionalPanel, if council input is blank show Scotland map - outputID = scot_map_tab_1
-             # This will not include absolute panel with across areas graph and within areas graph
-             conditionalPanel(condition = "input.submit_tab_1 == 0 | input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
-                              leafletOutput("scot_map_tab_1", width = "100%") %>%
-                                # Creates a loading spinner
-                                withSpinner(type = 6)
-                              ),
-             # Add 2nd conditionalPanel, if council input is not blank show council map - outputID = la_map_tab_1
+             # if council input and year are not blank show council map
+            conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ", 
+            
+            column(6,
+                   leafletOutput("la_map_tab_1", width = "100%") %>%
+                                       withSpinner(type = 6)),
              column(6,
-                    conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ",
-                                     leafletOutput("la_map_tab_1", width = "100%") %>%
-                                       withSpinner(type = 6))),
-             column(6,
-                    conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ",# Gives the panel a border
-                      tabsetPanel(type = "tabs",
-                                  tabPanel("Population Index Across Scotland", 
-                                           span(textOutput("across_scotland_text"), 
-                                                style = "color:#526470; font-size = 12px"), 
+                    tabsetPanel(type = "tabs",
+                                  tabPanel("Population Index Across Scotland",
                                            plotlyOutput("across_areas_plot_tab_1", 
                                                         height = "360px") %>% 
-                                             withSpinner(type = 6)
+                                             withSpinner(type = 6),
+                                           span(htmlOutput("across_scotland_text"), 
+                                                style = "color:#526470; font-size = 12px")
                                            ),
                                   tabPanel("Population Index Within Council Areas", 
                                            plotlyOutput("within_areas_plot_tab_1", 
                                                         height = "360px") %>% 
                                              withSpinner(type = 6), 
-                                           span(textOutput("within_la_text"), 
+                                           span(htmlOutput("within_la_text"), 
                                                 style = "color:#526470; font-size = 12px")
                                            )
-                                  )
-                      )
-                    )
-           )),
+                                  ) #end of tabsetPanel
+                      
+                    ) # end of column
+            ) # end of post-input conditionalPanel
+           ) # end of fluidRow
+           ), # end of tabPanel
+    
 
 # Similar Areas Tab (Tab 2) --------------------------------------------------------------------
 
@@ -126,5 +127,7 @@ ui <- navbarPage(
                                 # Creates a loading spinner
                                 withSpinner(type = 6)
              )
-           ))
-)
+           )
+           )
+) #end of navbar
+) #end of tags$List
