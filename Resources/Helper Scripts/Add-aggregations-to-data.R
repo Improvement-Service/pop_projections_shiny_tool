@@ -148,6 +148,10 @@ measures_data$Value <- round(measures_data$Value, 1)
 measures_data$Council.Name[measures_data$Council.Name == "Glasgow"] <- "Glasgow City"
 measures_data$Council.Name[measures_data$Council.Name == "Perth and Kinross"] <- "Perth & Kinross"
 
+# Filter to only include projected years
+measures_data <- measures_data %>% 
+  filter(Year %in% c(2018: 2030))
+
 # Write the data to a csv ---------------------------
 write.csv(projections_data_with_scot_and_persons, "Data files/Population Projections With Aggregations.csv", row.names = FALSE)
 write.csv(measures_data, "Data files/Other measures data.csv", row.names = FALSE)
