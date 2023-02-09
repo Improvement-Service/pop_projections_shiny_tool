@@ -1,5 +1,6 @@
 ui <- tagList(
-  tags$head(useShinyjs()),
+  tags$head(#useShinyjs(), 
+            withAnim()),
   navbarPage(
   
   title = "Sub-Council Population Projections",
@@ -56,23 +57,7 @@ ui <- tagList(
     
              ), # end of fluidRow,
            fluidRow(
-             conditionalPanel(condition = "input.submit_tab_1 == 0 | input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
-            # Add conditionalPanel, if council input is blank show Scotland map - outputID = scot_map_tab_1
-             # This will not include absolute panel with across areas graph and within areas graph
-             column(12,
-                    wellPanel(
-                     h1("How to use the app:"),
-                      h4("Select Local Authority area and year of interest (alter default gender and age inputs as required)."),
-                      tags$figure(align = "left",
-                                  tags$image(
-                                    src="greyscale tab 1 selections.gif", 
-                                    alt = "GIF demonstrating selection process"),
-                                  tags$figcaption("")
-                                  )
-                     )
-                    ) #end of WellPanel
-            ), #end of pre-input conditionalPanel
-             # Add 2nd conditionalPanel, if council input is not blank show council map - outputID = la_map_tab_1
+             # if council input and year are not blank show council map
             conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ", 
             
             column(6,
@@ -94,28 +79,12 @@ ui <- tagList(
                                            span(htmlOutput("within_la_text"), 
                                                 style = "color:#526470; font-size = 12px")
                                            )
-                                  )
+                                  ) #end of tabsetPanel
                       
-                    ) #end of column
-            ) #end of post-input conditionalPanel
-           ), #end of fluidRow
-           fluidRow(
-             conditionalPanel(condition = "input.submit_tab_1 == 0 | input.la_choice_tab_1 == `` | input.year_choice_tab_1 == ``",
-             column(12,
-                    wellPanel(
-                     h4("Hover over small areas to see populations based on selections. Click on small area to update population index line graph.", align = "left"),
-                      tags$figure(align = "left",
-                                  tags$image(
-                                    src="tab-1-map-functionality.gif",
-                                    alt = "GIF demonstrating selection process"),
-                                  tags$figcaption("")
-                                  )
-                     ) #end of wellPanel
-                    )
-             ) #end of conditionalPanel
-           )
-
-           ), #end of tabPanel
+                    ) # end of column
+            ) # end of post-input conditionalPanel
+           ) # end of fluidRow
+           ), # end of tabPanel
     
 
 # Similar Areas Tab (Tab 2) --------------------------------------------------------------------

@@ -105,34 +105,6 @@ server <- function(input, output, session) {
       layout(yaxis = list(fixedrange = TRUE)) %>%
       layout(legend = list(orientation = 'v', title = ""))
   }
-#Button experiment -----------------
-  
-  
-  # newInput <- reactiveVal(FALSE)
-  # 
-  # observeEvent({
-  #   input$la_choice_tab_1
-  #   input$year_choice_tab_1
-  #   input$age_choice_tab_1
-  #   input$gender_choice_tab_1
-  # },{
-  #   newInput(TRUE)
-  # })
-  # 
-  # observeEvent(input$submit_tab_1,{
-  #   newInput(FALSE)
-  # })
-  # 
-  # output$button <- renderUI({
-  #   if(newInput() == FALSE) {
-  #   actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
-  #                style="color: #fff; background-color: #808080; border-color: #2e6da4")
-  #   }
-  #   else {
-  #     actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
-  #                  style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
-  #   }
-  # })
   
   #Tab 1: Reactive data objects / selected variables ---------------------
   
@@ -277,7 +249,7 @@ server <- function(input, output, session) {
     render_la_map_tab_1()
   })
   
-  #Tab 1: Highlight selected polygons ------------
+  #Tab 1: Highlight selected polygon ------------
   proxy <- leafletProxy("la_map_tab_1")
   
   observeEvent({
@@ -398,7 +370,7 @@ server <- function(input, output, session) {
              selected_small_area_tab_1(),
              "</b>, for <b>",
              input$la_choice_tab_1, 
-             "</b>, and for Scotland as a whole."
+             "</b>, and for Scotland as a whole.<br>   "
       ))
     }
   )
@@ -420,7 +392,7 @@ server <- function(input, output, session) {
              selected_small_area_tab_1(),
              "</b> compared to other small areas in <b>",
              input$la_choice_tab_1,
-             "</b>. <br >Click on the map or click on sub-council areas in the legend to explore the data."
+             "</b>. <br>Click on the map or click on sub-council areas in the legend to explore the data.<br>   "
       )
     }
   )
@@ -435,27 +407,18 @@ server <- function(input, output, session) {
     iv$enable()
   })
   
-  #when submit is clicked disable the button, this will be enabled when changes have been made to inputs
-  observeEvent(input$submit_tab_1, {
-    # updateActionButton(session, "submit_tab_1", 
-    #                    label = "Change Selections",
-    #                    icon = icon("arrow-left"))
-    shinyjs::disable("submit_tab_1")
-  })
-  
-  #enable submit button to signal to user to click to refresh view
-  observeEvent({input$la_choice_tab_1
+  # trigger 'bouncing' submit button when input is changed
+  observeEvent({
+    input$la_choice_tab_1
     input$year_choice_tab_1
     input$age_choice_tab_1
     input$gender_choice_tab_1
-      }, 
+    },
     {
-      # updateActionButton(session, "submit_tab_1", 
-      #                    label = "Submit Selections",
-      #                    icon = icon("paper-plane"))
-    shinyjs::enable("submit_tab_1")
+      req(iv$is_valid())
+      startAnim(session, id= "submit_tab_1", "bounce")
       })
-  
+  # 
   # The first time submit is clicked with all inputs, show a notification 
   # which signposts less obvious dashboard functionality
   # observeEvent(input$submit_tab_1, {
