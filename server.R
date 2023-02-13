@@ -474,6 +474,21 @@ server <- function(input, output) {
       data.table::fwrite(measures_data, con)
     }
   )
+  
+  ##filter data for download
+  dl_measures_data <- reactive({
+    dta <- filter(measures_data, Council.Name %in% input$la_choice_tab_3 & Measure == input$measure_choice_tab_3)
+    #pivot_wider
+    dta$Value <- round(dta$Value, 2)
+    dta <- dta %>% select(Council.Name, LongName, Year, Value) %>% 
+      pivot_wider(names_from = Year, values_from = Value)
+  })
+  
+  ##create DT for preview
+  output$preview_table_tab3 <- DT::renderDataTable({
+    dl_measures_data <- dl_measures_data()
+    
+      })
 }
 
 
