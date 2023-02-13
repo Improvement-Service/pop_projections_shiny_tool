@@ -40,6 +40,8 @@ measures_data <- left_join(measures_data, small_area_lookup)
 # split out council and sub-council in shape_data for merging
 shape_data <- shape_data %>% 
   separate(`Sub-Council Area Name`, into = c("SubCouncil", "Council"), sep = " - ", remove = TRUE)
+#fix error in annbank name
+shape_data[shape_data$SubCouncil == "Annbank Mossblown and Tarbolton: the Coalfields", "SubCouncil"] <- "Annbank Mossblown and Tarbolton - the Coalfields"
 shape_data$SubCouncil <- str_wrap(shape_data$SubCouncil, 13)
 # replace "and" with ampersand in shapefiles - this is to allow merging with projection_data
 shape_data$Council <- gsub(" and ", " & ", shape_data$Council)
