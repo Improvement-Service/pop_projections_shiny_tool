@@ -203,6 +203,7 @@ ui <- navbarPage(
                     actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
                                  style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
              )
-           )
+           ),
+        DT::DTOutput("preview_table_tab3")
            )
 )
