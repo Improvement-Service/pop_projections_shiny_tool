@@ -108,7 +108,13 @@ ui <- tagList(
              # Add selectize input for indicator dropdown - inputID = measure_choice_tab_2
              column(3,
                     selectizeInput(inputId = "measure_choice_tab_2",  
-                                   choices = c("Total Population", "Net Migration", "Sex Ratio", "Dependency Ratio", "Standardised Mortality Ratio", "Total Fertility Rate"), 
+                                   choices = c("Total Population", 
+                                               "Net Migration", 
+                                               "Natural Change",
+                                               "Sex Ratio", 
+                                               "Dependency Ratio", 
+                                               "Life Expectancy - Persons"
+                                               ), 
                                    label = "Select measure:",
                                    options = list(placeholder = 'Select measure:',
                                                   onInitialize = I('function() { this.setValue(""); }')
