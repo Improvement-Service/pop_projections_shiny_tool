@@ -502,7 +502,8 @@ server <- function(input, output, session) {
   measures_data_tab_2 <- reactive({
     measures_data <- measures_data  %>%
       filter(Council.Name == input$la_choice_tab_2 &
-               Measure == input$measure_choice_tab_2)
+               Measure == input$measure_choice_tab_2 &
+               Level == "Small Area")
     council_small_areas <- unique(measures_data$LongName)
     area_factors <- c(input$small_area_choice_tab_2, 
                       council_small_areas[!council_small_areas == input$small_area_choice_tab_2])
