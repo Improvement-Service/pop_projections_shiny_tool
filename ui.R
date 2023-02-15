@@ -101,9 +101,16 @@ ui <- tagList(
                                    )
                     )
              ),
-             # Add UiOutput for small area dropdown - outputID = small_area_output_tab_2
-             column(3, uiOutput("small_area_output_tab_2")
-             ),
+             # Add selectize input for year dropdown - inputID = year_choice_tab_2
+             column(3, 
+                    selectizeInput(inputId = "year_choice_tab_2", 
+                                   choices = years, 
+                                   label = "Select year:",
+                                   options = list(placeholder = 'Select Year',
+                                                  onInitialize = I('function() { this.setValue(""); }')
+                                                  )
+                                   )
+                    ),
 
              # Add selectize input for indicator dropdown - inputID = measure_choice_tab_2
              column(3,
@@ -122,9 +129,11 @@ ui <- tagList(
                                    )
                     ),
              column(3,
-                    actionButton("download_pop_up", " Download Data", styleclass = "", size = "", block = T,
-                                 icon = icon("file-arrow-down", class = NULL, lib = "font-awesome"), 
-                                 style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                    actionButton("submit_tab_2", 
+                                 "Submit Selections", 
+                                 icon("paper-plane"),
+                                 style ="color: #fff; background-color: #337ab7; border-color: #2e6da4"
+                                 )
                     ),
            ),
            fluidRow(
