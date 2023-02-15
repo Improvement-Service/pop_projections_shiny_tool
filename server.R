@@ -1,13 +1,20 @@
 server <- function(input, output, session) {
   
 # Input Validation --------------------------------
-  # initialise an InputValidator object
-  iv <- InputValidator$new()
+  # initialise an InputValidator object - do for both tab 1 and tab 2
+  iv_tab_1 <- InputValidator$new()
+  iv_tab_2 <- InputValidator$new()
   
-  # Add validation rules: council and year choice cannot be null. 
-  #These rules can be enforced by calling req(iv$is_valid()) as required.
-  iv$add_rule("la_choice_tab_1", sv_required())
-  iv$add_rule("year_choice_tab_1", sv_required())
+  # Add validation rules: council and year choice cannot be null.
+  # These rules can be enforced by calling req(iv_tab_1$is_valid()) as required.
+  # Do this for both tab 1 and tab 2
+  iv_tab_1$add_rule("la_choice_tab_1", sv_required())
+  iv_tab_1$add_rule("year_choice_tab_1", sv_required())
+  
+  iv_tab_2$add_rule("la_choice_tab_2", sv_required())
+  iv_tab_2$add_rule("year_choice_tab_2", sv_required())
+  iv_tab_2$add_rule("measure_choice_tab_2", sv_required())
+
 # Functions ----------------------------------------------------------------------
 
   # Function to add total population index to data
@@ -151,10 +158,11 @@ server <- function(input, output, session) {
     return(filtered_data)
   })
   
-  # Reactive expression to store default small area selection - variable name = selected_small_area_tab_1
+  # Reactive expression to store default small area selections - variable name = selected_small_area_tab_1
   # This will be initialised when the user selects an LA and will be updated
   # either when a new LA is selected or the user clicks on the map
   selected_small_area_tab_1 <- reactiveVal()
+  selected_small_area_tab_2 <- reactiveVal()
   
 # Tab 1: Map Data ---------------
   # Create reactive data for map - variable name = map_data_tab_1
@@ -178,12 +186,14 @@ server <- function(input, output, session) {
   
 # Tab 1: Create Map LA Output ---------------
   render_la_map_tab_1 <- eventReactive({
+    # Will render the map whenever these inputs are changed
     input$submit_tab_1
     input$la_choice_tab_2
+    input$year_choice_tab_2
     }, 
     {
     # Do not run unless all input present
-    req(iv$is_valid())
+    req(iv_tab_1$is_valid())
     
     # Call reactive map data
     map_data_tab_1 <- map_data_tab_1()
@@ -269,25 +279,26 @@ server <- function(input, output, session) {
   })
   
 # Tab 1: Highlight selected polygon ------------
-  proxy <- leafletProxy("la_map_tab_1")
+  proxy_tab_1 <- leafletProxy("la_map_tab_1")
   
   observeEvent({
+    # Will change the polygon highlighted if any of these change
     input$la_map_tab_1_shape_click
+    input$la_map_tab_2_shape_click
     input$la_choice_tab_2
-    input$small_area_choice_tab_2
     input$submit_tab_1
     }, 
     {
-    req(iv$is_valid())
+    req(iv_tab_1$is_valid())
     # Get the selected polygon and extract the label point 
     selected_polygon <- shape_data %>% 
       filter(SubCouncil == selected_small_area_tab_1()) %>% 
       pull(geometry)
 
     # Remove any previously highlighted polygon
-    proxy %>% clearGroup("highlighted_polygon")
+    proxy_tab_1 %>% clearGroup("highlighted_polygon")
     # Add a slightly thicker red polygon on top of the selected one
-    proxy %>% addPolylines(stroke = TRUE, 
+    proxy_tab_1 %>% addPolylines(stroke = TRUE, 
                            weight = 3,
                            color = "orange",
                            opacity = 0.7,
@@ -324,13 +335,14 @@ server <- function(input, output, session) {
   
   # Reactive will render ONLY when user has clicked 'submit selections'
   render_across_areas_plot_tab_1 <- eventReactive(
+    # Will render the plot whenever these inputs are changed
     list(input$submit_tab_1, 
          input$la_map_tab_1_shape_click, 
-         input$la_choice_tab_2, 
-         input$small_area_choice_tab_2
+         input$la_map_tab_2_shape_click,
+         input$la_choice_tab_2 
          ), {
     # Do not run unless all input present
-    req(iv$is_valid())
+    req(iv_tab_1$is_valid())
     
     plot <- create_line_plot(dataset = across_areas_data_tab_1(), 
                              council_selection = input$la_choice_tab_1, 
@@ -363,13 +375,14 @@ server <- function(input, output, session) {
 # Tab 1: Create Within Councils Plot----------
   # Will render only when 'Submit Selections' is clicked and no empty selections
   render_within_areas_plot_tab_1 <- eventReactive(
+    # Will render the plot whenever these inputs are changed
     list(input$submit_tab_1, 
          input$la_map_tab_1_shape_click,
-         input$la_choice_tab_2,
-         input$small_area_choice_tab_2
+         input$la_map_tab_2_shape_click,
+         input$la_choice_tab_2
          ), {
     # Do not run unless all input present
-    req(iv$is_valid())
+    req(iv_tab_1$is_valid())
     plot <- create_line_plot(dataset = within_areas_data_tab_1(), 
                              council_selection = input$la_choice_tab_1, 
                              small_area_selection = selected_small_area_tab_1(), 
@@ -387,12 +400,13 @@ server <- function(input, output, session) {
   
   # Text to accompany/annotate the 'Population Index Across Scotland' plot
   render_across_scotland_text <- eventReactive(
+    # Will render the text whenever these inputs are changed
     list(input$submit_tab_1, 
          input$la_map_tab_1_shape_click, 
-         input$la_choice_tab_2, 
-         input$small_area_choice_tab_2
+         input$la_map_tab_2_shape_click,
+         input$la_choice_tab_2
          ), {
-           req(iv$is_valid())
+           req(iv_tab_1$is_valid())
            HTML(paste0("Showing projected population change for <b>",
                        selected_gender_tab_1(),
                        "</b> aged <b>",
@@ -414,12 +428,13 @@ server <- function(input, output, session) {
   
   # Text to accompany/annotate the 'Population Index Within Council Areas' plot
   render_within_la_text <- eventReactive(
+    # Will render the text whenever these inputs are changed
     list(input$submit_tab_1, 
-         input$la_map_tab_1_shape_click, 
-         input$la_choice_tab_2, 
-         input$small_area_choice_tab_2
+         input$la_map_tab_1_shape_click,
+         input$la_map_tab_2_shape_click,
+         input$la_choice_tab_2
          ), {
-           req(iv$is_valid())
+           req(iv_tab_1$is_valid())
            paste0("Showing projected population change for <b>",
                   selected_gender_tab_1(),
                   "</b> aged <b>",
@@ -440,55 +455,89 @@ server <- function(input, output, session) {
     render_within_la_text()
     })
   
-# Tab 1: Observe Events -------------------------------------------
+# Observe Events -------------------------------------------
   
   # 'turn on' user input validation when submit clicked for first time - 
   # missing fields, if there are any, will then show error
+  # Tab 1
   observeEvent(input$submit_tab_1, {
-    iv$enable()
+    iv_tab_1$enable()
+  })
+  # Tab 2
+  observeEvent(input$submit_tab_2, {
+    iv_tab_2$enable()
   })
   
   # Trigger 'bouncing' submit button when input is changed
+  # Tab 1
   observeEvent({
     input$la_choice_tab_1
     input$year_choice_tab_1
     input$age_choice_tab_1
     input$gender_choice_tab_1
-    },
-    {
-      req(iv$is_valid())
-      startAnim(session, id = "submit_tab_1", "bounce")
-      })
+  },
+  {
+    req(iv_tab_1$is_valid())
+    startAnim(session, id = "submit_tab_1", "bounce")
+  })
+  # Tab 2
+  observeEvent({
+    input$la_choice_tab_2
+    input$year_choice_tab_2
+    input$measure_choice_tab_2
+  },
+  {
+    req(iv_tab_2$is_valid())
+    startAnim(session, id = "submit_tab_2", "bounce")
+  })
   
   # When submit is clicked ensure that any update to selected LA 
-  # in tab 1 carries over to tab 2
+  # carries between the two tabs
+  # Tab 1
   observeEvent(input$submit_tab_1, {
     updateSelectizeInput(inputId = "la_choice_tab_2",
                          selected = input$la_choice_tab_1
-                         )
+    )
+  })
+  # Tab 2
+  observeEvent(input$submit_tab_2, {
+    updateSelectizeInput(inputId = "la_choice_tab_1",
+                         selected = input$la_choice_tab_2
+    )
   })
   
-  # Create observe event to update selected_small_area_tab_1
+  # When submit is clicked ensure that any update to selected Year 
+  # carries between the two tabs
+  # Tab 1
+  observeEvent(input$submit_tab_1, {
+    updateSelectizeInput(inputId = "year_choice_tab_2",
+                         selected = input$year_choice_tab_1
+    )
+  })
+  # Tab 2
+  observeEvent(input$submit_tab_2, {
+    updateSelectizeInput(inputId = "year_choice_tab_1",
+                         selected = input$year_choice_tab_2
+    )
+  })
+  
+  # Create observe event to update selected small areas when maps are clicked
+  # Tab 1 click
   observeEvent(input$la_map_tab_1_shape_click, {
     event <- input$la_map_tab_1_shape_click
     selected_small_area_tab_1(event$id)
-    updateSelectizeInput(inputId = "small_area_choice_tab_2",
-                         selected = event$id
-                         )
+    selected_small_area_tab_2(event$id)
+  })
+  # Tab 2 click
+  observeEvent(input$la_map_tab_2_shape_click, {
+    event <- input$la_map_tab_2_shape_click
+    selected_small_area_tab_1(event$id)
+    selected_small_area_tab_2(event$id)
   })
   
-  # Update tab 2 selected small area when tab 1 map clicked
-  observeEvent({
-    input$la_map_tab_1_shape_click
-    input$submit_tab_1
-    },
-    {
-    updateSelectizeInput(inputId = "small_area_choice_tab_2",
-                         selected = selected_small_area_tab_1()
-                         )
-  })
-  
-  # Determine default selected small area when LA is selected/changed (responsive to either tab)
+  # Determine default selected small area for tab when LA 
+  # is selected/changed (responsive to either tab)
+  # Tab 1
   observeEvent({
     input$submit_tab_1
     input$la_choice_tab_1
@@ -503,27 +552,157 @@ server <- function(input, output, session) {
     selected_small_area_tab_1(default_area)
   })
   
-# Tab 2: Code for Other Measures Tab ---------------------------------------------
-  
-  # Reactive expression to store small areas within selected_la_tab_2 - variable name = small_area_choices_tab_2
-  small_area_choices_tab_2 <- eventReactive(input$la_choice_tab_2, {
-    small_areas_subset <- small_area_lookup %>%
+  # Tab 2
+  observeEvent({
+    input$submit_tab_2
+    input$la_choice_tab_1
+    input$la_choice_tab_2
+  },
+  {
+    req(input$la_choice_tab_2 != "")
+    small_area_options <- small_area_lookup %>%
       filter(Council.Name == input$la_choice_tab_2) %>%
       pull(LongName)
-    return(small_areas_subset)
+    default_area <- small_area_options[1]
+    selected_small_area_tab_2(default_area)
   })
   
-  # RenderUi to create selectizeinput small_area_output_tab_2 - inputID = small_area_choice_tab_2 
-  output$small_area_output_tab_2 <- renderUI({
-    req(isTruthy(input$la_choice_tab_2)|isTruthy(input$la_choice_tab_1))
-    #req(input$la_choice_tab_2, input$la_choice_tab_1)
-    selectizeInput(inputId = "small_area_choice_tab_2",
-                   choices = small_area_choices_tab_2(),
-                   selected = selected_small_area_tab_1(),
-                   label = "Select Small Area:"
+# Tab 2: Code for Other Measures Tab ---------------------------------------------
+ 
+# Tab 2: Map Data ---------------
+  # Create reactive data for map - variable name = map_data_tab_2
+  map_data_tab_2 <- reactive({
+    # Filter this data based on council, measure and year
+    council_map_data <- measures_data %>%
+      filter(Council.Name == input$la_choice_tab_2,
+             Year == input$year_choice_tab_2,
+             Measure == input$measure_choice_tab_2,
+             Level == "Small Area") %>%
+      ungroup()
+    
+    # Filter shape file to selected council before combining with data
+    filtered_shape <- filter(shape_data, Council == input$la_choice_tab_2)
+    # Combine map data with shape file 
+    combined_data <- left_join(filtered_shape, 
+                               council_map_data,
+                               by = c("SubCouncil" = "LongName")
     )
   })
   
+# Tab 2: Create Map LA Output ---------------
+  render_la_map_tab_2 <- eventReactive({
+    input$submit_tab_2
+    input$la_choice_tab_1
+    input$year_choice_tab_1
+  },
+  {
+    # Do not run unless all input present
+    req(iv_tab_2$is_valid())
+    # Call reactive map data
+    map_data_tab_2 <- map_data_tab_2()
+    
+    # Set colours for the map
+    map_colours <- brewer.pal(8, "Blues")
+    # Assign colours to quintiles
+    map_colour_quintiles <- colorBin(map_colours, map_data_tab_2$Value, n = 8)
+    
+    default_selected_polygon <- shape_data %>% 
+      filter(SubCouncil == selected_small_area_tab_2()) %>% 
+      pull(geometry)
+    # Create a leaflet object using small area shapefiles
+    leaflet(data = map_data_tab_2, options = leafletOptions(zoomControl = FALSE)) %>%
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)
+    }"
+      ) %>%
+      # Create background map - OpenStreetMap by default
+      addTiles() %>%
+      # Add polygons for small areas
+      addPolygons(smoothFactor = 1, 
+                  weight = 1.5, 
+                  fillOpacity = 0.8,
+                  layerId = ~SubCouncil,
+                  color = "black", 
+                  # colour of polygons should map to population quintiles
+                  fillColor = ~map_colour_quintiles(Value),
+                  # Use HTML to create popover labels with all the selected info
+                  label = (sprintf("<strong>%s</strong><br/>Year: %s<br/>%s: %s",
+                                   map_data_tab_2$SubCouncil, 
+                                   map_data_tab_2$Year,
+                                   map_data_tab_2$Measure,
+                                   map_data_tab_2$Value
+                  ) %>% 
+                    lapply(htmltools::HTML)
+                  ),
+                  # Creates a white border on the polygon where the mouse hovers
+                  highlightOptions = highlightOptions(color = "white", 
+                                                      weight = 5, 
+                                                      bringToFront = FALSE
+                  )
+      ) %>%
+      addLegend("bottomleft", 
+                colors = map_colours,
+                labels = c("Smallest Value", 
+                           "",
+                           "",
+                           "",
+                           "",
+                           "",
+                           "",
+                           "Largest Value"
+                ),
+                title = paste0(input$measure_choice_tab_2, 
+                               ", ", 
+                               input$year_choice_tab_2
+                               ),
+                opacity = 1
+      ) %>%
+      addPolylines(stroke = TRUE, 
+                   weight = 3,
+                   color = "orange",
+                   opacity = 0.7,
+                   data = default_selected_polygon, 
+                   group ="highlighted_polygon"
+      )
+  })
+  
+# Tab 2: Highlight selected polygon ------------
+  proxy_tab_2 <- leafletProxy("la_map_tab_2")
+  
+  observeEvent({
+    input$la_map_tab_1_shape_click
+    input$la_map_tab_2_shape_click
+    input$la_choice_tab_1
+    input$la_choice_tab_2
+    input$submit_tab_1
+    input$submit_tab_2
+  }, 
+  {
+    req(iv_tab_2$is_valid())
+    # Get the selected polygon and extract the label point 
+    selected_polygon <- shape_data %>% 
+      filter(SubCouncil == selected_small_area_tab_2()) %>% 
+      pull(geometry)
+    
+    # Remove any previously highlighted polygon
+    proxy_tab_2 %>% clearGroup("highlighted_polygon")
+    # Add a slightly thicker red polygon on top of the selected one
+    proxy_tab_2 %>% addPolylines(stroke = TRUE, 
+                           weight = 3,
+                           color = "orange",
+                           opacity = 0.7,
+                           data = selected_polygon, 
+                           group = "highlighted_polygon"
+    )
+  })
+  
+  
+  
+  # RenderLeaflet for council level map - output name = la_map_tab_1
+  output$la_map_tab_2 <- renderLeaflet({
+    render_la_map_tab_2()
+  })
+
   # Filters measure_data by selected council and measure. Is updated when either changes.
     # Additionally changes factor levels so that the selected council is first followed by the rest
     # alphabetically. This allows the selected council to have a different line colour - controlled
@@ -583,22 +762,6 @@ server <- function(input, output, session) {
       data.table::fwrite(measures_data, con)
     }
   )
-  
-  #Tab 2: Observe Events --------------------
-  #when la is changed in tab 2, ensure that this is carried over to tab 1
-  observeEvent(input$la_choice_tab_2, {
-    updateSelectizeInput(inputId = "la_choice_tab_1",
-                         selected = input$la_choice_tab_2)
-    #because la_choice_tab_1 is updated, this triggers code which enables the submit button
-    #so this needs to be reversed
-    shinyjs::disable("submit_tab_1")
-    
-  })
-
-  #ensures that a small area change in tab 2 is reflected in outputs on tab 1
-  observeEvent(input$small_area_choice_tab_2, {
-    selected_small_area_tab_1(input$small_area_choice_tab_2)
-  })
   
 }
 
