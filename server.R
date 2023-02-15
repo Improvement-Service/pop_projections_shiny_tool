@@ -307,7 +307,7 @@ server <- function(input, output, session) {
                            )
     })
   
-# Tab 1: Across Scotland Plot Data-----------
+# Tab 1: Across Areas Plot Data-----------
   
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
   across_areas_data_tab_1 <- reactive({
@@ -331,7 +331,7 @@ server <- function(input, output, session) {
     return(across_data)
   })
   
-# Tab 1: Create Across Scotland Plot---------
+# Tab 1: Create Across Areas Plot---------
   
   # Reactive will render ONLY when user has clicked 'submit selections'
   render_across_areas_plot_tab_1 <- eventReactive(
@@ -357,7 +357,7 @@ server <- function(input, output, session) {
    render_across_areas_plot_tab_1()
   })
   
-# Tab 1: Within Councils Plot Data-----------
+# Tab 1: Within Areas Plot Data-----------
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
   within_areas_data_tab_1 <- reactive({
    data <- total_population_index_data() %>%
@@ -372,7 +372,7 @@ server <- function(input, output, session) {
    return(data)
    })
 
-# Tab 1: Create Within Councils Plot----------
+# Tab 1: Create Within Areas Plot----------
   # Will render only when 'Submit Selections' is clicked and no empty selections
   render_within_areas_plot_tab_1 <- eventReactive(
     # Will render the plot whenever these inputs are changed
@@ -703,33 +703,58 @@ server <- function(input, output, session) {
     render_la_map_tab_2()
   })
 
+# Tab2: Within Areas Plot Data-------------------------------------------
+  
   # Filters measure_data by selected council and measure. Is updated when either changes.
-    # Additionally changes factor levels so that the selected council is first followed by the rest
-    # alphabetically. This allows the selected council to have a different line colour - controlled
-    # by create_line_graph function.
+  # Additionally changes factor levels so that the selected council is first followed by the rest
+  # alphabetically. This allows the selected council to have a different line colour - controlled
+  # by create_line_graph function.
   measures_data_tab_2 <- reactive({
     measures_data <- measures_data  %>%
       filter(Council.Name == input$la_choice_tab_2 &
                Measure == input$measure_choice_tab_2 &
-               Level == "Small Area")
+               Level == "Small Area"
+             )
     council_small_areas <- unique(measures_data$LongName)
-    area_factors <- c(input$small_area_choice_tab_2, 
-                      council_small_areas[!council_small_areas == input$small_area_choice_tab_2])
-    measures_data$LongName <- factor(measures_data$LongName, levels = area_factors, ordered = TRUE)
+    area_factors <- c(selected_small_area_tab_2(), 
+                      council_small_areas[!council_small_areas == selected_small_area_tab_2()]
+                      )
+    measures_data$LongName <- factor(measures_data$LongName, 
+                                     levels = area_factors, 
+                                     ordered = TRUE
+                                     )
     return(measures_data)
   })
   
-  #once council and input measure is given, render line plot using reactive data object: measures_data_tab_2()
-  output$within_areas_plot_tab_2 <- renderPlotly({
-    req(input$la_choice_tab_2, input$measure_choice_tab_2)
-    plot <- create_line_plot(dataset = measures_data_tab_2(), 
-                             council_selection = input$la_choice_tab_2, 
-                             small_area_selection = input$small_area_choice_tab_2, 
-                             measure_selection = input$measure_choice_tab_2,
-                             graph_type = "Within Areas"
+# Tab 2: Create Within Areas Plot-------------------------------------------------  
+  # Once council and input measure is given, render line plot using reactive 
+  # data object: measures_data_tab_2()
+  
+  # Will render only when 'Submit Selections' is clicked and no empty selections
+  render_within_areas_plot_tab_2 <- eventReactive(
+    # Will render the plot whenever these inputs are changed
+    list(input$submit_tab_2, 
+         input$la_map_tab_1_shape_click,
+         input$la_map_tab_2_shape_click,
+         input$la_choice_tab_1
+         ), {
+           # Do not run unless all input present
+           req(iv_tab_2$is_valid())
+           
+           plot <- create_line_plot(dataset = measures_data_tab_2(), 
+                                    council_selection = input$la_choice_tab_2, 
+                                    small_area_selection = selected_small_area_tab_2(), 
+                                    measure_selection = input$measure_choice_tab_2,
+                                    graph_type = "Within Areas"
+                                    )
+           }
     )
+  
+  output$within_areas_plot_tab_2 <- renderPlotly({
+    render_within_areas_plot_tab_2()
   })
   
+# Download data button ---------------------------------------------
   #when Download Data button (Ui title) is clicked, pop up appears and gives two download options
   observeEvent(input$download_pop_up, {
     showModal(modalDialog(

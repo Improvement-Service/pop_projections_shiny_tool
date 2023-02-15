@@ -134,9 +134,17 @@ ui <- tagList(tags$head(withAnim()),
                                            ),
                                     # End of fluidRow
                                     ),
-                                  fluidRow(conditionalPanel(condition = "input.la_choice_tab_2 != 0 | input.measure_choice_tab_2 != 0",
-                                                            leafletOutput("la_map_tab_2", width = "100%") %>%
-                                                              withSpinner(type = 6)
+                                  fluidRow(conditionalPanel(condition = "input.submit_tab_2 != 0 && input.la_choice_tab_2 != `` && input.year_choice_tab_2 != `` && input.measure_choice_tab_2 != `` ",
+                                                            column(6, 
+                                                                   leafletOutput("la_map_tab_2", width = "100%") %>%
+                                                                     withSpinner(type = 6)
+                                                                   ),
+                                                            column(6,
+                                                                   plotlyOutput("within_areas_plot_tab_2", 
+                                                                                height = "360px"
+                                                                                ) %>% 
+                                                                     withSpinner(type = 6),
+                                                                   )
                                                             )
                                            )
                                   # End of tabPanel
