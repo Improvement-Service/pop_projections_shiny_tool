@@ -144,6 +144,8 @@ ui <- tagList(tags$head(withAnim()),
                                                                                 height = "360px"
                                                                                 ) %>% 
                                                                      withSpinner(type = 6),
+                                                                   span(htmlOutput("within_la_text_tab_2"), 
+                                                                        style = "color:#526470; font-size = 12px")
                                                                    )
                                                             )
                                            )
