@@ -754,6 +754,62 @@ server <- function(input, output, session) {
     render_within_areas_plot_tab_2()
   })
   
+# Tab 2: Annotation for plot ---------------------------------
+  
+  # Text to describe selected measure
+  measure_info <- reactive({
+    text <- if (input$measure_choice_tab_2 == "Net Migration") {
+      "<b>Net Migration</b> = people moving in minus people moving away."
+    } else {
+      if (input$measure_choice_tab_2 == "Natural Change") {
+        "<b>Natural Change</b> = births minus deaths"
+      } else {
+        if (input$measure_choice_tab_2 == "Sex Ratio") {
+          "<b>Sex Ratio</b> = proportion of males to females"
+        } else {
+          if (input$measure_choice_tab_2 == "Dependency Ratio") {
+            "<b>Dependency Ratio</b> = population aged 0-15 & 65+ as a proportion of population aged 16-64"
+          } else {
+            if (input$measure_choice_tab_2 == "Life Expectancy - Persons") {
+              "<b>Life Expectancy - Persons</b> = expectation of life as an average across males and females"
+            } else {
+              return()
+            }
+          }
+        }
+      }
+    }
+    text
+  })
+  
+  # Text to accompany/annotate the Within Council Areas plot
+  render_within_la_text_tab_2 <- eventReactive(
+    # Will render the text whenever these inputs are changed
+    list(input$submit_tab_2, 
+         input$la_map_tab_1_shape_click,
+         input$la_map_tab_2_shape_click,
+         input$la_choice_tab_1
+    ), {
+      req(iv_tab_2$is_valid())
+      paste0("Showing projected change in <b>",
+             input$measure_choice_tab_2,
+             "</b> in <b>",
+             selected_small_area_tab_2(),
+             "</b> compared to other small areas in <b>",
+             input$la_choice_tab_2,
+             "</b>.<br>",
+             measure_info(),
+             "<br>Click on the map or click on sub-council areas in the legend to explore the data.<br>   "
+      )
+    }
+  )
+  
+  # Plot text will not render until requirements within render_within_la_text_tab_2() are met
+  output$within_la_text_tab_2 <- renderText({
+    render_within_la_text_tab_2()
+  })
+  
+  
 # Download data button ---------------------------------------------
   #when Download Data button (Ui title) is clicked, pop up appears and gives two download options
   observeEvent(input$download_pop_up, {
