@@ -138,9 +138,11 @@ ui <- tagList(
            ),
            fluidRow(
              conditionalPanel(condition = "input.la_choice_tab_2 != 0 | input.measure_choice_tab_2 != 0",
-                              plotlyOutput("within_areas_plot_tab_2", width = "100%") %>%
-                                # Creates a loading spinner
+                              leafletOutput("la_map_tab_2", width = "100%") %>%
                                 withSpinner(type = 6)
+                              #  plotlyOutput("within_areas_plot_tab_2", width = "100%") %>%
+                                # Creates a loading spinner
+                            #    withSpinner(type = 6)
              )
            )
            )
