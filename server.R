@@ -531,8 +531,8 @@ server <- function(input, output, session) {
   # Tab 2 click
   observeEvent(input$la_map_tab_2_shape_click, {
     event <- input$la_map_tab_2_shape_click
-    selected_small_area_tab_1(event$id)
     selected_small_area_tab_2(event$id)
+    selected_small_area_tab_1(event$id)
   })
   
   # Determine default selected small area for tab when LA 
