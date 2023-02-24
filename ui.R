@@ -189,6 +189,7 @@ ui <- navbarPage(
           
           ),
 
+           ),
         DT::DTOutput("preview_table_tab3")
            )
 )
