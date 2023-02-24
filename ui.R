@@ -156,7 +156,7 @@ ui <- navbarPage(
     ##Selection for measure
             column(2,
                    selectizeInput(inputId = "measure_choice_tab_3",  
-                                  choices = c("Detailed Data","Total Population", "Net Migration", "Sex Ratio", "Dependency Ratio", "Standardised Mortality Ratio", "Total Fertility Rate"), 
+                                  choices = c("Detailed Data",unique(measures_data$Measure)), 
                                   label = "Select measure:",
                                   options = list(placeholder = 'Select measure:',
                                                  onInitialize = I('function() { this.setValue(""); }')
@@ -167,16 +167,6 @@ ui <- navbarPage(
       ##conditional panel where measure is "Detailed Data"
         conditionalPanel(
           condition = "input.measure_choice_tab_3 == 'Detailed Data'",
-          column(2,
-                 selectizeInput(inputId = "year_choice_tab_3", 
-                                choices = years, 
-                                label = NULL,
-                                options = list(placeholder = 'Select Year',
-                                               onInitialize = I('function() { this.setValue(""); }')
-                                )
-                 )
-            
-                    ),
           column(3,
                  sliderInput(inputId = "age_choice_tab_3", 
                              label = "Select ages to include:", 
@@ -191,18 +181,14 @@ ui <- navbarPage(
                  checkboxGroupInput(
                    inputId = "gender_choice_tab_3",
                    label = "Select genders to include:",
-                   choices = c("Males", "Females"),
-                   selected = c("Males", "Females"),
+                   choices = c("Males" = "Males", "Females" = "Females", "Total" = "Persons"),
+                   selected = c("Males", "Females", "Persons"),
                    inline = FALSE
                  )
                  )
           
           ),
-      ##Action button
-             column(2,
-                    actionButton("submit_tab_1", "Submit Selections", icon("paper-plane"), 
-                                 style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
-             )
-           )
+
+        DT::DTOutput("preview_table_tab3")
            )
 )
