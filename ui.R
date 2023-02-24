@@ -132,7 +132,7 @@ ui <- navbarPage(
   tabPanel("Data Download",
            fluidRow(
              # Add selectize input for council dropdown - inputID = la_choice_tab_3
-             column(3,
+             column(2,
                     selectizeInput(inputId = "la_choice_tab_3", 
                                    choices = councils, 
                                    label = "Select Local Authority:",
@@ -167,7 +167,7 @@ ui <- navbarPage(
       ##conditional panel where measure is "Detailed Data"
         conditionalPanel(
           condition = "input.measure_choice_tab_3 == 'Detailed Data'",
-          column(3,
+          column(2,
                  sliderInput(inputId = "age_choice_tab_3", 
                              label = "Select ages to include:", 
                              min = 0, 
@@ -185,9 +185,25 @@ ui <- navbarPage(
                    selected = c("Males", "Females", "Persons"),
                    inline = FALSE
                  )
+                 ),
+          column(2, 
+                 sliderInput(inputId = "year_select_tab3",
+                             label = "Select years to display:",
+                             min = 2018,
+                             max = 2030,
+                             step = 1,
+                             value = c(2018,2030),
+                             sep = ""
+                             )
+                 )
+        ),
+          column(2,
+                 downloadButton("dl_data_tab_3", "Download this Selection"),
+                 p(style = "display:inline-block","All data can be accessed on the IS"), a(href = "https://www.improvementservice.org.uk/products-and-services/data-and-intelligence2/sub-council-area-population-projections/downloads", target = "_blank","website")
+                    
                  )
           
-          ),
+
 
            ),
         DT::DTOutput("preview_table_tab3")
