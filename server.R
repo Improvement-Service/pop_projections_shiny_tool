@@ -474,6 +474,31 @@ server <- function(input, output) {
       data.table::fwrite(measures_data, con)
     }
   )
+  
+  ##filter data for download
+  dl_measures_data <- reactive({
+    if(input$measure_choice_tab_3 != "Detailed Data"){
+    dta <- filter(measures_data, Council.Name %in% input$la_choice_tab_3 & Measure == input$measure_choice_tab_3)
+    #pivot_wider
+    dta$Value <- round(dta$Value, 2)
+    dta <- dta %>% select(Council.Name, LongName, Year, Value) %>% 
+      pivot_wider(names_from = Year, values_from = Value)
+    
+    } else {
+      ##age range
+      age_range <- c(input$age_choice_tab_3[1]:input$age_choice_tab_3[2])
+      dta <- filter(projection_data, Council.Name %in% input$la_choice_tab_3 & Sex %in% input$gender_choice_tab_3 & Age %in% age_range) %>%
+        mutate(Population = round(Population,1)) %>%
+        select(Council.Name, Area.Name, Year, Sex, Age, Population) %>%
+        pivot_wider(names_from = Year, values_from = Population)
+    }
+  })
+  
+  ##create DT for preview
+  output$preview_table_tab3 <- DT::renderDataTable({
+    dl_measures_data <- dl_measures_data()
+    
+      })
 }
 
 
