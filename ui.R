@@ -156,7 +156,7 @@ ui <- navbarPage(
     ##Selection for measure
             column(2,
                    selectizeInput(inputId = "measure_choice_tab_3",  
-                                  choices = c("Detailed Data",unique(measures_data$Measure)), 
+                                  choices = c("Detailed Population Data",unique(measures_data$Measure)), 
                                   label = "Select measure:",
                                   options = list(placeholder = 'Select measure:',
                                                  onInitialize = I('function() { this.setValue(""); }')
@@ -166,7 +166,7 @@ ui <- navbarPage(
                    ),
       ##conditional panel where measure is "Detailed Data"
         conditionalPanel(
-          condition = "input.measure_choice_tab_3 == 'Detailed Data'",
+          condition = "input.measure_choice_tab_3 == 'Detailed Population Data'",
           column(2,
                  sliderInput(inputId = "age_choice_tab_3", 
                              label = "Select ages to include:", 

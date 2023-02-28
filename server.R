@@ -477,7 +477,7 @@ server <- function(input, output) {
   
   ##filter data for download
   dl_measures_data <- reactive({
-    if(input$measure_choice_tab_3 != "Detailed Data"){
+    if(input$measure_choice_tab_3 != "Detailed Population Data"){
     dta <- filter(measures_data, Council.Name %in% input$la_choice_tab_3 & Measure == input$measure_choice_tab_3)
     #pivot_wider
     dta$Value <- round(dta$Value, 2)
@@ -516,7 +516,7 @@ server <- function(input, output) {
   
   ##Data to download based on selections in tab 3
   output$dl_data_tab_3 <- downloadHandler(
-    filename = paste("llalala", ".csv", sep =""),
+    filename = paste(paste0("population_dl_", Sys.Date()), ".csv", sep =""),
     content = function(con) {
       write.csv(dl_measures_data(), con, row.names = FALSE)
     }
