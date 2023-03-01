@@ -15,111 +15,8 @@ server <- function(input, output, session) {
   iv_tab_2$add_rule("year_choice_tab_2", sv_required())
   iv_tab_2$add_rule("measure_choice_tab_2", sv_required())
 
-# Functions ----------------------------------------------------------------------
 
-  # Function to add total population index to data
-  add_pop_index <- function(data, gender_selection, age_selection) {
-    setDT(data)
-    setkey(data, Council.Name, Area.Name, Year, Sex, Age)
-    setDT(lookup)
-    setkey(lookup, ShortName, Council)
-    
-    total_pop_data <- data[Sex == gender_selection & Age %in% age_selection, 
-                           .(Total.Population = sum(Population)), 
-                           by = .(Council.Name, Level, Area.Name, Year, Sex)
-                           ][, Sex:= NULL
-                             ][, 
-                               Population.Index := lapply(.SD, function(x) round((x/x[1]) * 100, 1)), 
-                               by = .(Council.Name, Level, Area.Name), 
-                               .SDcols = c("Total.Population")
-                               ][lookup, on =.(Area.Name = ShortName), 
-                                 LongName := i.LongName
-                                 ] %>%
-      melt(total_pop_data, 
-           id.vars = c("Council.Name", 
-                       "Level", 
-                       "Area.Name", 
-                       "LongName", 
-                       "Year"
-                       ),
-           measure.vars = c("Total.Population", "Population.Index"),
-           variable.name = "Measure",
-           value.name = "Value"
-           )
-    
-    total_pop_data$LongName[is.na(total_pop_data$LongName)] <- total_pop_data$Council.Name[is.na(total_pop_data$LongName)]
-    
-    return(total_pop_data)
-  }
-  
-  # Function to create line graphs
-  create_line_plot <- function(dataset, 
-                               council_selection, 
-                               small_area_selection, 
-                               measure_selection,
-                               graph_type
-                               ) {
-    
-    measure_title <- measure_selection
-    all_area_names <- unique(dataset$LongName)
-    
-    # Default aesthetic for within council area plots...
-    # Renders the first area (by factor level) blue and the rest grey
-    line_colours <- c("orange", rep("grey", 23))
-    # Renders the first area (by factor level) as normal and the rest as more opaque
-    # this prevents the selected small area line being hidden by subsequently rendered areas
-    alpha_settings <- c(1, rep(0.5, 23))
-    
-    if(graph_type == "Across Areas") {
-      line_colours <- c("orange", "grey", "dimgrey")
-      alpha_settings <- c(1, 1, 1)
-    }
-
-    # Create plot object
-    plot <- ggplot(data = dataset) +
-      geom_line(aes(x = Year, 
-                    y = Value, 
-                    group = LongName, 
-                    colour = LongName,
-                    alpha = LongName,
-                    # Creates text for hoverover label
-                    text = paste("Area Name:",
-                                 `LongName`, 
-                                 "<br>", 
-                                 "Year:", 
-                                 `Year`,
-                                 "<br>",
-                                 "Measure:", 
-                                 `measure_title`, 
-                                 "<br>", 
-                                 "Value:",
-                                 `Value`
-                                 )
-                    ), 
-                size = 0.7
-                ) +
-      scale_color_manual(values = line_colours) +
-      scale_alpha_manual(values = alpha_settings) +
-      labs(title = "", color = "", alpha = "") +
-      theme(plot.title = element_text(size = 9), 
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(), 
-            panel.background = element_blank(), 
-            axis.line = element_line(colour = "black"),
-            axis.text.x = element_text(vjust = 0.3, angle = 20, size = 6),
-            axis.text.y = element_text(size = 7),
-            axis.title.x = element_blank(),
-            axis.title.y = element_blank()
-            ) +
-      scale_x_continuous(breaks = 2018:2030)
-      ggplotly(plot, tooltip = c("text")) %>% 
-      config(displayModeBar = FALSE) %>% 
-      layout(xaxis = list(fixedrange = TRUE)) %>% 
-      layout(yaxis = list(fixedrange = TRUE)) %>%
-      layout(legend = list(orientation = 'v', title = ""))
-      }
-  
-  #Tab 1: Reactive data objects / selected variables ---------------------
+#Tab 1: Reactive data objects / selected variables ---------------------
   
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
   selected_gender_tab_1 <- reactive({
@@ -158,36 +55,40 @@ server <- function(input, output, session) {
     return(filtered_data)
   })
   
-  # Reactive expression to store default small area selections - variable name = selected_small_area_tab_1
-  # This will be initialised when the user selects an LA and will be updated
-  # either when a new LA is selected or the user clicks on the map
-  selected_small_area_tab_1 <- reactiveVal()
-  selected_small_area_tab_2 <- reactiveVal()
+  #the following 'Global' reactive variables store the values which should be consistent across both tabs
+    # these will be updated by a submit button event on either tab
+  selected_la <- reactiveVal()
+  selected_year <- reactiveVal()
+  selected_small_area <- reactiveVal() #this var is also updated by map clicks in either tab
   
 # Tab 1: Map Data ---------------
   # Create reactive data for map - variable name = map_data_tab_1
   map_data_tab_1 <- reactive({
     # Filter this data based on council and year
     council_map_data <- pop_index_data() %>%
-      filter(Council.Name == input$la_choice_tab_1,
+      filter(Council.Name == selected_la(),
              Level == "Small Area",
-             Year == input$year_choice_tab_1,
+             Year == selected_year(),
              Measure == "Total.Population") %>%
       ungroup()
     
     # Filter shape file to selected council before combining with data
-    filtered_shape <- filter(shape_data, Council == input$la_choice_tab_1)
+    filtered_shape <- filter(shape_data, Council == selected_la())
     # Combine map data with shape file 
     combined_data <- left_join(filtered_shape, 
                                council_map_data,
                                by = c("SubCouncil" = "LongName")
                                )
+    return(combined_data)
   })
+  
+
   
 # Tab 1: Create Map LA Output ---------------
   render_la_map_tab_1 <- eventReactive({
     # Will render the map whenever these inputs are changed
     input$submit_tab_1
+    input$submit_tab_2
     input$la_choice_tab_2
     input$year_choice_tab_2
     }, 
@@ -198,9 +99,8 @@ server <- function(input, output, session) {
     # Call reactive map data
     map_data_tab_1 <- map_data_tab_1()
     
-    # Store selected age
+    # Store selected age then construct label if range selected ("min-max")
     selected_age_tab_1 <- selected_age_tab_1()
-    # Label of the ages included, if more than 1 age is selected is will be presented as "16-64"
     age_label <- if (length(selected_age_tab_1) > 1) { 
       paste(first(selected_age_tab_1), "-", last(selected_age_tab_1))
     } else {
@@ -210,67 +110,13 @@ server <- function(input, output, session) {
     # Store selected gender
     selected_gender_tab_1 <- selected_gender_tab_1()
     
-    # Set colours for the map
-    map_colours <- brewer.pal(8, "Blues")
-    # Assign colours to quintiles
-    map_colour_quintiles <- colorBin(map_colours, map_data_tab_1$Value, n = 8)
-    
-    default_selected_polygon <- shape_data %>% 
-      filter(SubCouncil == selected_small_area_tab_1()) %>% 
-      pull(geometry)
-    # Create a leaflet object using small area shapefiles
-    leaflet(data = map_data_tab_1, options = leafletOptions(zoomControl = FALSE)) %>%
-    htmlwidgets::onRender("function(el, x) {
-        L.control.zoom({ position: 'topright' }).addTo(this)
-    }"
-                          ) %>%
-      # Create background map - OpenStreetMap by default
-      addTiles() %>%
-      # Add polygons for small areas
-      addPolygons(smoothFactor = 1, 
-                  weight = 1.5, 
-                  fillOpacity = 0.8,
-                  layerId = ~SubCouncil,
-                  color = "black", 
-                  # colour of polygons should map to population quintiles
-                  fillColor = ~map_colour_quintiles(Value),
-                  # Use HTML to create popover labels with all the selected info
-                  label = (sprintf("<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
-                                   map_data_tab_1$SubCouncil, 
-                                   map_data_tab_1$Year,
-                                   age_label,
-                                   selected_gender_tab_1,
-                                   map_data_tab_1$Value
-                                   ) %>% 
-                             lapply(htmltools::HTML)
-                           ),
-                  # Creates a white border on the polygon where the mouse hovers
-                  highlightOptions = highlightOptions(color = "white", 
-                                                      weight = 5, 
-                                                      bringToFront = FALSE
-                                                      )
-                  ) %>%
-      addLegend("bottomleft", 
-                colors = map_colours,
-                labels = c("Smallest Population", 
-                           "",
-                           "",
-                           "",
-                           "",
-                           "",
-                           "",
-                           "Largest Population"
-                           ),
-                title = paste0("Population, ", input$year_choice_tab_1),
-                opacity = 1
-                ) %>%
-      addPolylines(stroke = TRUE, 
-                   weight = 3,
-                   color = "orange",
-                   opacity = 0.7,
-                   data = default_selected_polygon, 
-                   group ="highlighted_polygon"
-                   )
+    #create leaflet output for tab 1
+    create_map(map_data = map_data_tab_1, 
+               council = selected_la(),
+               year =selected_year(), 
+               tab_num = 2,
+               age_label = age_label,
+               gender = selected_gender_tab_1)
     })
 
   # RenderLeaflet for council level map - output name = la_map_tab_1
@@ -285,14 +131,14 @@ server <- function(input, output, session) {
     # Will change the polygon highlighted if any of these change
     input$la_map_tab_1_shape_click
     input$la_map_tab_2_shape_click
-    input$la_choice_tab_2
+    input$submit_tab_2
     input$submit_tab_1
     }, 
     {
     req(iv_tab_1$is_valid())
     # Get the selected polygon and extract the label point 
     selected_polygon <- shape_data %>% 
-      filter(SubCouncil == selected_small_area_tab_1()) %>% 
+      filter(SubCouncil == selected_small_area()) %>% 
       pull(geometry)
 
     # Remove any previously highlighted polygon
@@ -313,17 +159,17 @@ server <- function(input, output, session) {
   across_areas_data_tab_1 <- reactive({
     # use indexed data then filter to selected Council and small area
     across_data <- total_population_index_data() %>%
-      filter(Council.Name %in% c(input$la_choice_tab_1, "Scotland") & 
-               LongName %in% c(input$la_choice_tab_1, 
+      filter(Council.Name %in% c(selected_la(), "Scotland") & 
+               LongName %in% c(selected_la(), 
                                "Scotland", 
-                               selected_small_area_tab_1()
+                               selected_small_area()
                                )
              )
     # The area names need to be stored as a factor so that the order of the areas can be set
     # If this is not done the areas will be ordered alphabetically and the colours will be out of order
     across_data$LongName <- factor(across_data$LongName, 
-                                   levels = c(selected_small_area_tab_1(), 
-                                              input$la_choice_tab_1, 
+                                   levels = c(selected_small_area(), 
+                                              selected_la(), 
                                               "Scotland"
                                               ),
                                    ordered = TRUE
@@ -339,14 +185,14 @@ server <- function(input, output, session) {
     list(input$submit_tab_1, 
          input$la_map_tab_1_shape_click, 
          input$la_map_tab_2_shape_click,
-         input$la_choice_tab_2 
+         input$submit_tab_2 
          ), {
     # Do not run unless all input present
     req(iv_tab_1$is_valid())
     
     plot <- create_line_plot(dataset = across_areas_data_tab_1(), 
-                             council_selection = input$la_choice_tab_1, 
-                             small_area_selection = selected_small_area_tab_1(), 
+                             council_selection = selected_la(), 
+                             small_area_selection = selected_small_area(), 
                              measure_selection = "Total Population Index",
                              graph_type = "Across Areas"
                              )
@@ -361,12 +207,12 @@ server <- function(input, output, session) {
   # Filter data for within areas graph - variable name = within_areas_data_tab_1
   within_areas_data_tab_1 <- reactive({
    data <- total_population_index_data() %>%
-     filter(Council.Name == input$la_choice_tab_1 & Level == "Small Area")
+     filter(Council.Name == selected_la() & Level == "Small Area")
    council_small_areas <- unique(data$LongName)
    # The area names need to be stored as a factor so that the order of the areas can be set
    # If this is not done the areas will be ordered alphabetically and the colours will be out of order
-   area_factors <- c(selected_small_area_tab_1(), 
-                     council_small_areas[!council_small_areas == selected_small_area_tab_1()]
+   area_factors <- c(selected_small_area(), 
+                     council_small_areas[!council_small_areas == selected_small_area()]
                      )
    data$LongName <- factor(data$LongName, levels = area_factors, ordered = TRUE)
    return(data)
@@ -379,13 +225,13 @@ server <- function(input, output, session) {
     list(input$submit_tab_1, 
          input$la_map_tab_1_shape_click,
          input$la_map_tab_2_shape_click,
-         input$la_choice_tab_2
+         input$submit_tab_2
          ), {
     # Do not run unless all input present
     req(iv_tab_1$is_valid())
     plot <- create_line_plot(dataset = within_areas_data_tab_1(), 
-                             council_selection = input$la_choice_tab_1, 
-                             small_area_selection = selected_small_area_tab_1(), 
+                             council_selection = selected_la(), 
+                             small_area_selection = selected_small_area(), 
                              measure_selection = "Total Population Index",
                              graph_type = "Within Council Areas"
                              )
@@ -404,7 +250,7 @@ server <- function(input, output, session) {
     list(input$submit_tab_1, 
          input$la_map_tab_1_shape_click, 
          input$la_map_tab_2_shape_click,
-         input$la_choice_tab_2
+         input$submit_tab_1
          ), {
            req(iv_tab_1$is_valid())
            HTML(paste0("Showing projected population change for <b>",
@@ -414,9 +260,9 @@ server <- function(input, output, session) {
                        "-",
                        input$age_choice_tab_1[2],
                        "</b> for <b>",
-                       selected_small_area_tab_1(),
+                       selected_small_area(),
                        "</b>, for <b>",
-                       input$la_choice_tab_1, 
+                       selected_la(), 
                        "</b>, and for Scotland as a whole.<br>   "
                        )
                 )
@@ -432,7 +278,7 @@ server <- function(input, output, session) {
     list(input$submit_tab_1, 
          input$la_map_tab_1_shape_click,
          input$la_map_tab_2_shape_click,
-         input$la_choice_tab_2
+         input$submit_tab_2
          ), {
            req(iv_tab_1$is_valid())
            paste0("Showing projected population change for <b>",
@@ -442,9 +288,9 @@ server <- function(input, output, session) {
                   "-",
                   input$age_choice_tab_1[2],
                   "</b> in <b>",
-                  selected_small_area_tab_1(),
+                  selected_small_area(),
                   "</b> compared to other small areas in <b>",
-                  input$la_choice_tab_1,
+                  selected_la(),
                   "</b>. <br>Click on the map or click on sub-council areas in the legend to explore the data.<br>   "
                   )
            }
@@ -455,7 +301,7 @@ server <- function(input, output, session) {
     render_within_la_text()
     })
   
-# Observe Events -------------------------------------------
+# Observe Events: validators -------------------------------------------
   
   # 'turn on' user input validation when submit clicked for first time - 
   # missing fields, if there are any, will then show error
@@ -468,11 +314,52 @@ server <- function(input, output, session) {
     iv_tab_2$enable()
   })
   
-  # Trigger 'bouncing' submit button when input is changed
+  # Observe Events: record/update global selections -------------------------------------------
+  
+  #on submit click, update global variables and outputs to reflect tab 1 selections
+  observeEvent(input$submit_tab_1, {
+    #update 'global' values for LA, year and small area
+    selected_la(input$la_choice_tab_1)
+    selected_year(input$year_choice_tab_1)
+    small_area_options <- small_area_lookup %>%
+      filter(Council.Name == input$la_choice_tab_1) %>%
+      pull(LongName)
+    default_area <- small_area_options[1]
+    selected_small_area(default_area)
+    #update tab 2 selections to match tab 1
+    updateSelectizeInput(inputId = "year_choice_tab_2",
+                         selected = selected_year())
+    updateSelectizeInput(inputId = "la_choice_tab_2",
+                         selected = selected_la())
+  })
+  
+  #update global variables and outputs to reflect tab 2 selections
+  observeEvent(input$submit_tab_2, {
+    #update 'global' values for LA, year and small area
+    selected_la(input$la_choice_tab_2)
+    selected_year(input$year_choice_tab_2)
+    small_area_options <- small_area_lookup %>%
+      filter(Council.Name == input$la_choice_tab_2) %>%
+      pull(LongName)
+    default_area <- small_area_options[1]
+    selected_small_area(default_area)
+    #update tab 1 selections to match tab 2
+    updateSelectizeInput(inputId = "year_choice_tab_1",
+                         selected = selected_year())
+    updateSelectizeInput(inputId = "la_choice_tab_1",
+                         selected = selected_la())
+  })
+  
+  # Observe Events: trigger button bounce -------------------------------------------
+#The following observe events react to user input and cause the submit button 
+  #to bounce to prompt the user to click submit and update the app. 
+  #Measures have been taken to PREVENT button bounce in the cases where an input is
+  #being changed programmatically (server-side) by an updateSelectizeInput() instead 
+  #of user input.
+  
   # Tab 1
+  #if new input detected for age/gender, bounce to prompt user-click
   observeEvent({
-    input$la_choice_tab_1
-    input$year_choice_tab_1
     input$age_choice_tab_1
     input$gender_choice_tab_1
   },
@@ -480,10 +367,21 @@ server <- function(input, output, session) {
     req(iv_tab_1$is_valid())
     startAnim(session, id = "submit_tab_1", "bounce")
   })
+  
+  #if the selected LA in tab 1 is the SAME as the LA already selected in tab 2,
+    #this indicates that input$la_choice_tab_1 event has been triggered programmatically 
+    #by updateSelectizeInput() following a user-change to tab 2.
+    #User has not updated tab 1. Do no trigger button bounce.
+  observeEvent(input$la_choice_tab_1, {
+    req(iv_tab_1$is_valid())
+    if (input$la_choice_tab_2 != input$la_choice_tab_1) {
+      #must be user input >> bounce
+      startAnim(session, id= "submit_tab_1", "bounce")
+    }
+  })
+  
   # Tab 2
   observeEvent({
-    input$la_choice_tab_2
-    input$year_choice_tab_2
     input$measure_choice_tab_2
   },
   {
@@ -491,57 +389,49 @@ server <- function(input, output, session) {
     startAnim(session, id = "submit_tab_2", "bounce")
   })
   
-  # When submit is clicked ensure that any update to selected LA 
-  # carries between the two tabs
-  # Tab 1
-  observeEvent(input$submit_tab_1, {
-    updateSelectizeInput(inputId = "la_choice_tab_2",
-                         selected = input$la_choice_tab_1
-    )
-  })
-  # Tab 2
-  observeEvent(input$submit_tab_2, {
-    updateSelectizeInput(inputId = "la_choice_tab_1",
-                         selected = input$la_choice_tab_2
-    )
+  observeEvent({
+    input$la_choice_tab_2
+  },
+  {
+    req(iv_tab_2$is_valid())
+    if (input$la_choice_tab_1 != input$la_choice_tab_2) {
+      startAnim(session, id= "submit_tab_2", "bounce")
+    }
   })
   
-  # When submit is clicked ensure that any update to selected Year 
-  # carries between the two tabs
-  # Tab 1
-  observeEvent(input$submit_tab_1, {
-    updateSelectizeInput(inputId = "year_choice_tab_2",
-                         selected = input$year_choice_tab_1
-    )
+  observeEvent(input$year_choice_tab_1, {
+    req(iv_tab_1$is_valid())
+    if (input$year_choice_tab_1 != input$year_choice_tab_2) {
+      startAnim(session, id= "submit_tab_1", "bounce")
+    }
   })
-  # Tab 2
-  observeEvent(input$submit_tab_2, {
-    updateSelectizeInput(inputId = "year_choice_tab_1",
-                         selected = input$year_choice_tab_2
-    )
+  
+  observeEvent(input$year_choice_tab_2,{
+    req(iv_tab_1$is_valid())
+    if (input$year_choice_tab_1 != input$year_choice_tab_2) {
+      startAnim(session, id= "submit_tab_2", "bounce")
+    }
   })
+  
+  #Observe Events: map shape clicks--------------------
   
   # Create observe event to update selected small areas when maps are clicked
   # Tab 1 click
   observeEvent(input$la_map_tab_1_shape_click, {
     event <- input$la_map_tab_1_shape_click
-    selected_small_area_tab_1(event$id)
-    selected_small_area_tab_2(event$id)
+    selected_small_area(event$id)
   })
   # Tab 2 click
   observeEvent(input$la_map_tab_2_shape_click, {
     event <- input$la_map_tab_2_shape_click
-    selected_small_area_tab_2(event$id)
-    selected_small_area_tab_1(event$id)
+    selected_small_area(event$id)
   })
   
-  # Determine default selected small area for tab when LA 
-  # is selected/changed (responsive to either tab)
-  # Tab 1
+  #The selected_small_area() reactiveVal depends on a submit click to be updated or a map click.
+  # This presents problems on initial page-load when LA is absent, because selected_small_area is null which throws warnings server-side.
+  #The following code runs once when LA is selected the first time to initialise the selected_small_area variable.
   observeEvent({
-    input$submit_tab_1
     input$la_choice_tab_1
-    input$la_choice_tab_2
   },
   {
     req(input$la_choice_tab_1 != "")
@@ -549,13 +439,12 @@ server <- function(input, output, session) {
       filter(Council.Name == input$la_choice_tab_1) %>%
       pull(LongName)
     default_area <- small_area_options[1]
-    selected_small_area_tab_1(default_area)
-  })
-  
-  # Tab 2
+    selected_small_area(default_area)
+    #print(selected_small_area())
+  }, ignoreInit = TRUE, once = TRUE)
+
+
   observeEvent({
-    input$submit_tab_2
-    input$la_choice_tab_1
     input$la_choice_tab_2
   },
   {
@@ -564,8 +453,10 @@ server <- function(input, output, session) {
       filter(Council.Name == input$la_choice_tab_2) %>%
       pull(LongName)
     default_area <- small_area_options[1]
-    selected_small_area_tab_2(default_area)
-  })
+    selected_small_area(default_area)
+    #(selected_small_area())
+  }, ignoreInit = TRUE, once = TRUE)
+  
   
 # Tab 2: Code for Other Measures Tab ---------------------------------------------
  
@@ -574,14 +465,14 @@ server <- function(input, output, session) {
   map_data_tab_2 <- reactive({
     # Filter this data based on council, measure and year
     council_map_data <- measures_data %>%
-      filter(Council.Name == input$la_choice_tab_2,
-             Year == input$year_choice_tab_2,
+      filter(Council.Name == selected_la(),
+             Year == selected_year(),
              Measure == input$measure_choice_tab_2,
              Level == "Small Area") %>%
       ungroup()
     
     # Filter shape file to selected council before combining with data
-    filtered_shape <- filter(shape_data, Council == input$la_choice_tab_2)
+    filtered_shape <- filter(shape_data, Council == selected_la())
     # Combine map data with shape file 
     combined_data <- left_join(filtered_shape, 
                                council_map_data,
@@ -592,6 +483,7 @@ server <- function(input, output, session) {
 # Tab 2: Create Map LA Output ---------------
   render_la_map_tab_2 <- eventReactive({
     input$submit_tab_2
+    input$submit_tab_1
     input$la_choice_tab_1
     input$year_choice_tab_1
   },
@@ -601,69 +493,8 @@ server <- function(input, output, session) {
     # Call reactive map data
     map_data_tab_2 <- map_data_tab_2()
     
-    # Set colours for the map
-    map_colours <- brewer.pal(8, "Blues")
-    # Assign colours to quintiles
-    map_colour_quintiles <- colorBin(map_colours, map_data_tab_2$Value, n = 8)
-    
-    default_selected_polygon <- shape_data %>% 
-      filter(SubCouncil == selected_small_area_tab_2()) %>% 
-      pull(geometry)
-    # Create a leaflet object using small area shapefiles
-    leaflet(data = map_data_tab_2, options = leafletOptions(zoomControl = FALSE)) %>%
-      htmlwidgets::onRender("function(el, x) {
-        L.control.zoom({ position: 'topright' }).addTo(this)
-    }"
-      ) %>%
-      # Create background map - OpenStreetMap by default
-      addTiles() %>%
-      # Add polygons for small areas
-      addPolygons(smoothFactor = 1, 
-                  weight = 1.5, 
-                  fillOpacity = 0.8,
-                  layerId = ~SubCouncil,
-                  color = "black", 
-                  # colour of polygons should map to population quintiles
-                  fillColor = ~map_colour_quintiles(Value),
-                  # Use HTML to create popover labels with all the selected info
-                  label = (sprintf("<strong>%s</strong><br/>Year: %s<br/>%s: %s",
-                                   map_data_tab_2$SubCouncil, 
-                                   map_data_tab_2$Year,
-                                   map_data_tab_2$Measure,
-                                   map_data_tab_2$Value
-                  ) %>% 
-                    lapply(htmltools::HTML)
-                  ),
-                  # Creates a white border on the polygon where the mouse hovers
-                  highlightOptions = highlightOptions(color = "white", 
-                                                      weight = 5, 
-                                                      bringToFront = FALSE
-                  )
-      ) %>%
-      addLegend("bottomleft", 
-                colors = map_colours,
-                labels = c("Smallest Value", 
-                           "",
-                           "",
-                           "",
-                           "",
-                           "",
-                           "",
-                           "Largest Value"
-                ),
-                title = paste0(input$measure_choice_tab_2, 
-                               ", ", 
-                               input$year_choice_tab_2
-                               ),
-                opacity = 1
-      ) %>%
-      addPolylines(stroke = TRUE, 
-                   weight = 3,
-                   color = "orange",
-                   opacity = 0.7,
-                   data = default_selected_polygon, 
-                   group ="highlighted_polygon"
-      )
+    create_map(map_data_tab_2, selected_la(), selected_year(), 2)
+
   })
   
 # Tab 2: Highlight selected polygon ------------
@@ -681,7 +512,7 @@ server <- function(input, output, session) {
     req(iv_tab_2$is_valid())
     # Get the selected polygon and extract the label point 
     selected_polygon <- shape_data %>% 
-      filter(SubCouncil == selected_small_area_tab_2()) %>% 
+      filter(SubCouncil == selected_small_area()) %>% 
       pull(geometry)
     
     # Remove any previously highlighted polygon
@@ -711,13 +542,13 @@ server <- function(input, output, session) {
   # by create_line_graph function.
   measures_data_tab_2 <- reactive({
     measures_data <- measures_data  %>%
-      filter(Council.Name == input$la_choice_tab_2 &
+      filter(Council.Name == selected_la() &
                Measure == input$measure_choice_tab_2 &
                Level == "Small Area"
              )
     council_small_areas <- unique(measures_data$LongName)
-    area_factors <- c(selected_small_area_tab_2(), 
-                      council_small_areas[!council_small_areas == selected_small_area_tab_2()]
+    area_factors <- c(selected_small_area(), 
+                      council_small_areas[!council_small_areas == selected_small_area()]
                       )
     measures_data$LongName <- factor(measures_data$LongName, 
                                      levels = area_factors, 
@@ -742,8 +573,8 @@ server <- function(input, output, session) {
            req(iv_tab_2$is_valid())
            
            plot <- create_line_plot(dataset = measures_data_tab_2(), 
-                                    council_selection = input$la_choice_tab_2, 
-                                    small_area_selection = selected_small_area_tab_2(), 
+                                    council_selection = selected_la(), 
+                                    small_area_selection = selected_small_area(), 
                                     measure_selection = input$measure_choice_tab_2,
                                     graph_type = "Within Areas"
                                     )
@@ -794,9 +625,9 @@ server <- function(input, output, session) {
       paste0("Showing projected change in <b>",
              input$measure_choice_tab_2,
              "</b> in <b>",
-             selected_small_area_tab_2(),
+             selected_small_area(),
              "</b> compared to other small areas in <b>",
-             input$la_choice_tab_2,
+             selected_la(),
              "</b>.<br>",
              measure_info(),
              "<br>Click on the map or click on sub-council areas in the legend to explore the data.<br>   "
@@ -815,7 +646,7 @@ server <- function(input, output, session) {
   observeEvent(input$download_pop_up, {
     showModal(modalDialog(
       title = "Download",
-      paste0("To download ", input$measure_choice_tab_2, " data for ", input$la_choice_tab_2, 
+      paste0("To download ", input$measure_choice_tab_2, " data for ", selected_la(), 
       " (currently shown on the graph), click 'Download Selected Data'. Or for all measures for all councils, select 'Download All Data'."),
       footer = tagList(
         downloadButton(outputId = "download_selected_data", "Download Selected Data"),

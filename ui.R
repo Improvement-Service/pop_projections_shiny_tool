@@ -1,4 +1,6 @@
-ui <- tagList(tags$head(withAnim()),
+ui <- tagList(tags$head(withAnim(),
+                        #use_tota11y() requires shinya11y package, for assessing accessibility
+                        ),
               navbarPage(title = "Sub-Council Population Projections",
 # Population Size Tab (Tab 1)-----------------------------------------------------------                           
                          tabPanel("Population size", 
