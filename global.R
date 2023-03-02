@@ -10,6 +10,7 @@ library(vroom)
 library(shinyvalidate)
 library(stringr)
 library(data.table)
+library(DT)
 library(shinyanimate)
 library(shinyjs)
 

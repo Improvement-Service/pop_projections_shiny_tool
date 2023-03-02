@@ -36,7 +36,7 @@ ui <- tagList(tags$head(withAnim()),
                                            column(2,
                                                   # Add checkbox input for gender - inputID = gender_choice_tab_1
                                                   checkboxGroupInput(inputId = "gender_choice_tab_1",
-                                                                     label = "Select genders to include:",
+                                                                     label = "Select Sex to include:",
                                                                      choices = c("Males", "Females"),
                                                                      selected = c("Males", "Females"),
                                                                      inline = FALSE
@@ -150,7 +150,94 @@ ui <- tagList(tags$head(withAnim()),
                                                             )
                                            )
                                   # End of tabPanel
+                                  ),
+
+# Data Table / Data Download (Tab 3)--------------------------------------------
+  tabPanel("Data Download",
+           fluidRow(
+             # Add selectize input for council dropdown - inputID = la_choice_tab_3
+             column(2,
+                    selectizeInput(inputId = "la_choice_tab_3", 
+                                   choices = councils, 
+                                   label = "Select Local Authority:",
+                                   multiple = TRUE,
+                                   options = list(placeholder = 'Select Council',
+                                                  onInitialize = I('function() { this.setValue(""); }')
+                                                  )
+                                   )
+                    ),
+            # Selectize input for measure
+            column(2,
+                   selectizeInput(inputId = "measure_choice_tab_3",  
+                                  choices = c("Detailed Population Data",
+                                              "Total Population", 
+                                              "Net Migration", 
+                                              "Natural Change",
+                                               "Sex Ratio", 
+                                               "Dependency Ratio", 
+                                               "Life Expectancy - Persons"
+                                              ), 
+                                  label = "Select measure:",
+                                  options = list(placeholder = 'Select measure:',
+                                                 onInitialize = I('function() { this.setValue(""); }')
+                                                 )
                                   )
+                   ),
+            # Conditional panel to show other select options when measure is "Detailed Data"
+            conditionalPanel(condition = "input.measure_choice_tab_3 == 'Detailed Population Data'",
+                             column(2,
+                                    # Age choice slider input
+                                    sliderInput(inputId = "age_choice_tab_3", 
+                                                label = "Select ages to include:", 
+                                                min = 0, 
+                                                max = 90, 
+                                                step = 1, 
+                                                value = c(0,90), 
+                                                dragRange = TRUE 
+                                                )
+                                    ),
+                             column(2,
+                                    # Gender choice slider input
+                                    checkboxGroupInput(inputId = "gender_choice_tab_3",
+                                                       label = "Select Sex to include:",
+                                                       choices = c("Males" = "Males", 
+                                                                   "Females" = "Females", 
+                                                                   "Total" = "Persons"
+                                                                   ),
+                                                       selected = c("Males", 
+                                                                    "Females", 
+                                                                    "Persons"
+                                                                    ),
+                                                       inline = FALSE
+                                                       )
+                                    ),
+                             column(2, 
+                                    # Year choice slider input
+                                    sliderInput(inputId = "year_select_tab3",
+                                                label = "Select years to display:",
+                                                min = 2018,
+                                                max = 2030,
+                                                step = 1,
+                                                value = c(2018,2030),
+                                                sep = ""
+                                                )
+                                    )
+                             ),
+            column(2,
+                   # Data download button
+                   downloadButton("dl_data_tab_3", "Download this Selection"),
+                   p(style = "display:inline-block", "All data can be accessed on the IS"), 
+                   a(href = "https://www.improvementservice.org.uk/products-and-services/data-and-intelligence2/sub-council-area-population-projections/downloads", 
+                     target = "_blank",
+                     "website"
+                     )
+                   )
+            # FluidRow closing bracket
+            ),
+           # Data table 
+           DT::DTOutput("preview_table_tab3")
+           # TabPanel closing bracket
+           )
                           # End of navbar
                           ) 
               # End of tags$List
