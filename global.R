@@ -11,6 +11,8 @@ library(shinyvalidate)
 library(stringr)
 library(data.table)
 library(DT)
+library(shinyanimate)
+library(shinyjs)
 
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", delim = ",", col_names = TRUE)
 measures_data <- vroom::vroom("Data files/Other measures data.csv", delim = ",", col_names = TRUE)
@@ -35,10 +37,21 @@ small_area_lookup <- small_area_lookup %>%
 
 # combine measures_data with lookup file
 measures_data <- left_join(measures_data, small_area_lookup)
+# Fix issue with NA lookup in Highland
+measures_data$LongName[measures_data$Area.Name == "NA"] <- "Nairn"
+# Fix Long Names for council level
+measures_data$LongName[is.na(measures_data$LongName)] <- measures_data$Council.Name[is.na(measures_data$LongName)]
+#add level
+measures_data$Level <- if_else(measures_data$Council.Name == measures_data$LongName,
+                               "Council",
+                               "Small Area"
+                               )
 
 # split out council and sub-council in shape_data for merging
 shape_data <- shape_data %>% 
   separate(`Sub-Council Area Name`, into = c("SubCouncil", "Council"), sep = " - ", remove = TRUE)
+#fix error in annbank name
+shape_data[shape_data$SubCouncil == "Annbank Mossblown and Tarbolton: the Coalfields", "SubCouncil"] <- "Annbank Mossblown and Tarbolton - the Coalfields"
 shape_data$SubCouncil <- str_wrap(shape_data$SubCouncil, 13)
 # replace "and" with ampersand in shapefiles - this is to allow merging with projection_data
 shape_data$Council <- gsub(" and ", " & ", shape_data$Council)
