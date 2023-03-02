@@ -810,86 +810,58 @@ server <- function(input, output, session) {
   })
   
   
-# Download data button ---------------------------------------------
-  #when Download Data button (Ui title) is clicked, pop up appears and gives two download options
-  observeEvent(input$download_pop_up, {
-    showModal(modalDialog(
-      title = "Download",
-      paste0("To download ", input$measure_choice_tab_2, " data for ", input$la_choice_tab_2, 
-      " (currently shown on the graph), click 'Download Selected Data'. Or for all measures for all councils, select 'Download All Data'."),
-      footer = tagList(
-        downloadButton(outputId = "download_selected_data", "Download Selected Data"),
-        downloadButton(outputId = "download_all_data", "Download All Data"),
-        modalButton("Cancel")
-      ),
-      easyClose = TRUE
-    ))
-  })
-  
-  #code to handle downloading selected data
-  output$download_selected_data <- downloadHandler(
-    filename = paste0(input$measure_choice_tab_2 ," data - ", input$la_choice_tab_2, ".csv"),
-    content = function(con){
-      on.exit(removeModal())
-      data.table::fwrite(measures_data_tab_2(), con)
-    }
-  )
-  
-  #handles download of entire dataset
-  output$download_all_data <- downloadHandler(
-    filename = paste0("population projections data.csv"),
-    content = function(con){
-      on.exit(removeModal())
-      data.table::fwrite(measures_data, con)
-    }
-  )
+# Tab 3 - Data filter  ---------------------------------------------
   
   dl_measures_data <- reactive({
-    if(input$measure_choice_tab_3 != "Detailed Population Data"){
-    dta <- filter(measures_data, Council.Name %in% input$la_choice_tab_3 & Measure == input$measure_choice_tab_3)
-    #pivot_wider
-    dta$Value <- round(dta$Value, 2)
-    dta <- dta %>% select(Council.Name, LongName, Year, Value) %>% 
-    ##Remove newlines from long sub-council area names
-      mutate(LongName = stringr::str_replace_all(LongName, "\n"," ")) %>%
-      pivot_wider(names_from = Year, values_from = Value) %>%
-      dplyr::rename(Council = Council.Name, "Sub-Council Area" = LongName)
-
-    } else {
-      ##age range
-      age_range <- c(input$age_choice_tab_3[1]:input$age_choice_tab_3[2])
-      ##get year range for selecting data
-      year_range <- as.character(c(input$year_select_tab3[1]:input$year_select_tab3[2]))
-      #filter data based on selections
-      dta <- filter(projection_data, Council.Name %in% input$la_choice_tab_3 & Sex %in% input$gender_choice_tab_3 & Age %in% age_range) %>%
-        mutate(Population = round(Population,1)) %>%
-        left_join(., small_area_lookup[2:3],by = "Area.Name")
-      #replace any missing long names with "Council Total"
-      dta[is.na(dta$LongName),"LongName"] <- "Council Total"
-      dta <- dta %>% select(Council.Name, LongName, Year, Sex, Age, Population) %>%
-        ##Remove newlines from long sub-council area names
-        mutate(LongName = stringr::str_replace_all(LongName, "\n"," ")) %>%
-      ##Pivot to wide data frame
-          pivot_wider(names_from = Year, values_from = Population) %>%
-      ##Keep only selected years  
-        select(Council.Name, LongName, Sex, Age, year_range) %>%
+    if (input$measure_choice_tab_3 != "Detailed Population Data") {
+      dta <- filter(measures_data, 
+                    Council.Name %in% input$la_choice_tab_3 & Measure == input$measure_choice_tab_3
+                    )
+      # Pivot_wider
+      dta$Value <- round(dta$Value, 2)
+      dta <- dta %>% 
+        select(Council.Name, LongName, Year, Value) %>% 
+        # Remove newlines from long sub-council area names
+        mutate(LongName = stringr::str_replace_all(LongName, "\n", " ")) %>%
+        pivot_wider(names_from = Year, values_from = Value) %>%
         dplyr::rename(Council = Council.Name, "Sub-Council Area" = LongName)
-    }
-  })
+      } else {
+        # Store selected age range
+        age_range <- c(input$age_choice_tab_3[1]:input$age_choice_tab_3[2])
+        # Store selected year range
+        year_range <- as.character(c(input$year_select_tab3[1]:input$year_select_tab3[2]))
+        # Filter data based on selections
+        dta <- filter(projection_data, 
+                      Council.Name %in% input$la_choice_tab_3 & Sex %in% input$gender_choice_tab_3 & Age %in% age_range) %>%
+          mutate(Population = round(Population, 1)) %>%
+          left_join(., small_area_lookup[2:3], by = "Area.Name")
+        # Replace any missing long names with "Council Total"
+        dta[is.na(dta$LongName), "LongName"] <- "Council Total"
+        dta <- dta %>% 
+          select(Council.Name, LongName, Year, Sex, Age, Population) %>%
+          # Remove newlines from long sub-council area names
+          mutate(LongName = stringr::str_replace_all(LongName, "\n", " ")) %>%
+          # Pivot to wide data frame
+          pivot_wider(names_from = Year, values_from = Population) %>%
+          # Keep only selected years  
+          select(Council.Name, LongName, Sex, Age, year_range) %>%
+          dplyr::rename(Council = Council.Name, "Sub-Council Area" = LongName)
+        }
+    })
   
-  ##create DT for preview
+# Tab 3 - Data preview table ----------------------------------------------------
+  
   output$preview_table_tab3 <- DT::renderDataTable({
     dl_measures_data <- dl_measures_data()
-      })
+    })
+
+# Tab 3 - Data Download Button -------------------------------------------------
   
-  ##Data to download based on selections in tab 3
+  # Data to download based on selections in tab 3
   output$dl_data_tab_3 <- downloadHandler(
-    filename = paste(paste0("population_dl_", Sys.Date()), ".csv", sep =""),
+    filename = paste(paste0("population_dl_", Sys.Date()), ".csv", sep = ""),
     content = function(con) {
       write.csv(dl_measures_data(), con, row.names = FALSE)
-    }
+      }
   )
 }
-
-
-
