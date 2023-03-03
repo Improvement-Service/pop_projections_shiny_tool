@@ -14,8 +14,17 @@ library(DT)
 library(shinyanimate)
 library(shinyjs)
 
-projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", delim = ",", col_names = TRUE)
+projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", 
+                                delim = ",", 
+                                col_names = TRUE
+                                )
+projection_data <- projection_data %>% 
+  mutate_at(vars(Population), funs(round(., 0)))
+
 measures_data <- vroom::vroom("Data files/Other measures data.csv", delim = ",", col_names = TRUE)
+measures_data <- measures_data %>% 
+  mutate_at(vars(Value), funs(round(., 0)))
+
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
 la_shape_data <- read_rds("Data files/LAShps.rds") 
 

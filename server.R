@@ -93,7 +93,11 @@ server <- function(input, output, session) {
                                  `measure_title`, 
                                  "<br>", 
                                  "Value:",
-                                 `Value`
+                                 # Format values with thousand separator
+                                 prettyNum(`Value`, 
+                                           big.mark = ",", 
+                                           scientific = FALSE
+                                           )
                                  )
                     ), 
                 size = 0.7
@@ -240,7 +244,11 @@ server <- function(input, output, session) {
                                    map_data_tab_1$Year,
                                    age_label,
                                    selected_gender_tab_1,
-                                   map_data_tab_1$Value
+                                   # Format values with thousand separator
+                                   prettyNum(map_data_tab_1$Value, 
+                                             big.mark = ",", 
+                                             scientific = FALSE
+                                             )
                                    ) %>% 
                              lapply(htmltools::HTML)
                            ),
@@ -630,7 +638,11 @@ server <- function(input, output, session) {
                                    map_data_tab_2$SubCouncil, 
                                    map_data_tab_2$Year,
                                    map_data_tab_2$Measure,
-                                   map_data_tab_2$Value
+                                   # Format values with thousand separator
+                                   prettyNum(map_data_tab_2$Value, 
+                                             big.mark = ",", 
+                                             scientific = FALSE
+                                             )
                   ) %>% 
                     lapply(htmltools::HTML)
                   ),
@@ -853,6 +865,9 @@ server <- function(input, output, session) {
   
   output$preview_table_tab3 <- DT::renderDataTable({
     dl_measures_data <- dl_measures_data()
+    # Format values with thousand separator
+    dl_measures_data <- dl_measures_data %>% 
+      mutate_if(is.numeric, ~prettyNum(., big.mark = ",", scientific = FALSE))
     })
 
 # Tab 3 - Data Download Button -------------------------------------------------
