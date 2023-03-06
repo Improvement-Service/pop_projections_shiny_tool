@@ -15,6 +15,13 @@ server <- function(input, output, session) {
   iv_tab_2$add_rule("year_choice_tab_2", sv_required())
   iv_tab_2$add_rule("measure_choice_tab_2", sv_required())
 
+#Global variables -----------
+  #the following 'Global' reactive variables store the values which should be consistent across both tabs
+  # these will be updated by a submit button event on either tab
+  selected_la <- reactiveVal()
+  selected_year <- reactiveVal()
+  selected_small_area <- reactiveVal() #this var is also updated by map clicks in either tab
+  
 
 #Tab 1: Reactive data objects / selected variables ---------------------
   
@@ -55,12 +62,6 @@ server <- function(input, output, session) {
     return(filtered_data)
   })
   
-  #the following 'Global' reactive variables store the values which should be consistent across both tabs
-    # these will be updated by a submit button event on either tab
-  selected_la <- reactiveVal()
-  selected_year <- reactiveVal()
-  selected_small_area <- reactiveVal() #this var is also updated by map clicks in either tab
-  
 # Tab 1: Map Data ---------------
   # Create reactive data for map - variable name = map_data_tab_1
   map_data_tab_1 <- reactive({
@@ -91,32 +92,37 @@ server <- function(input, output, session) {
     input$submit_tab_2
     input$la_choice_tab_2
     input$year_choice_tab_2
-    }, 
+    },
     {
     # Do not run unless all input present
     req(iv_tab_1$is_valid())
-    
+
     # Call reactive map data
     map_data_tab_1 <- map_data_tab_1()
-    
+
     # Store selected age then construct label if range selected ("min-max")
     selected_age_tab_1 <- selected_age_tab_1()
-    age_label <- if (length(selected_age_tab_1) > 1) { 
+    age_label <- if (length(selected_age_tab_1) > 1) {
       paste(first(selected_age_tab_1), "-", last(selected_age_tab_1))
     } else {
       selected_age_tab_1
     }
-    
+
     # Store selected gender
     selected_gender_tab_1 <- selected_gender_tab_1()
-    
+
     #create leaflet output for tab 1
-    create_map(map_data = map_data_tab_1, 
+    map <- create_map(map_data = map_data_tab_1,
                council = selected_la(),
-               year =selected_year(), 
+               year =selected_year(),
                tab_num = 2,
                age_label = age_label,
                gender = selected_gender_tab_1)
+    
+    update_highlighted_polygon(proxy_tab_1, selected_small_area())
+    
+    return(map)
+
     })
 
   # RenderLeaflet for council level map - output name = la_map_tab_1
@@ -124,34 +130,11 @@ server <- function(input, output, session) {
     render_la_map_tab_1()
   })
   
-# Tab 1: Highlight selected polygon ------------
+  #map proxy which will be updated to reflect selected small area;
+    #when small are clicked or submit clicked, update proxy with update_highlighted_polygon()
   proxy_tab_1 <- leafletProxy("la_map_tab_1")
   
-  observeEvent({
-    # Will change the polygon highlighted if any of these change
-    input$la_map_tab_1_shape_click
-    input$la_map_tab_2_shape_click
-    input$submit_tab_2
-    input$submit_tab_1
-    }, 
-    {
-    req(iv_tab_1$is_valid())
-    # Get the selected polygon and extract the label point 
-    selected_polygon <- shape_data %>% 
-      filter(SubCouncil == selected_small_area()) %>% 
-      pull(geometry)
 
-    # Remove any previously highlighted polygon
-    proxy_tab_1 %>% clearGroup("highlighted_polygon")
-    # Add a slightly thicker red polygon on top of the selected one
-    proxy_tab_1 %>% addPolylines(stroke = TRUE, 
-                           weight = 3,
-                           color = "orange",
-                           opacity = 0.7,
-                           data = selected_polygon, 
-                           group = "highlighted_polygon"
-                           )
-    })
   
 # Tab 1: Across Areas Plot Data-----------
   
@@ -316,7 +299,7 @@ server <- function(input, output, session) {
   
   # Observe Events: record/update global selections -------------------------------------------
   
-  #on submit click, update global variables and outputs to reflect tab 1 selections
+  #on submit_tab_1 click, update global variables and outputs on both tabs to reflect tab 1 selections
   observeEvent(input$submit_tab_1, {
     #update 'global' values for LA, year and small area
     selected_la(input$la_choice_tab_1)
@@ -331,9 +314,14 @@ server <- function(input, output, session) {
                          selected = selected_year())
     updateSelectizeInput(inputId = "la_choice_tab_2",
                          selected = selected_la())
+    #update highlighted polygon on both tabs
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    
+    
   })
   
-  #update global variables and outputs to reflect tab 2 selections
+  #on submit_tab_2 click, update global variables and outputs on both tabs to reflect tab 2 selections
   observeEvent(input$submit_tab_2, {
     #update 'global' values for LA, year and small area
     selected_la(input$la_choice_tab_2)
@@ -348,6 +336,9 @@ server <- function(input, output, session) {
                          selected = selected_year())
     updateSelectizeInput(inputId = "la_choice_tab_1",
                          selected = selected_la())
+    #update highlighted polygon on both tabs
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
   })
   
   # Observe Events: trigger button bounce -------------------------------------------
@@ -420,16 +411,22 @@ server <- function(input, output, session) {
   observeEvent(input$la_map_tab_1_shape_click, {
     event <- input$la_map_tab_1_shape_click
     selected_small_area(event$id)
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
   })
   # Tab 2 click
   observeEvent(input$la_map_tab_2_shape_click, {
     event <- input$la_map_tab_2_shape_click
     selected_small_area(event$id)
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
   })
   
-  #The selected_small_area() reactiveVal depends on a submit click to be updated or a map click.
+  #The selected_small_area() reactiveVal depends on a submit click or a map click to be updated.
   # This presents problems on initial page-load when LA is absent, because selected_small_area is null which throws warnings server-side.
   #The following code runs once when LA is selected the first time to initialise the selected_small_area variable.
+  
+  #tab 1
   observeEvent({
     input$la_choice_tab_1
   },
@@ -443,7 +440,8 @@ server <- function(input, output, session) {
     #print(selected_small_area())
   }, ignoreInit = TRUE, once = TRUE)
 
-
+  
+  #tab 1
   observeEvent({
     input$la_choice_tab_2
   },
@@ -458,8 +456,6 @@ server <- function(input, output, session) {
   }, ignoreInit = TRUE, once = TRUE)
   
   
-# Tab 2: Code for Other Measures Tab ---------------------------------------------
- 
 # Tab 2: Map Data ---------------
   # Create reactive data for map - variable name = map_data_tab_2
   map_data_tab_2 <- reactive({
@@ -493,47 +489,22 @@ server <- function(input, output, session) {
     # Call reactive map data
     map_data_tab_2 <- map_data_tab_2()
     
-    create_map(map_data_tab_2, selected_la(), selected_year(), 2)
+    map <- create_map(map_data_tab_2, selected_la(), selected_year(), 2)
+    
+    update_highlighted_polygon(proxy_tab_2, selected_small_area())
+    
+    return(map)
 
   })
-  
-# Tab 2: Highlight selected polygon ------------
-  proxy_tab_2 <- leafletProxy("la_map_tab_2")
-  
-  observeEvent({
-    input$la_map_tab_1_shape_click
-    input$la_map_tab_2_shape_click
-    input$la_choice_tab_1
-    input$la_choice_tab_2
-    input$submit_tab_1
-    input$submit_tab_2
-  }, 
-  {
-    req(iv_tab_2$is_valid())
-    # Get the selected polygon and extract the label point 
-    selected_polygon <- shape_data %>% 
-      filter(SubCouncil == selected_small_area()) %>% 
-      pull(geometry)
-    
-    # Remove any previously highlighted polygon
-    proxy_tab_2 %>% clearGroup("highlighted_polygon")
-    # Add a slightly thicker red polygon on top of the selected one
-    proxy_tab_2 %>% addPolylines(stroke = TRUE, 
-                           weight = 3,
-                           color = "orange",
-                           opacity = 0.7,
-                           data = selected_polygon, 
-                           group = "highlighted_polygon"
-    )
-  })
-  
-  
   
   # RenderLeaflet for council level map - output name = la_map_tab_1
   output$la_map_tab_2 <- renderLeaflet({
     render_la_map_tab_2()
   })
 
+  proxy_tab_2 <- leafletProxy("la_map_tab_2")
+
+  
 # Tab2: Within Areas Plot Data-------------------------------------------
   
   # Filters measure_data by selected council and measure. Is updated when either changes.
@@ -641,39 +612,7 @@ server <- function(input, output, session) {
   })
   
   
-# Download data button ---------------------------------------------
-  #when Download Data button (Ui title) is clicked, pop up appears and gives two download options
-  observeEvent(input$download_pop_up, {
-    showModal(modalDialog(
-      title = "Download",
-      paste0("To download ", input$measure_choice_tab_2, " data for ", selected_la(), 
-      " (currently shown on the graph), click 'Download Selected Data'. Or for all measures for all councils, select 'Download All Data'."),
-      footer = tagList(
-        downloadButton(outputId = "download_selected_data", "Download Selected Data"),
-        downloadButton(outputId = "download_all_data", "Download All Data"),
-        modalButton("Cancel")
-      ),
-      easyClose = TRUE
-    ))
-  })
-  
-  #code to handle downloading selected data
-  output$download_selected_data <- downloadHandler(
-    filename = paste0(input$measure_choice_tab_2 ," data - ", input$la_choice_tab_2, ".csv"),
-    content = function(con){
-      on.exit(removeModal())
-      data.table::fwrite(measures_data_tab_2(), con)
-    }
-  )
-  
-  #handles download of entire dataset
-  output$download_all_data <- downloadHandler(
-    filename = paste0("population projections data.csv"),
-    content = function(con){
-      on.exit(removeModal())
-      data.table::fwrite(measures_data, con)
-    }
-  )
+#download page
   
 }
 

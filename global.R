@@ -246,3 +246,20 @@ create_map <- function(map_data, council, year, tab_num, age_label = "", gender 
   
 }
 
+#function to update the orange highlighted polygon on LA maps.
+update_highlighted_polygon <- function(proxy, small_area){
+  selected_polygon <- shape_data %>% 
+    filter(SubCouncil == small_area) %>% 
+    pull(geometry)
+  
+  # Remove any previously highlighted polygon
+  proxy %>% clearGroup("highlighted_polygon")%>% 
+    addPolylines(stroke = TRUE,
+                 weight = 3,
+                 color = "orange",
+                 opacity = 0.7,
+                 data = selected_polygon,
+                 group = "highlighted_polygon"
+    )
+  
+}
