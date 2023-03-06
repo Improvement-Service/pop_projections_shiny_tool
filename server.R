@@ -15,12 +15,14 @@ server <- function(input, output, session) {
   iv_tab_2$add_rule("year_choice_tab_2", sv_required())
   iv_tab_2$add_rule("measure_choice_tab_2", sv_required())
 
+
 #Global variables -----------
   #the following 'Global' reactive variables store the values which should be consistent across both tabs
   # these will be updated by a submit button event on either tab
   selected_la <- reactiveVal()
   selected_year <- reactiveVal()
   selected_small_area <- reactiveVal() #this var is also updated by map clicks in either tab
+
   
 
 #Tab 1: Reactive data objects / selected variables ---------------------
@@ -121,6 +123,7 @@ server <- function(input, output, session) {
     
     update_highlighted_polygon(proxy_tab_1, selected_small_area())
     
+
     return(map)
 
     })
@@ -492,6 +495,7 @@ server <- function(input, output, session) {
     map <- create_map(map_data_tab_2, selected_la(), selected_year(), 2)
     
     update_highlighted_polygon(proxy_tab_2, selected_small_area())
+
     
     return(map)
 
@@ -612,9 +616,63 @@ server <- function(input, output, session) {
   })
   
   
-#download page
+
+# Tab 3 - Data filter  ---------------------------------------------
   
+  dl_measures_data <- reactive({
+    if (input$measure_choice_tab_3 != "Detailed Population Data") {
+      dta <- filter(measures_data, 
+                    Council.Name %in% input$la_choice_tab_3 & Measure == input$measure_choice_tab_3
+                    )
+      # Pivot_wider
+      dta$Value <- round(dta$Value, 2)
+      dta <- dta %>% 
+        select(Council.Name, LongName, Year, Value) %>% 
+        # Remove newlines from long sub-council area names
+        mutate(LongName = stringr::str_replace_all(LongName, "\n", " ")) %>%
+        pivot_wider(names_from = Year, values_from = Value) %>%
+        dplyr::rename(Council = Council.Name, "Sub-Council Area" = LongName)
+      } else {
+        # Store selected age range
+        age_range <- c(input$age_choice_tab_3[1]:input$age_choice_tab_3[2])
+        # Store selected year range
+        year_range <- as.character(c(input$year_select_tab3[1]:input$year_select_tab3[2]))
+        # Filter data based on selections
+        dta <- filter(projection_data, 
+                      Council.Name %in% input$la_choice_tab_3 & Sex %in% input$gender_choice_tab_3 & Age %in% age_range) %>%
+          mutate(Population = round(Population, 1)) %>%
+          left_join(., small_area_lookup[2:3], by = "Area.Name")
+        # Replace any missing long names with "Council Total"
+        dta[is.na(dta$LongName), "LongName"] <- "Council Total"
+        dta <- dta %>% 
+          select(Council.Name, LongName, Year, Sex, Age, Population) %>%
+          # Remove newlines from long sub-council area names
+          mutate(LongName = stringr::str_replace_all(LongName, "\n", " ")) %>%
+          # Pivot to wide data frame
+          pivot_wider(names_from = Year, values_from = Population) %>%
+          # Keep only selected years  
+          select(Council.Name, LongName, Sex, Age, year_range) %>%
+          dplyr::rename(Council = Council.Name, "Sub-Council Area" = LongName)
+        }
+    })
+  
+# Tab 3 - Data preview table ----------------------------------------------------
+  
+  output$preview_table_tab3 <- DT::renderDataTable({
+    dl_measures_data <- dl_measures_data()
+    # Format values with thousand separator
+    dl_measures_data <- dl_measures_data %>% 
+      mutate_if(is.numeric, ~prettyNum(., big.mark = ",", scientific = FALSE))
+    })
+
+
+# Tab 3 - Data Download Button -------------------------------------------------
+  
+  # Data to download based on selections in tab 3
+  output$dl_data_tab_3 <- downloadHandler(
+    filename = paste(paste0("population_dl_", Sys.Date()), ".csv", sep = ""),
+    content = function(con) {
+      write.csv(dl_measures_data(), con, row.names = FALSE)
+      }
+  )
 }
-
-
-

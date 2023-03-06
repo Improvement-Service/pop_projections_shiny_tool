@@ -10,14 +10,20 @@ library(sf)
 library(vroom)
 library(shinyvalidate, warn.conflicts = FALSE)
 library(stringr)
+
 library(data.table, warn.conflicts = FALSE)
 library(shinyanimate, warn.conflicts = FALSE)
-#library(shinyjs, warn.conflicts = FALSE)
-#library(shinya11y)
+library(DT)
+library(shinyjs)
 
 # Read raw data ------------
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", delim = ",", col_names = TRUE, show_col_types = FALSE)
+projection_data <- projection_data %>% 
+  mutate_at(vars(Population), funs(round(., 0)))
 measures_data <- vroom::vroom("Data files/Other measures data.csv", delim = ",", col_names = TRUE, show_col_types = FALSE)
+measures_data <- measures_data %>% 
+  mutate_at(vars(Value), funs(round(., 0)))
+
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
 la_shape_data <- read_rds("Data files/LAShps.rds") 
 
@@ -130,7 +136,11 @@ create_line_plot <- function(dataset,
                                                   `measure_title`, 
                                                   "<br>", 
                                                   "Value:",
-                                                  `Value`
+                                                   # Format values with thousand separator
+                                 prettyNum(`Value`, 
+                                           big.mark = ",", 
+                                           scientific = FALSE
+                                           )
                                      )
   )) +
     geom_line( 
@@ -183,7 +193,12 @@ create_map <- function(map_data, council, year, tab_num, age_label = "", gender 
                              map_data$Year,
                              age_label,
                              gender,
-                             map_data$Value)
+                              # Format values with thousand separator
+                                   prettyNum(map_data$Value, 
+                                             big.mark = ",", 
+                                             scientific = FALSE
+                                             )
+                                             )
     
     legend_content <- "Population"
     
