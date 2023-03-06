@@ -16,16 +16,15 @@ server <- function(input, output, session) {
   iv_tab_2$add_rule("measure_choice_tab_2", sv_required())
 
 
-#Global variables -----------
-  #the following 'Global' reactive variables store the values which should be consistent across both tabs
+# Global variables -----------
+  
+  # The following 'Global' reactive variables store the values which should be consistent across both tabs
   # these will be updated by a submit button event on either tab
   selected_la <- reactiveVal()
   selected_year <- reactiveVal()
   selected_small_area <- reactiveVal() #this var is also updated by map clicks in either tab
-
   
-
-#Tab 1: Reactive data objects / selected variables ---------------------
+# Tab 1: Reactive data objects / selected variables ---------------------
   
   # Reactive expression to store selection from gender_choice_tab_1 - variable name = selected_gender_tab_1
   selected_gender_tab_1 <- reactive({
@@ -85,8 +84,6 @@ server <- function(input, output, session) {
     return(combined_data)
   })
   
-
-  
 # Tab 1: Create Map LA Output ---------------
   render_la_map_tab_1 <- eventReactive({
     # Will render the map whenever these inputs are changed
@@ -115,29 +112,26 @@ server <- function(input, output, session) {
 
     #create leaflet output for tab 1
     map <- create_map(map_data = map_data_tab_1,
-               council = selected_la(),
-               year =selected_year(),
-               tab_num = 2,
-               age_label = age_label,
-               gender = selected_gender_tab_1)
+                      council = selected_la(),
+                      year = selected_year(),
+                      tab_num = 2,
+                      age_label = age_label,
+                      gender = selected_gender_tab_1
+                      )
     
     update_highlighted_polygon(proxy_tab_1, selected_small_area())
-    
 
     return(map)
-
     })
-
+  
   # RenderLeaflet for council level map - output name = la_map_tab_1
   output$la_map_tab_1 <- renderLeaflet({
     render_la_map_tab_1()
   })
   
-  #map proxy which will be updated to reflect selected small area;
-    #when small are clicked or submit clicked, update proxy with update_highlighted_polygon()
+  # Map proxy which will be updated to reflect selected small area;
+  # when small are clicked or submit clicked, update proxy with update_highlighted_polygon()
   proxy_tab_1 <- leafletProxy("la_map_tab_1")
-  
-
   
 # Tab 1: Across Areas Plot Data-----------
   
@@ -289,7 +283,7 @@ server <- function(input, output, session) {
   
 # Observe Events: validators -------------------------------------------
   
-  # 'turn on' user input validation when submit clicked for first time - 
+  # 'Turn on' user input validation when submit clicked for first time - 
   # missing fields, if there are any, will then show error
   # Tab 1
   observeEvent(input$submit_tab_1, {
@@ -300,11 +294,11 @@ server <- function(input, output, session) {
     iv_tab_2$enable()
   })
   
-  # Observe Events: record/update global selections -------------------------------------------
+# Observe Events: record/update global selections -------------------------------------------
   
-  #on submit_tab_1 click, update global variables and outputs on both tabs to reflect tab 1 selections
+  # On submit_tab_1 click, update global variables and outputs on both tabs to reflect tab 1 selections
   observeEvent(input$submit_tab_1, {
-    #update 'global' values for LA, year and small area
+    # Update 'global' values for LA, year and small area
     selected_la(input$la_choice_tab_1)
     selected_year(input$year_choice_tab_1)
     small_area_options <- small_area_lookup %>%
@@ -312,19 +306,17 @@ server <- function(input, output, session) {
       pull(LongName)
     default_area <- small_area_options[1]
     selected_small_area(default_area)
-    #update tab 2 selections to match tab 1
+    # Update tab 2 selections to match tab 1
     updateSelectizeInput(inputId = "year_choice_tab_2",
                          selected = selected_year())
     updateSelectizeInput(inputId = "la_choice_tab_2",
                          selected = selected_la())
-    #update highlighted polygon on both tabs
+    # Update highlighted polygon on both tabs
     update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
     update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
-    
-    
-  })
+    })
   
-  #on submit_tab_2 click, update global variables and outputs on both tabs to reflect tab 2 selections
+  # On submit_tab_2 click, update global variables and outputs on both tabs to reflect tab 2 selections
   observeEvent(input$submit_tab_2, {
     #update 'global' values for LA, year and small area
     selected_la(input$la_choice_tab_2)
@@ -344,15 +336,16 @@ server <- function(input, output, session) {
     update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
   })
   
-  # Observe Events: trigger button bounce -------------------------------------------
-#The following observe events react to user input and cause the submit button 
-  #to bounce to prompt the user to click submit and update the app. 
-  #Measures have been taken to PREVENT button bounce in the cases where an input is
-  #being changed programmatically (server-side) by an updateSelectizeInput() instead 
-  #of user input.
+# Observe Events: trigger button bounce -------------------------------------------
+
+  # The following observe events react to user input and cause the submit button 
+  # to bounce to prompt the user to click submit and update the app. 
+  # Measures have been taken to PREVENT button bounce in the cases where an input is
+  # being changed programmatically (server-side) by an updateSelectizeInput() instead 
+  # of user input.
   
   # Tab 1
-  #if new input detected for age/gender, bounce to prompt user-click
+  # If new input detected for age/gender, bounce to prompt user-click
   observeEvent({
     input$age_choice_tab_1
     input$gender_choice_tab_1
@@ -362,10 +355,10 @@ server <- function(input, output, session) {
     startAnim(session, id = "submit_tab_1", "bounce")
   })
   
-  #if the selected LA in tab 1 is the SAME as the LA already selected in tab 2,
-    #this indicates that input$la_choice_tab_1 event has been triggered programmatically 
-    #by updateSelectizeInput() following a user-change to tab 2.
-    #User has not updated tab 1. Do no trigger button bounce.
+  # If the selected LA in tab 1 is the SAME as the LA already selected in tab 2,
+  # this indicates that input$la_choice_tab_1 event has been triggered programmatically 
+  # by updateSelectizeInput() following a user-change to tab 2.
+  # User has not updated tab 1. Do no trigger button bounce.
   observeEvent(input$la_choice_tab_1, {
     req(iv_tab_1$is_valid())
     if (input$la_choice_tab_2 != input$la_choice_tab_1) {
@@ -407,7 +400,7 @@ server <- function(input, output, session) {
     }
   })
   
-  #Observe Events: map shape clicks--------------------
+# Observe Events: map shape clicks--------------------
   
   # Create observe event to update selected small areas when maps are clicked
   # Tab 1 click
@@ -425,11 +418,11 @@ server <- function(input, output, session) {
     update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
   })
   
-  #The selected_small_area() reactiveVal depends on a submit click or a map click to be updated.
+  # The selected_small_area() reactiveVal depends on a submit click or a map click to be updated.
   # This presents problems on initial page-load when LA is absent, because selected_small_area is null which throws warnings server-side.
-  #The following code runs once when LA is selected the first time to initialise the selected_small_area variable.
+  # The following code runs once when LA is selected the first time to initialise the selected_small_area variable.
   
-  #tab 1
+  # Tab 1
   observeEvent({
     input$la_choice_tab_1
   },
@@ -440,11 +433,10 @@ server <- function(input, output, session) {
       pull(LongName)
     default_area <- small_area_options[1]
     selected_small_area(default_area)
-    #print(selected_small_area())
-  }, ignoreInit = TRUE, once = TRUE)
-
+  }, 
+  ignoreInit = TRUE, once = TRUE)
   
-  #tab 1
+  # Tab 2
   observeEvent({
     input$la_choice_tab_2
   },
@@ -455,11 +447,11 @@ server <- function(input, output, session) {
       pull(LongName)
     default_area <- small_area_options[1]
     selected_small_area(default_area)
-    #(selected_small_area())
-  }, ignoreInit = TRUE, once = TRUE)
-  
+  }, 
+  ignoreInit = TRUE, once = TRUE)
   
 # Tab 2: Map Data ---------------
+  
   # Create reactive data for map - variable name = map_data_tab_2
   map_data_tab_2 <- reactive({
     # Filter this data based on council, measure and year
@@ -495,10 +487,8 @@ server <- function(input, output, session) {
     map <- create_map(map_data_tab_2, selected_la(), selected_year(), 2)
     
     update_highlighted_polygon(proxy_tab_2, selected_small_area())
-
     
     return(map)
-
   })
   
   # RenderLeaflet for council level map - output name = la_map_tab_1
@@ -507,7 +497,6 @@ server <- function(input, output, session) {
   })
 
   proxy_tab_2 <- leafletProxy("la_map_tab_2")
-
   
 # Tab2: Within Areas Plot Data-------------------------------------------
   
@@ -641,7 +630,7 @@ server <- function(input, output, session) {
         dta <- filter(projection_data, 
                       Council.Name %in% input$la_choice_tab_3 & Sex %in% input$gender_choice_tab_3 & Age %in% age_range) %>%
           mutate(Population = round(Population, 1)) %>%
-          left_join(., small_area_lookup[2:3], by = "Area.Name")
+          left_join(., small_area_lookup[1:2], by = "Area.Name")
         # Replace any missing long names with "Council Total"
         dta[is.na(dta$LongName), "LongName"] <- "Council Total"
         dta <- dta %>% 

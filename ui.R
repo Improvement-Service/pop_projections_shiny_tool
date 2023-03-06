@@ -237,7 +237,8 @@ ui <- tagList(tags$head(withAnim(),
             # FluidRow closing bracket
             ),
            # Data table 
-           DT::DTOutput("preview_table_tab3")
+           DT::DTOutput("preview_table_tab3") %>%
+             withSpinner(type = 6)
            # TabPanel closing bracket
            )
                           # End of navbar

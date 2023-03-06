@@ -17,50 +17,69 @@ library(DT)
 library(shinyjs)
 
 # Read raw data ------------
-projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", delim = ",", col_names = TRUE, show_col_types = FALSE)
+projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", 
+                                delim = ",", 
+                                col_names = TRUE, 
+                                show_col_types = FALSE
+                                )
 projection_data <- projection_data %>% 
   mutate_at(vars(Population), funs(round(., 0)))
-measures_data <- vroom::vroom("Data files/Other measures data.csv", delim = ",", col_names = TRUE, show_col_types = FALSE)
+measures_data <- vroom::vroom("Data files/Other measures data.csv", 
+                              delim = ",", 
+                              col_names = TRUE, 
+                              show_col_types = FALSE
+                              )
 measures_data <- measures_data %>% 
   mutate_at(vars(Value), funs(round(., 0)))
 
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
 la_shape_data <- read_rds("Data files/LAShps.rds") 
 
-# small-area look ups ---------
-small_area_lookup <- vroom::vroom("Data files/ShortNameLookup.csv", delim = ",", col_names = TRUE, show_col_types = FALSE) %>%
+# Small-area look ups ---------
+small_area_lookup <- vroom::vroom("Data files/ShortNameLookup.csv", 
+                                  delim = ",", 
+                                  col_names = TRUE, 
+                                  show_col_types = FALSE
+                                  ) %>%
   rename("Area.Name" = "ShortName", "Council.Name" = "Council")
- #constrain the width of long area names so that the legend can be narrower in plots
- #this is done for shape data below as well, these must be consistent
+# Constrain the width of long area names so that the legend can be narrower in plots
+# this is done for shape data below as well, these must be consistent
 small_area_lookup$LongName <- str_wrap(small_area_lookup$LongName, 13)
 
-# global variables ----------
+# Global variables ----------
 councils <- unique(projection_data$Council.Name[projection_data$Council.Name != "Scotland"])
 years <- unique(projection_data$Year)
 
-# manipulate data objects -----------
-measures_data <- left_join(measures_data, small_area_lookup, by = c("Council.Name", "Area.Name"))
+# Manipulate data objects -----------
+measures_data <- left_join(measures_data, 
+                           small_area_lookup, 
+                           by = c("Council.Name", "Area.Name")
+                           )
 # Fix issue with NA lookup in Highland
 measures_data$LongName[measures_data$Area.Name == "NA"] <- "Nairn"
 # Fix Long Names for council level (set longname equal to council name at council level)
 measures_data$LongName[is.na(measures_data$LongName)] <- measures_data$Council.Name[is.na(measures_data$LongName)]
-#add area level
+# Add area level
 measures_data$Level <- if_else(measures_data$Council.Name == measures_data$LongName,
                                "Council",
                                "Small Area"
                                )
 
-# split out council and sub-council in shape_data for merging
+# Split out council and sub-council in shape_data for merging
 shape_data <- shape_data %>% 
-  separate(`Sub-Council Area Name`, into = c("SubCouncil", "Council"), sep = " - ", remove = TRUE)
-#fix error in annbank name
+  separate(`Sub-Council Area Name`, 
+           into = c("SubCouncil", "Council"), 
+           sep = " - ", 
+           remove = TRUE
+           )
+# Fix error in annbank name
 shape_data[shape_data$SubCouncil == "Annbank Mossblown and Tarbolton: the Coalfields", "SubCouncil"] <- "Annbank Mossblown and Tarbolton - the Coalfields"
 shape_data$SubCouncil <- str_wrap(shape_data$SubCouncil, 13)
-# replace "and" with ampersand in shapefiles - this is to allow merging with projection_data
+# Replace "and" with ampersand in shapefiles - this is to allow merging with projection_data
 shape_data$Council <- gsub(" and ", " & ", shape_data$Council)
 
+# Functions -------------
 
-# functions -------------
 # Function to add total population index to data
 add_pop_index <- function(data, gender_selection, age_selection) {
   setDT(data)
@@ -102,7 +121,7 @@ create_line_plot <- function(dataset,
                              small_area_selection, 
                              measure_selection,
                              graph_type
-) {
+                             ) {
   
   measure_title <- measure_selection
   all_area_names <- unique(dataset$LongName)
@@ -137,15 +156,13 @@ create_line_plot <- function(dataset,
                                                   "<br>", 
                                                   "Value:",
                                                    # Format values with thousand separator
-                                 prettyNum(`Value`, 
-                                           big.mark = ",", 
-                                           scientific = FALSE
-                                           )
-                                     )
-  )) +
-    geom_line( 
-    size = 0.7
-    ) +
+                                                  prettyNum(`Value`, 
+                                                            big.mark = ",", 
+                                                            scientific = FALSE
+                                                            )
+                                                  )
+                                     )) +
+    geom_line(size = 0.7) +
     scale_color_manual(values = line_colours) +
     scale_alpha_manual(values = alpha_settings) +
     labs(title = "", color = "", alpha = "") +
@@ -160,6 +177,7 @@ create_line_plot <- function(dataset,
           axis.title.y = element_blank()
     ) +
     scale_x_continuous(breaks = 2018:2030)
+  
   ggplotly(plot, tooltip = c("text")) %>% 
     config(displayModeBar = FALSE) %>% 
     layout(xaxis = list(fixedrange = TRUE)) %>% 
@@ -167,7 +185,13 @@ create_line_plot <- function(dataset,
     layout(legend = list(orientation = 'v', title = ""))
 }
 
-create_map <- function(map_data, council, year, tab_num, age_label = "", gender = ""){
+create_map <- function(map_data, 
+                       council, 
+                       year, 
+                       tab_num, 
+                       age_label = "", 
+                       gender = "") {
+  
   # Set colours for the map
   map_colours <- brewer.pal(8, "Blues")
   # Assign colours to quintiles
@@ -183,42 +207,45 @@ create_map <- function(map_data, council, year, tab_num, age_label = "", gender 
     filter(SubCouncil == default_area) %>% 
     pull(geometry)
   
-  
-  #tab 1 content
+  # Tab 1 content
   hover_content <- ""
   legend_content <- ""
-  if (tab_num == 1){
+  if (tab_num == 1) {
     hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
                              map_data$SubCouncil, 
                              map_data$Year,
                              age_label,
                              gender,
-                              # Format values with thousand separator
-                                   prettyNum(map_data$Value, 
-                                             big.mark = ",", 
-                                             scientific = FALSE
-                                             )
-                                             )
-    
+                             # Format values with thousand separator
+                             prettyNum(map_data$Value, 
+                                       big.mark = ",", 
+                                       scientific = FALSE
+                                       )
+                             )
     legend_content <- "Population"
-    
-  } else if (tab_num == 2){
-    
-    hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>%s: %s",
-                             map_data$SubCouncil, 
-                             map_data$Year,
-                             map_data$Measure,
-                             map_data$Value)
-    
-    legend_content <- "Value"
-  }
+    } else if (tab_num == 2) {
+      
+      hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>%s: %s",
+                               map_data$SubCouncil, 
+                               map_data$Year,
+                               map_data$Measure,
+                               # Format values with thousand separator
+                               prettyNum(map_data$Value, 
+                                         big.mark = ",", 
+                                         scientific = FALSE
+                                         )
+                               )
+      legend_content <- "Value"
+      }
   
   leaflet(data = map_data, 
           #the following two lines remove zoom control and reinstate it on the right
           #of the map so it doesn't obstruct drop down menu options
-          options = leafletOptions(zoomControl = FALSE)) %>%
-    htmlwidgets::onRender("function(el, x) {
-          L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
+          options = leafletOptions(zoomControl = FALSE)
+          ) %>%
+          htmlwidgets::onRender("function(el, x) {
+          L.control.zoom({ position: 'topright' }).addTo(this)}"
+                                ) %>%
     # Create background map - OpenStreetMap by default
     addTiles() %>%
     # Add polygons for small area
@@ -258,17 +285,16 @@ create_map <- function(map_data, council, year, tab_num, age_label = "", gender 
                  data = default_selected_polygon, 
                  group ="highlighted_polygon"
     )
-  
 }
 
-#function to update the orange highlighted polygon on LA maps.
-update_highlighted_polygon <- function(proxy, small_area){
+# Function to update the orange highlighted polygon on LA maps.
+update_highlighted_polygon <- function(proxy, small_area) {
   selected_polygon <- shape_data %>% 
     filter(SubCouncil == small_area) %>% 
     pull(geometry)
   
   # Remove any previously highlighted polygon
-  proxy %>% clearGroup("highlighted_polygon")%>% 
+  proxy %>% clearGroup("highlighted_polygon") %>% 
     addPolylines(stroke = TRUE,
                  weight = 3,
                  color = "orange",
@@ -276,5 +302,4 @@ update_highlighted_polygon <- function(proxy, small_area){
                  data = selected_polygon,
                  group = "highlighted_polygon"
     )
-  
 }
