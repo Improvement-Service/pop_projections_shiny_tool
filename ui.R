@@ -1,4 +1,6 @@
-ui <- tagList(tags$head(withAnim()),
+ui <- tagList(tags$head(withAnim(),
+                        #use_tota11y() requires shinya11y package, for assessing accessibility
+                        ),
               navbarPage(title = "Sub-Council Population Projections",
 # Population Size Tab (Tab 1)-----------------------------------------------------------                           
                          tabPanel("Population size", 
@@ -235,7 +237,8 @@ ui <- tagList(tags$head(withAnim()),
             # FluidRow closing bracket
             ),
            # Data table 
-           DT::DTOutput("preview_table_tab3")
+           DT::DTOutput("preview_table_tab3") %>%
+             withSpinner(type = 6)
            # TabPanel closing bracket
            )
                           # End of navbar
