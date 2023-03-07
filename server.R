@@ -630,7 +630,7 @@ server <- function(input, output, session) {
         dta <- filter(projection_data, 
                       Council.Name %in% input$la_choice_tab_3 & Sex %in% input$gender_choice_tab_3 & Age %in% age_range) %>%
           mutate(Population = round(Population, 1)) %>%
-          left_join(., small_area_lookup[1:2], by = "Area.Name")
+          left_join(., small_area_lookup[,1:2], by = "Area.Name")
         # Replace any missing long names with "Council Total"
         dta[is.na(dta$LongName), "LongName"] <- "Council Total"
         dta <- dta %>% 
