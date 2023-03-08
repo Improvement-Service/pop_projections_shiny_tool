@@ -56,7 +56,7 @@ ui <- tagList(tags$head(withAnim(),
                                   # If council input and year are not blank show council map
                                   fluidRow(conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ", 
                                                             column(6,
-                                                                   leafletOutput("la_map_tab_1", width = "100%") %>%
+                                                                   leafletOutput("la_map_tab_1", width = "100%", height = "80vh") %>%
                                                                      withSpinner(type = 6)
                                                                    ),
                                                             column(6,
@@ -138,7 +138,7 @@ ui <- tagList(tags$head(withAnim(),
                                     ),
                                   fluidRow(conditionalPanel(condition = "input.submit_tab_2 != 0 && input.la_choice_tab_2 != `` && input.year_choice_tab_2 != `` && input.measure_choice_tab_2 != `` ",
                                                             column(6, 
-                                                                   leafletOutput("la_map_tab_2", width = "100%") %>%
+                                                                   leafletOutput("la_map_tab_2", width = "100%", height = "80vh") %>%
                                                                      withSpinner(type = 6)
                                                                    ),
                                                             column(6,
