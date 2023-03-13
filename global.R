@@ -81,10 +81,10 @@ shape_data$Council <- gsub(" and ", " & ", shape_data$Council)
 # Functions -------------
 
 # Function to add total population index to data
-add_pop_index <- function(data, gender_selection, age_selection) {
-  setDT(data)
+add_pop_index <- function(raw_data, gender_selection, age_selection, lookup = small_area_lookup) {
+  data <- as.data.table(raw_data)
   setkey(data, Council.Name, Area.Name, Year, Sex, Age)
-  setDT(small_area_lookup)
+  small_area_lookup <- as.data.table(lookup)
   setkey(small_area_lookup, Area.Name, Council.Name)
   
   total_pop_data <- data[Sex == gender_selection & Age %in% age_selection, 
