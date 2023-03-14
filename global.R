@@ -10,7 +10,6 @@ library(sf)
 library(vroom, warn.conflicts = FALSE)
 library(shinyvalidate, warn.conflicts = FALSE)
 library(stringr)
-
 library(data.table, warn.conflicts = FALSE)
 library(shinyanimate, warn.conflicts = FALSE)
 library(DT)
@@ -81,8 +80,13 @@ shape_data$Council <- gsub(" and ", " & ", shape_data$Council)
 # Functions -------------
 
 # Function to add total population index to data
-add_pop_index <- function(raw_data, gender_selection, age_selection, lookup = small_area_lookup) {
-  #make data table copies of raw_data and lookup dataframes and assign keys (columns to index by for speed)
+add_pop_index <- function(raw_data, 
+                          gender_selection, 
+                          age_selection, 
+                          lookup = small_area_lookup
+                          ) {
+  # Make data table copies of raw_data and lookup dataframes and 
+  # assign keys (columns to index by for speed)
   data <- as.data.table(raw_data)
   setkey(data, Council.Name, Area.Name, Year, Sex, Age)
   small_area_lookup <- as.data.table(lookup)
@@ -199,12 +203,6 @@ create_map <- function(map_data,
   # Assign colours to quintiles
   map_colour_quintiles <- colorBin(map_colours, map_data$Value, n = 8)
   
-  # small_area_options <- small_area_lookup %>%
-  #   filter(Council.Name == council) %>%
-  #   pull(LongName)
-  # 
-  # default_area <- small_area_options[1]
-  
   default_selected_polygon <- shape_data %>% 
     filter(SubCouncil == default_area) %>% 
     pull(geometry)
@@ -226,7 +224,6 @@ create_map <- function(map_data,
                              )
     legend_content <- "Population"
     } else if (tab_num == 2) {
-      
       hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>%s: %s",
                                map_data$SubCouncil, 
                                map_data$Year,
@@ -253,8 +250,6 @@ create_map <- function(map_data,
           L.control.zoom({ position: 'topright' }).addTo(this)}"
                                 ) %>%
     # Create background map - OpenStreetMap by default
-    #addTiles() %>%
-    #addProviderTiles(providers$CartoDB.Positron) %>%
     addProviderTiles(providers$CartoDB.VoyagerLabelsUnder) %>%
     # Add polygons for small area
     addPolygons(smoothFactor = 1,
