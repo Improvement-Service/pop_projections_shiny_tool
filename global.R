@@ -1,5 +1,5 @@
 library(shiny, warn.conflicts = FALSE)
-library(tidyverse)
+library(tidyverse, warn.conflicts = FALSE)
 library(readxl)
 library(leaflet)
 library(ggplot2, warn.conflicts = FALSE)
@@ -7,7 +7,7 @@ library(plotly, warn.conflicts = FALSE)
 library(RColorBrewer)
 library(shinycssloaders)
 library(sf)
-library(vroom)
+library(vroom, warn.conflicts = FALSE)
 library(shinyvalidate, warn.conflicts = FALSE)
 library(stringr)
 
@@ -81,10 +81,11 @@ shape_data$Council <- gsub(" and ", " & ", shape_data$Council)
 # Functions -------------
 
 # Function to add total population index to data
-add_pop_index <- function(data, gender_selection, age_selection) {
-  setDT(data)
+add_pop_index <- function(raw_data, gender_selection, age_selection, lookup = small_area_lookup) {
+  #make data table copies of raw_data and lookup dataframes and assign keys (columns to index by for speed)
+  data <- as.data.table(raw_data)
   setkey(data, Council.Name, Area.Name, Year, Sex, Age)
-  setDT(small_area_lookup)
+  small_area_lookup <- as.data.table(lookup)
   setkey(small_area_lookup, Area.Name, Council.Name)
   
   total_pop_data <- data[Sex == gender_selection & Age %in% age_selection, 
@@ -188,7 +189,8 @@ create_line_plot <- function(dataset,
 create_map <- function(map_data, 
                        council, 
                        year, 
-                       tab_num, 
+                       tab_num,
+                       default_area,
                        age_label = "", 
                        gender = "") {
   
@@ -197,11 +199,11 @@ create_map <- function(map_data,
   # Assign colours to quintiles
   map_colour_quintiles <- colorBin(map_colours, map_data$Value, n = 8)
   
-  small_area_options <- small_area_lookup %>%
-    filter(Council.Name == council) %>%
-    pull(LongName)
-  
-  default_area <- small_area_options[1]
+  # small_area_options <- small_area_lookup %>%
+  #   filter(Council.Name == council) %>%
+  #   pull(LongName)
+  # 
+  # default_area <- small_area_options[1]
   
   default_selected_polygon <- shape_data %>% 
     filter(SubCouncil == default_area) %>% 
@@ -236,6 +238,10 @@ create_map <- function(map_data,
                                          )
                                )
       legend_content <- "Value"
+      # Set colours for the map
+      map_colours <- brewer.pal(8, "Purples")
+      # Assign colours to quintiles
+      map_colour_quintiles <- colorBin(map_colours, map_data$Value, n = 8)
       }
   
   leaflet(data = map_data, 
@@ -247,7 +253,9 @@ create_map <- function(map_data,
           L.control.zoom({ position: 'topright' }).addTo(this)}"
                                 ) %>%
     # Create background map - OpenStreetMap by default
-    addTiles() %>%
+    #addTiles() %>%
+    #addProviderTiles(providers$CartoDB.Positron) %>%
+    addProviderTiles(providers$CartoDB.VoyagerLabelsUnder) %>%
     # Add polygons for small area
     addPolygons(smoothFactor = 1,
                 weight = 1.5, 
