@@ -23,6 +23,7 @@ projection_data <- vroom::vroom("Data files/Population Projections With Aggregat
                                 )
 projection_data <- projection_data %>% 
   mutate_at(vars(Population), funs(round(., 0)))
+
 measures_data <- vroom::vroom("Data files/Other measures data.csv", 
                               delim = ",", 
                               col_names = TRUE, 
@@ -121,26 +122,32 @@ add_pop_index <- function(raw_data,
 }
 
 # Function to create line graphs
+# Function to create line graphs
 create_line_plot <- function(dataset, 
-                             council_selection, 
                              small_area_selection, 
-                             measure_selection,
-                             graph_type
-                             ) {
+                             graph_type,
+                             tab) {
   
-  measure_title <- measure_selection
-  all_area_names <- unique(dataset$LongName)
+  measure_title <- "Population Index"
+  all_area_names <- sort(unique(dataset$LongName))
+  small_area_index <- match(small_area_selection, all_area_names)
+  trace_aes <- get_plot_trace_aesthetics(small_area_index)
   
   # Default aesthetic for within council area plots...
   # Renders the first area (by factor level) blue and the rest grey
-  line_colours <- c("orange", rep("grey", 23))
+  line_colours <- trace_aes$colours
   # Renders the first area (by factor level) as normal and the rest as more opaque
   # this prevents the selected small area line being hidden by subsequently rendered areas
-  alpha_settings <- c(1, rep(0.5, 23))
-  
+  alpha_settings <- trace_aes$opacity
+  source_name <- "within_areas_1"
   if(graph_type == "Across Areas") {
     line_colours <- c("orange", "grey", "dimgrey")
-    alpha_settings <- c(1, 1, 1)
+    alpha_settings <- c(1, 0.7, 0.7)
+    source_name <- "across_areas"
+  }
+  if(tab == 2) {
+    source_name <- "within_areas_2"
+    measure_title <- unique(dataset$Measure)
   }
   
   # Create plot object
@@ -160,14 +167,17 @@ create_line_plot <- function(dataset,
                                                   `measure_title`, 
                                                   "<br>", 
                                                   "Value:",
-                                                   # Format values with thousand separator
+                                                  # Format values with thousand separator
                                                   prettyNum(`Value`, 
                                                             big.mark = ",", 
                                                             scientific = FALSE
-                                                            )
                                                   )
-                                     )) +
-    geom_line(size = 0.7) +
+                                     )
+  )) +
+    #geom_vline(xintercept = 2018, linetype="dashed", 
+    #             color = "lightgrey", size=0.7) +
+    geom_line(size = 0.7#, position=position_dodge(width=0.5)
+    ) +
     scale_color_manual(values = line_colours) +
     scale_alpha_manual(values = alpha_settings) +
     labs(title = "", color = "", alpha = "") +
@@ -183,90 +193,75 @@ create_line_plot <- function(dataset,
     ) +
     scale_x_continuous(breaks = 2018:2030)
   
-  ggplotly(plot, tooltip = c("text")) %>% 
+  ggplotly(plot, tooltip = c("text"), source = source_name) %>% 
     config(displayModeBar = FALSE) %>% 
     layout(xaxis = list(fixedrange = TRUE)) %>% 
     layout(yaxis = list(fixedrange = TRUE)) %>%
-    layout(legend = list(orientation = 'v', title = ""))
+    layout(legend = list(orientation = 'v', title = "", itemclick = "toggleothers"))
 }
 
 create_map <- function(map_data, 
-                       council, 
-                       year, 
                        tab_num,
                        default_area,
+                       initial_polygon_click,
                        age_label = "", 
                        gender = "") {
+  #data passed to this function should already be filtered by council and year
+  council <- map_data$Council.Name[1]
+  year <- map_data$Year[1]
+  #map_data <- map_data$Year[1]
   
   # Set colours for the map
   map_colours <- brewer.pal(8, "Blues")
   # Assign colours to quintiles
   map_colour_quintiles <- colorBin(map_colours, map_data$Value, n = 8)
   
-  default_selected_polygon <- shape_data %>% 
-    filter(SubCouncil == default_area) %>% 
-    pull(geometry)
+  
   
   # Tab 1 content
   hover_content <- ""
   legend_content <- ""
   if (tab_num == 1) {
     hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
-                             map_data$SubCouncil, 
+                             map_data$SubCouncil,
                              map_data$Year,
                              age_label,
                              gender,
                              # Format values with thousand separator
-                             prettyNum(map_data$Value, 
-                                       big.mark = ",", 
+                             prettyNum(map_data$Value,
+                                       big.mark = ",",
                                        scientific = FALSE
-                                       )
                              )
+    )
     legend_content <- "Population"
-    } else if (tab_num == 2) {
-      hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>%s: %s",
-                               map_data$SubCouncil, 
-                               map_data$Year,
-                               map_data$Measure,
-                               # Format values with thousand separator
-                               prettyNum(map_data$Value, 
-                                         big.mark = ",", 
-                                         scientific = FALSE
-                                         )
-                               )
-      legend_content <- "Value"
-      # Set colours for the map
-      map_colours <- brewer.pal(8, "Purples")
-      # Assign colours to quintiles
-      map_colour_quintiles <- colorBin(map_colours, map_data$Value, n = 8)
-      }
+  } else if (tab_num == 2) {
+    hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>%s: %s",
+                             map_data$SubCouncil,
+                             map_data$Year,
+                             map_data$Measure,
+                             # Format values with thousand separator
+                             prettyNum(map_data$Value,
+                                       big.mark = ",",
+                                       scientific = FALSE
+                             )
+    )
+    legend_content <- "Value"
+    # Set colours for the map
+    map_colours <- brewer.pal(8, "Purples")
+    # Assign colours to quintiles
+    map_colour_quintiles <- colorBin(map_colours, map_data$Value, n = 8)
+  }
   
-  leaflet(data = map_data, 
-          #the following two lines remove zoom control and reinstate it on the right
-          #of the map so it doesn't obstruct drop down menu options
-          options = leafletOptions(zoomControl = FALSE)
-          ) %>%
-          htmlwidgets::onRender("function(el, x) {
+  map <-leaflet(data = map_data, 
+                #the following two lines remove zoom control and reinstate it on the right
+                #of the map so it doesn't obstruct drop down menu options
+                options = leafletOptions(zoomControl = FALSE)
+  ) %>%
+    htmlwidgets::onRender("function(el, x) {
           L.control.zoom({ position: 'topright' }).addTo(this)}"
-                                ) %>%
+    ) %>%
     # Create background map - OpenStreetMap by default
     addProviderTiles(providers$CartoDB.VoyagerLabelsUnder) %>%
-    # Add polygons for small area
-    addPolygons(smoothFactor = 1,
-                weight = 1.5, 
-                fillOpacity = 0.8,
-                layerId = ~SubCouncil,
-                color = "black", 
-                # colour of polygons should map to population quintiles
-                fillColor = ~map_colour_quintiles(Value),
-                # Use HTML to create popover labels with all the selected info
-                label = hover_content %>% lapply(htmltools::HTML),
-                # Creates a white border on the polygon where the mouse hovers
-                highlightOptions = highlightOptions(color = "white", 
-                                                    weight = 5, 
-                                                    bringToFront = FALSE
-                )
-    ) %>%
     addLegend("bottomleft", 
               colors = map_colours,
               labels = c(paste0("Smallest ", legend_content), 
@@ -278,17 +273,53 @@ create_map <- function(map_data,
                          "",
                          paste0("Largest ", legend_content)
               ),
-              title = paste0("Population, ", year),
+              #title = paste0(legend_content,", ", year),
               opacity = 1
-    ) %>%
-    addPolylines(stroke = TRUE,
-                 weight = 3,
-                 color = "orange",
-                 opacity = 0.7,
-                 data = default_selected_polygon, 
-                 group ="highlighted_polygon"
+    ) %>% 
+    #this button is for resetting map view (centre on selected_la again)
+    addEasyButton(easyButton(
+      icon = icon("rotate-left", lib = "font-awesome"),
+      title = 'Reset view',
+      position = "topright",
+      onClick = JS("function(btn, map) { 
+       var groupLayer = map.layerManager.getLayerGroup('year_layer');
+       map.fitBounds(groupLayer.getBounds());
+    }")  
+    )) %>%
+    addPolygons(
+      smoothFactor = 1,
+      weight = 1.5,
+      fillOpacity = 0.8,
+      layerId = ~SubCouncil,
+      group = "year_layer",
+      color = "black", 
+      # colour of polygons should map to population quintiles
+      fillColor = ~map_colour_quintiles(Value),
+      # Use HTML to create popover labels with all the selected info
+      label = hover_content %>% lapply(htmltools::HTML),
+      # Creates a white border on the polygon where the mouse hovers
+      highlightOptions = highlightOptions(color = "white", 
+                                          weight = 5,
+                                          bringToFront = FALSE
+      )
     )
-}
+  #render the map with no highlight (only add highlight if initial polygon selected)
+  if (initial_polygon_click == TRUE) {
+    default_selected_polygon <- shape_data %>% 
+      filter(SubCouncil == default_area) %>% 
+      pull(geometry)
+    
+    map <- map %>%
+      addPolylines(stroke = TRUE,
+                   weight = 3,
+                   color = "orange",
+                   opacity = 0.7,
+                   data = default_selected_polygon,
+                   group ="highlighted_polygon")
+  }
+  
+  return(map)
+} #end of create_map()
 
 # Function to update the orange highlighted polygon on LA maps.
 update_highlighted_polygon <- function(proxy, small_area) {
@@ -299,10 +330,21 @@ update_highlighted_polygon <- function(proxy, small_area) {
   # Remove any previously highlighted polygon
   proxy %>% clearGroup("highlighted_polygon") %>% 
     addPolylines(stroke = TRUE,
-                 weight = 3,
+                 weight = 2,
                  color = "orange",
-                 opacity = 0.7,
+                 opacity = 0.8,
                  data = selected_polygon,
                  group = "highlighted_polygon"
     )
+}
+
+#function to re-render orange lines on map or plot lick. 
+#Takes an integer (which in practice is is obtained from the plotly-click curveNumber or event$id)
+get_plot_trace_aesthetics <- function(trace_number) {
+  colours <- c(rep("lightgrey",24))
+  colours[trace_number] <- "orange"
+    
+  opacity <- c(rep(0.7,24))
+  opacity[trace_number] <- 1
+  return(list(colours = colours, opacity = opacity))
 }

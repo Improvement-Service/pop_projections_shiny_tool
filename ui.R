@@ -1,4 +1,11 @@
 ui <- tagList(tags$head(withAnim(),
+                        useShinyjs(),
+                        tags$style(
+                          HTML(' #year_panel {background-color: rgba(255,255,255, 0);
+                          border-bottom-color:rgba(0,0,255,0);
+                          border-left-color:rgba(0,0,255,0);
+                          border-right-color:rgba(0,0,255,0);
+                              border-top-color:rgba(0,0,255,0);}')) #this ensures background of year panel is transparent
                         #use_tota11y() requires shinya11y package, for assessing accessibility
                         ),
               navbarPage(title = "Sub-Council Population Projections",
@@ -10,16 +17,6 @@ ui <- tagList(tags$head(withAnim(),
                                                                  choices = councils, 
                                                                  label = "Select Local Authority:",
                                                                  options = list(placeholder = 'Select Council',
-                                                                                onInitialize = I('function() { this.setValue(""); }')
-                                                                                )
-                                                                 )
-                                                  ),
-                                           column(2,
-                                                  # Add selectize input for year dropdown - inputID = year_choice_tab_1
-                                                  selectizeInput(inputId = "year_choice_tab_1", 
-                                                                 choices = years, 
-                                                                 label = "Select year:",
-                                                                 options = list(placeholder = 'Select Year',
                                                                                 onInitialize = I('function() { this.setValue(""); }')
                                                                                 )
                                                                  )
@@ -48,38 +45,40 @@ ui <- tagList(tags$head(withAnim(),
                                                   actionButton("submit_tab_1", 
                                                                "Submit Selections", 
                                                                icon("paper-plane"),
-                                                               style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+                                                               style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
+                                                               disabled = '' #disabled on initial load until LA selected
                                                                )
                                                   )
                                            # End of fluidRow
                                            ), 
                                   # If council input and year are not blank show council map
-                                  fluidRow(conditionalPanel(condition = "input.submit_tab_1 != 0 && input.la_choice_tab_1 != `` && input.year_choice_tab_1 != `` ", 
+                                  fluidRow(conditionalPanel(condition = "input.submit_tab_1 != 0 || input.submit_tab_2 != 0", 
                                                             column(6,
-                                                                   leafletOutput("la_map_tab_1", width = "100%", height = "80vh") %>%
-                                                                     withSpinner(type = 6)
+                                                                   div(
+                                                                     h3("Population Size in: "),
+                                                                     leafletOutput("la_map_tab_1", width = "100%", height = "80vh") %>%
+                                                                     withSpinner(type = 6),
+                                                                   absolutePanel(id = "year_panel",
+                                                                                 class = "panel panel-default", 
+                                                                                 fixed = FALSE,
+                                                                                 draggable = FALSE,
+                                                                                 top = "0", 
+                                                                                 left = "280", 
+                                                                                 right = "auto", 
+                                                                                 bottom = "auto",
+                                                                                 width = 200,
+                                                                                 opacity = 0.8,
+                                                                                 selectizeInput(
+                                                                                   inputId = "year_choice_tab_1",
+                                                                                   choices = years,
+                                                                                   selected = 2018,
+                                                                                   label = ""
+                                                                                   )
+                                                                                 ))
                                                                    ),
                                                             column(6,
-                                                                   tabsetPanel(type = "tabs",
-                                                                               tabPanel("Population Index Across Scotland",
-                                                                                        plotlyOutput("across_areas_plot_tab_1", 
-                                                                                                     height = "360px"
-                                                                                                     ) %>% 
-                                                                                          withSpinner(type = 6),
-                                                                                        span(htmlOutput("across_scotland_text"), 
-                                                                                             style = "color:#526470; font-size = 12px"
-                                                                                             )
-                                                                                        ),
-                                                                               tabPanel("Population Index Within Council Areas", 
-                                                                                        plotlyOutput("within_areas_plot_tab_1", 
-                                                                                                     height = "360px") %>% 
-                                                                                          withSpinner(type = 6), 
-                                                                                        span(htmlOutput("within_la_text"), 
-                                                                                             style = "color:#526470; font-size = 12px"
-                                                                                             )
-                                                                                        )
-                                                                               # End of tabsetPanel
-                                                                               ) 
+                                                                   #rendered dynamically when inital polygon click detected
+                                                                   uiOutput("tabsetPanel")
                                                                    # End of column
                                                                    ) 
                                                             # End of post-input conditionalPanel
@@ -88,8 +87,9 @@ ui <- tagList(tags$head(withAnim(),
                                            ) 
                                   # End of tabPanel
                                   ), 
-# Similar Areas Tab (Tab 2) --------------------------------------------------------------------
-                         tabPanel("Other Measures", 
+# Other Measures Tab (Tab 2) --------------------------------------------------------------------
+                         tabPanel(title = "Other Measures", 
+                                  value = "other_measures",
                                   fluidRow(
                                     column(3,
                                            # Add selectize input for council dropdown - inputID = la_choice_tab_2
@@ -97,16 +97,6 @@ ui <- tagList(tags$head(withAnim(),
                                                           choices = councils, 
                                                           label = "Select Local Authority:",
                                                           options = list(placeholder = 'Select Council',
-                                                                         onInitialize = I('function() { this.setValue(""); }')
-                                                                         )
-                                                          )
-                                           ),
-                                    column(3, 
-                                           # Add selectize input for year dropdown - inputID = year_choice_tab_2
-                                           selectizeInput(inputId = "year_choice_tab_2", 
-                                                          choices = years, 
-                                                          label = "Select year:",
-                                                          options = list(placeholder = 'Select Year',
                                                                          onInitialize = I('function() { this.setValue(""); }')
                                                                          )
                                                           )
@@ -122,32 +112,45 @@ ui <- tagList(tags$head(withAnim(),
                                                                       "Life Expectancy - Persons"
                                                                       ), 
                                                           label = "Select measure:",
-                                                          options = list(placeholder = 'Select measure:',
-                                                                         onInitialize = I('function() { this.setValue(""); }')
-                                                                         )
+                                                          selected = "Dependency Ratio"
                                                           )
                                            ),
                                     column(3,
                                            actionButton("submit_tab_2", 
                                                         "Submit Selections", 
                                                         icon("paper-plane"),
-                                                        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+                                                        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
+                                                        disabled = '' #disabled on initial load until LA selected
                                                         )
                                            ),
                                     # End of fluidRow
                                     ),
-                                  fluidRow(conditionalPanel(condition = "input.submit_tab_2 != 0 && input.la_choice_tab_2 != `` && input.year_choice_tab_2 != `` && input.measure_choice_tab_2 != `` ",
+                                  fluidRow(conditionalPanel(condition = "input.submit_tab_1 != 0 || input.submit_tab_2 != 0", #if either button has ever been clicked
                                                             column(6, 
                                                                    leafletOutput("la_map_tab_2", width = "100%", height = "80vh") %>%
-                                                                     withSpinner(type = 6)
-                                                                   ),
-                                                            column(6,
-                                                                   plotlyOutput("within_areas_plot_tab_2", 
-                                                                                height = "360px"
-                                                                                ) %>% 
                                                                      withSpinner(type = 6),
-                                                                   span(htmlOutput("within_la_text_tab_2"), 
-                                                                        style = "color:#526470; font-size = 12px")
+                                                                   
+                                                                   absolutePanel(id = "year_panel",
+                                                                                 class = "panel panel-default", 
+                                                                                 fixed = FALSE,
+                                                                                 draggable = FALSE,
+                                                                                 top = "10", 
+                                                                                 left = "20", 
+                                                                                 right = "auto", 
+                                                                                 bottom = "auto",
+                                                                                 width = 200,
+                                                                                 
+                                                                                 selectizeInput(
+                                                                                   inputId = "year_choice_tab_2",
+                                                                                   choices = years,
+                                                                                   selected = 2018,
+                                                                                   label = ""
+                                                                                 )
+                                                                   ) #end of absolutePanel
+                                                                   
+                                                                   ), #end of column
+                                                            column(6,
+                                                                   uiOutput("tab_2_graphs") #and annotations
                                                                    )
                                                             )
                                            )
@@ -155,10 +158,12 @@ ui <- tagList(tags$head(withAnim(),
                                   ),
 
 # Data Table / Data Download (Tab 3)--------------------------------------------
-  tabPanel("Data Download",
+  tabPanel(
+    title = "Data Download",
+    value = "download",
            fluidRow(
              # Add selectize input for council dropdown - inputID = la_choice_tab_3
-             column(2,
+             column(4,
                     selectizeInput(inputId = "la_choice_tab_3", 
                                    choices = councils, 
                                    label = "Select Local Authority:",
@@ -169,10 +174,9 @@ ui <- tagList(tags$head(withAnim(),
                                    )
                     ),
             # Selectize input for measure
-            column(2,
+            column(4,
                    selectizeInput(inputId = "measure_choice_tab_3",  
                                   choices = c("Detailed Population Data",
-                                              "Total Population", 
                                               "Net Migration", 
                                               "Natural Change",
                                                "Sex Ratio", 
@@ -185,63 +189,71 @@ ui <- tagList(tags$head(withAnim(),
                                                  )
                                   )
                    ),
-            # Conditional panel to show other select options when measure is "Detailed Data"
-            conditionalPanel(condition = "input.measure_choice_tab_3 == 'Detailed Population Data'",
-                             column(2,
-                                    # Age choice slider input
-                                    sliderInput(inputId = "age_choice_tab_3", 
-                                                label = "Select ages to include:", 
-                                                min = 0, 
-                                                max = 90, 
-                                                step = 1, 
-                                                value = c(0,90), 
-                                                dragRange = TRUE 
-                                                )
-                                    ),
-                             column(2,
-                                    # Gender choice slider input
-                                    checkboxGroupInput(inputId = "gender_choice_tab_3",
-                                                       label = "Select Sex to include:",
-                                                       choices = c("Males" = "Males", 
-                                                                   "Females" = "Females", 
-                                                                   "Total" = "Persons"
-                                                                   ),
-                                                       selected = c("Males", 
-                                                                    "Females", 
-                                                                    "Persons"
-                                                                    ),
-                                                       inline = FALSE
-                                                       )
-                                    ),
-                             column(2, 
-                                    # Year choice slider input
-                                    sliderInput(inputId = "year_select_tab3",
-                                                label = "Select years to display:",
-                                                min = 2018,
-                                                max = 2030,
-                                                step = 1,
-                                                value = c(2018,2030),
-                                                sep = ""
-                                                )
-                                    )
-                             ),
-            column(2,
+            column(4,
                    # Data download button
                    downloadButton("dl_data_tab_3", "Download this Selection"),
                    p(style = "display:inline-block", "All data can be accessed on the IS"), 
                    a(href = "https://www.improvementservice.org.uk/products-and-services/data-and-intelligence2/sub-council-area-population-projections/downloads", 
                      target = "_blank",
                      "website"
-                     )
                    )
-            # FluidRow closing bracket
-            ),
-           # Data table 
-           DT::DTOutput("preview_table_tab3") %>%
-             withSpinner(type = 6)
-           # TabPanel closing bracket
-           )
-                          # End of navbar
-                          ) 
-              # End of tags$List
-              ) 
+            )
+           ), #end of fluidRow
+    fluidRow (
+      # Conditional panel to show other select options when measure is "Detailed Data"
+      conditionalPanel(condition = "input.measure_choice_tab_3 == 'Detailed Population Data'",
+                       column(3,
+                              radioButtons("granularity_selection",
+                                           label = "Select detail:",
+                                           choices = c("Total Area Population", "Custom Population Data"),
+                                           selected = "Total Area Population"
+                                           )
+                              ),
+                       conditionalPanel(condition = "input.granularity_selection == 'Custom Population Data'",
+                                        column(3,
+                                               # Age choice slider input
+                                               sliderInput(inputId = "age_choice_tab_3", 
+                                                           label = "Select ages to include:", 
+                                                           min = 0, 
+                                                           max = 90, 
+                                                           step = 1, 
+                                                           value = c(0,90), 
+                                                           dragRange = TRUE 
+                                                           )
+                                               ),
+                                        column(2,
+                                               # Gender choice slider input
+                                               checkboxGroupInput(inputId = "gender_choice_tab_3",
+                                                                  label = "Select sex to include:",
+                                                                  choices = c("Males" = "Males", 
+                                                                              "Females" = "Females",
+                                                                              "Total" = "Persons"
+                                                                              ),
+                                                                  selected = c("Males", 
+                                                                               "Females",
+                                                                               "Persons"
+                                                                               ),
+                                                                  inline = FALSE
+                                                                  )
+                                               ),
+                                        column(3, 
+                                               # Year choice slider input
+                                               sliderInput(inputId = "year_select_tab3",
+                                                           label = "Select years to include:",
+                                                           min = 2018,
+                                                           max = 2030,
+                                                           step = 1,
+                                                           value = c(2018,2030),
+                                                           sep = ""
+                                                           )
+                                               )
+                                        ) #end of conditionalPanel
+                       ) #end of conditionalPanel
+      ), #end of fluidRow
+    # Data table 
+    DT::DTOutput("preview_table_tab3") %>%
+      withSpinner(type = 6)
+    
+    ) # TabPanel closing bracket
+)# End of navbar
+) # End of tags$List
