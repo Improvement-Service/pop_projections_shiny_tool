@@ -6,7 +6,7 @@ server <- function(input, output, session) {
   # these will be updated by a submit button event on either tab
   selected_la <- reactiveVal()
   selected_year <- reactiveVal(2018)
-  selected_small_area <- reactiveVal() #this var is also updated by map clicks and plot trace clicks in either tab
+  selected_small_area <- reactiveVal("") #this var is also updated by map clicks and plot trace clicks in either tab
   
   #this variable indicates whether user has made first small area selection
   initial_polygon_click <- reactiveVal(FALSE)
@@ -57,8 +57,8 @@ server <- function(input, output, session) {
   # Filter out population count data
   total_population_index_data <- reactive({
     filtered_data <- pop_index_data() %>%
-      filter(Measure == "Population.Index") %>%
-      mutate(Value = Value -100)
+      filter(Measure == "Population.Index")# %>%
+      #mutate(Value = Value -100)
     return(filtered_data)
   })
   
@@ -116,7 +116,7 @@ server <- function(input, output, session) {
       return(div("Click on a sub-council area on the map to begin exploring projected change for your selected population."))
     } else {
       
-      div (h3("Population Growth Over Time"),
+      div (h3("Projected Population Growth"),
       tabsetPanel(id = "tab_1_plots",
                   type = "tabs",
                   tabPanel(
@@ -154,7 +154,7 @@ server <- function(input, output, session) {
   # Filter data for across areas graph - variable name = across_areas_data_tab_1
   across_areas_data_tab_1 <- eventReactive(list(input$submit_tab_1,
                                                 input$submit_tab_2,
-                                                selected_small_area()
+                                                initial_polygon_click() #respond to initial polygon click (single event)
                                                 ), {
     # Use indexed data then filter to selected Council and small area
     across_data <- total_population_index_data() %>%
@@ -167,9 +167,9 @@ server <- function(input, output, session) {
     # The area names need to be stored as a factor so that the order of the areas can be set
     # If this is not done the areas will be ordered alphabetically and the colours will be out of order
     across_data$LongName <- factor(across_data$LongName, 
-                                   levels = c(selected_small_area(), 
-                                              selected_la(), 
-                                              "Scotland"
+                                   levels = c(selected_la(), 
+                                              "Scotland",
+                                              selected_small_area()
                                               ),
                                    ordered = TRUE
                                    )
@@ -184,15 +184,22 @@ server <- function(input, output, session) {
   output$across_areas_plot_tab_1 <- renderPlotly({
     req(initial_polygon_click())
     create_line_plot(dataset = across_areas_data_tab_1(), 
-                     small_area_selection = selected_small_area(), 
+                     small_area_selection = isolate(selected_small_area()), 
                      graph_type = "Across Areas",
-                     tab = 1)
+                     tab = 1,
+                     yrange = c(
+                       min(min(within_areas_data_tab_1()$Value),min(across_areas_data_tab_1()$Value)),
+                       max(max(within_areas_data_tab_1()$Value),max(across_areas_data_tab_1()$Value))
+                     ))
     })
+  
+  across_areas_proxy <- plotlyProxy("across_areas_plot_tab_1", session)
     
 # Tab 1: Within Areas Plot Data-----------
   # Filter data for selections when submit buttons or map polygons are clicked in either tab
   within_areas_data_tab_1 <- eventReactive(list(input$submit_tab_1,
-                                                input$submit_tab_2),{
+                                                input$submit_tab_2,
+                                                initial_polygon_click()),{
    data <- total_population_index_data() %>%
      filter(Council.Name == selected_la() & Level == "Small Area")
 
@@ -202,9 +209,9 @@ server <- function(input, output, session) {
    data$LongName <- factor(data$LongName, levels = council_small_areas, ordered = TRUE)
    return(data)
    })
+  
 
 # Tab 1: Create Within Areas Plot----------
-  
   output$within_areas_plot_tab_1 <- renderPlotly({
     req(initial_polygon_click())
     create_line_plot(dataset = within_areas_data_tab_1(), 
@@ -212,9 +219,18 @@ server <- function(input, output, session) {
                      graph_type = "Within Council Areas",
                      tab = 1
                      )
-  })
+  }) %>%
+    bindEvent(list(input$submit_tab_1,
+                   input$submit_tab_2)) #provoke update when submits are clicked
+  
+  
   #create a proxy which will show aesthetic updates when user clicks line trace
-  within_areas_1_proxy <- plotlyProxy("within_areas_plot_tab_1", session)
+    within_areas_1_proxy <- eventReactive (list(input$submit_tab_1,
+                                                input$submit_tab_2), {
+      plotlyProxy("within_areas_plot_tab_1")
+    })
+    
+
   
 # Tab 1: Annotations for plots -------------------
   
@@ -230,7 +246,10 @@ server <- function(input, output, session) {
                 selected_small_area(),
                 "</b>, for <b>",
                 isolate(selected_la()), 
-                "</b>, and for Scotland as a whole.<br>   "
+                "</b>, and for Scotland as a whole.<br>
+                <br><b>Population Index</b> = the projected population size as a percentage of 
+                  the population size in 2018. For example, a population index of 96 by 2030 means that the area's population 
+                  is projected to be 96% of its size in 2018. <br><br>"
     )
     )
   })
@@ -256,7 +275,10 @@ server <- function(input, output, session) {
                   selected_small_area(),
                   "</b> compared to other small areas in <b>",
                   selected_la(),
-                  "</b>. <br>Click on the map or click on sub-council areas in the legend to explore the data.<br>   "
+                  ".</b><br>
+                  <br><b>Population Index</b> = the projected population size as a percentage of 
+                  the population size in 2018. For example, a population index of 96 by 2030 means that the area's population 
+                  is projected to be 96% of its size in 2018. <br><br>"
                   )
            }
   )
@@ -287,8 +309,11 @@ server <- function(input, output, session) {
   
   # On submit_tab_1 click, update global variables and outputs on both tabs to reflect tab 1 selections
   #sequence is important so that tabs don't diverge from another
+
+  
+  
   observeEvent(input$submit_tab_1, {
-    
+    print(initial_polygon_click)
     # Update 'global' value for LA, and dropdown in tab 2
     selected_la(input$la_choice_tab_1)
     #selected_year(input$year_choice_tab_1)
@@ -309,6 +334,28 @@ server <- function(input, output, session) {
       
       update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
       update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+      
+    #   #update within_areas aes
+    #   index <- match(selected_small_area(), levels(within_areas_data_tab_1()$LongName))
+    #   restyle_obj <- get_plot_trace_aesthetics(index)
+    #   #plotlyProxy("within_areas_plot_tab_1", session, deferUntilFlush = TRUE) %>%
+    #   plotlyProxyInvoke(within_areas_1_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy$curveNumber)
+    #   plotlyProxyInvoke(within_areas_2_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_2_proxy$curveNumber)
+    # 
+    #   #update across_areas aes
+    #   area_data <- within_areas_data_tab_1() %>%
+    #     filter(LongName == selected_small_area())
+    #   plotlyProxy("across_areas_plot_tab_1", session, deferUntilFlush = TRUE) %>%
+    #     plotlyProxyInvoke("deleteTraces", list(as.integer(2)))%>%
+    #     plotlyProxyInvoke("addTraces", list(list(x = area_data$Year,
+    #                                              y = area_data$Value,
+    #                                              text = c(rep("Population Index",13)),
+    #                                              customdata = c(rep(str_replace(selected_small_area(), "\n", "<br>"), 13)),
+    #                                              mode = "lines",
+    #                                              line = list(color = 'orange', width = 2, shape = 'spline'),
+    #                                              hovertemplate='<br>Area Name: %{customdata}<br>Year: %{x}<br>Measure: %{text}<br>Value: %{y}<extra></extra>',
+    #                                              name = str_replace_all(selected_small_area(), "\n", "<br>"))
+    #     ))
     }
     
   })
@@ -349,6 +396,7 @@ server <- function(input, output, session) {
   }, ignoreInit = TRUE)
 
 #Observe Events: line plot clicks -------------------------------
+
   observeEvent(event_data("plotly_click", source = "within_areas_1"), {
     #get event data
     plot_click_data <- (event_data("plotly_click", source = "within_areas_1"))
@@ -358,7 +406,15 @@ server <- function(input, output, session) {
     update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
     update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
     restyle_obj <- get_plot_trace_aesthetics(plot_click_data$curveNumber + 1)
-    plotlyProxyInvoke(within_areas_1_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy$curveNumber)
+
+    plotlyProxyInvoke(within_areas_1_proxy(), "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy()$curveNumber)
+    plotlyProxyInvoke(within_areas_2_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_2_proxy$curveNumber)
+
+    #update line trace for selected_small_area on across areas plot proxy (tab 1)
+    update_across_area_proxy(plotlyProxy("across_areas_plot_tab_1", session),
+                             selected_small_area(), 
+                             within_areas_data_tab_1())
+   
   })
   
   observeEvent(event_data("plotly_click", source = "within_areas_2"), {
@@ -369,8 +425,17 @@ server <- function(input, output, session) {
     #update polygon highlighting on plots
     update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
     update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    
+    #obtain a list of colours and opacity values to pass to restyle proxy
     restyle_obj <- get_plot_trace_aesthetics(plot_click_data$curveNumber + 1)
+    #update opacity/colour of traces on within_areas plot on both tabs
+    plotlyProxyInvoke(within_areas_1_proxy(), "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy()$curveNumber)
     plotlyProxyInvoke(within_areas_2_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_2_proxy$curveNumber)
+    
+    #update line trace for selected_small_area on across areas plot proxy (tab 1)
+    update_across_area_proxy(plotlyProxy("across_areas_plot_tab_1", session),
+                             selected_small_area(), 
+                             within_areas_data_tab_1())
   })
   
   
@@ -421,18 +486,23 @@ server <- function(input, output, session) {
   observeEvent(input$la_map_tab_1_shape_click, {
     
     event <- input$la_map_tab_1_shape_click
+    #if statement prevents app crashing if user clicks the highlighted line instead of polygon
+    # when this occurs the event$id is NULL
+    if(!is.null(event$id)) {
     selected_small_area(event$id)
-    
+
     update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
     update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
     
+    #update within_areas aes
     index <- match(event$id, levels(within_areas_data_tab_1()$LongName))
     restyle_obj <- get_plot_trace_aesthetics(index)
-    plotlyProxyInvoke(within_areas_1_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy$curveNumber)
-    # plotlyProxyInvoke(within_areas_1_proxy, "restyle", list(line = list(
-    #   opacity = restyle_obj$opacity,
-    #   color = restyle_obj$colours
-    # )),within_areas_1_proxy$curveNumber)
+    plotlyProxyInvoke(within_areas_1_proxy(), "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy()$curveNumber)
+    plotlyProxyInvoke(within_areas_2_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_2_proxy$curveNumber)
+
+    plotlyProxy("across_areas_plot_tab_1", session) %>%
+      update_across_area_proxy(event$id, within_areas_data_tab_1())
+    }
     
   })
   
@@ -440,18 +510,24 @@ server <- function(input, output, session) {
   observeEvent(input$la_map_tab_2_shape_click, {
     
     event <- input$la_map_tab_2_shape_click
-    selected_small_area(event$id)
     
+    if(!is.null(event$id)) {
+    selected_small_area(event$id)
+
     update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
     update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
     
     index <- match(event$id, levels(measures_data_tab_2()$LongName))
+    
     restyle_obj <- get_plot_trace_aesthetics(index)
     plotlyProxyInvoke(within_areas_2_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_2_proxy$curveNumber)
-    # plotlyProxyInvoke(within_areas_2_proxy, "restyle", list(line = list(
-    #   opacity = restyle_obj$opacity,
-    #   color = restyle_obj$colours
-    # )),within_areas_2_proxy$curveNumber)
+
+    plotlyProxyInvoke(within_areas_1_proxy(), "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy()$curveNumber)
+    
+    update_across_area_proxy(plotlyProxy("across_areas_plot_tab_1", session),
+                               event$id, 
+                               within_areas_data_tab_1())
+    }
   })
   
   # The selected_small_area() reactiveVal depends on a submit click or a map click to be updated.
@@ -546,7 +622,8 @@ server <- function(input, output, session) {
   # alphabetically. This allows the selected council to have a different line colour - controlled
   # by create_line_graph function.
   measures_data_tab_2 <- eventReactive(list(input$submit_tab_1,
-                                            input$submit_tab_2
+                                            input$submit_tab_2,
+                                            initial_polygon_click()
                                             ), {
     measures_data <- measures_data  %>%
       filter(Council.Name == selected_la() &
@@ -617,9 +694,9 @@ server <- function(input, output, session) {
              selected_small_area(),
              "</b> compared to other small areas in <b>",
              selected_la(),
-             "</b>.<br>",
+             "</b>.<br><br>",
              measure_info(),
-             "<br>Click on the map or click on sub-council areas in the legend to explore the data.<br>   "
+             "<br><br>Click on the map or click on sub-council areas in the legend to explore the data.<br>   "
       )
     }
   )
@@ -633,7 +710,20 @@ server <- function(input, output, session) {
 
 # Tab 3 - Data filter  ---------------------------------------------
   
+  selected_ages_dwnld <- reactiveVal(c(0, 90))
+  selected_sex_dwnld <- reactiveVal(c("Females", "Males", "Persons"))
+  selected_years_dwnld <- reactiveVal(c(2018,2030))
+  
+  observeEvent(input$apply_filters,{
+    selected_ages_dwnld(input$age_choice_tab_3)
+    selected_sex_dwnld(input$gender_choice_tab_3)
+    selected_years_dwnld(input$year_select_tab3)
+  })
+  
+  
+  
   dl_measures_data <- reactive({
+    req(input$la_choice_tab_3)
     if (input$measure_choice_tab_3 != "Detailed Population Data") {
       dta <- filter(measures_data, 
                     Council.Name %in% input$la_choice_tab_3 & Measure == input$measure_choice_tab_3
@@ -649,25 +739,16 @@ server <- function(input, output, session) {
     } else {
       if (input$granularity_selection == "Custom Population Data") {
         # Store selected age range
-        age_range <- c(input$age_choice_tab_3[1]:input$age_choice_tab_3[2])
+        age_range <- c(selected_ages_dwnld()[1]:selected_ages_dwnld()[2])
         # Store selected year range
-        year_range <- as.character(c(input$year_select_tab3[1]:input$year_select_tab3[2]))
+        year_range <- as.character(c(selected_years_dwnld()[1]:selected_years_dwnld()[2]))
         # Filter data based on selections
-        dta <- filter(projection_data, 
-                      Council.Name %in% input$la_choice_tab_3 & Sex %in% input$gender_choice_tab_3 & Age %in% age_range) %>%
-          mutate(Population = round(Population, 1)) %>%
-          left_join(., small_area_lookup[,1:2], by = "Area.Name")
-        # Replace any missing long names with "Council Total"
-        dta[is.na(dta$LongName), "LongName"] <- "Council Total"
-        dta <- dta %>% 
-          select(Council.Name, LongName, Year, Sex, Age, Population) %>%
-          # Remove newlines from long sub-council area names
-          mutate(LongName = stringr::str_replace_all(LongName, "\n", " ")) %>%
-          # Pivot to wide data frame
-          pivot_wider(names_from = Year, values_from = Population) %>%
-          # Keep only selected years  
-          select(Council.Name, LongName, Sex, Age, year_range) %>%
-          dplyr::rename(Council = Council.Name, "Sub-Council Area" = LongName)
+        dta <- filter_n_format(projection_data, 
+                               small_area_lookup, 
+                               input$la_choice_tab_3, 
+                               age_range, 
+                               year_range, 
+                               selected_sex_dwnld())
       } else {
         dta <- filter(measures_data, 
                       Council.Name %in% input$la_choice_tab_3 & Measure == "Total Population"

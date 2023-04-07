@@ -8,12 +8,12 @@ library(RColorBrewer)
 library(shinycssloaders)
 library(sf)
 library(vroom, warn.conflicts = FALSE)
-library(shinyvalidate, warn.conflicts = FALSE)
 library(stringr)
 library(data.table, warn.conflicts = FALSE)
 library(shinyanimate, warn.conflicts = FALSE)
 library(DT)
 library(shinyjs)
+library(shinyWidgets)
 
 # Read raw data ------------
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", 
@@ -49,6 +49,9 @@ small_area_lookup$LongName <- str_wrap(small_area_lookup$LongName, 13)
 # Global variables ----------
 councils <- unique(projection_data$Council.Name[projection_data$Council.Name != "Scotland"])
 years <- unique(projection_data$Year)
+ years_labels <- years
+# years_labels[1] <- "2018 - base year"
+ names(years) <- years_labels
 
 # Manipulate data objects -----------
 measures_data <- left_join(measures_data, 
@@ -122,17 +125,17 @@ add_pop_index <- function(raw_data,
 }
 
 # Function to create line graphs
-# Function to create line graphs
 create_line_plot <- function(dataset, 
                              small_area_selection, 
                              graph_type,
-                             tab) {
+                             tab,
+                             yrange = NULL) {
   
   measure_title <- "Population Index"
   all_area_names <- sort(unique(dataset$LongName))
   small_area_index <- match(small_area_selection, all_area_names)
   trace_aes <- get_plot_trace_aesthetics(small_area_index)
-  
+
   # Default aesthetic for within council area plots...
   # Renders the first area (by factor level) blue and the rest grey
   line_colours <- trace_aes$colours
@@ -141,7 +144,7 @@ create_line_plot <- function(dataset,
   alpha_settings <- trace_aes$opacity
   source_name <- "within_areas_1"
   if(graph_type == "Across Areas") {
-    line_colours <- c("orange", "grey", "dimgrey")
+    line_colours <- c("grey", "dimgrey", "orange")
     alpha_settings <- c(1, 0.7, 0.7)
     source_name <- "across_areas"
   }
@@ -162,11 +165,11 @@ create_line_plot <- function(dataset,
                                                   "<br>", 
                                                   "Year:", 
                                                   `Year`,
-                                                  "<br>",
-                                                  "Measure:", 
-                                                  `measure_title`, 
+                                                  # "<br>",
+                                                  # "Measure:", 
+                                                  # `measure_title`, 
                                                   "<br>", 
-                                                  "Value:",
+                                                  `measure_title`,": ",
                                                   # Format values with thousand separator
                                                   prettyNum(`Value`, 
                                                             big.mark = ",", 
@@ -178,8 +181,8 @@ create_line_plot <- function(dataset,
     #             color = "lightgrey", size=0.7) +
     geom_line(size = 0.7#, position=position_dodge(width=0.5)
     ) +
-    scale_color_manual(values = line_colours) +
-    scale_alpha_manual(values = alpha_settings) +
+    scale_color_manual(values = line_colours) + #rep("grey", 25)) +
+    scale_alpha_manual(values = alpha_settings) + #rep(0.8, 25)) +
     labs(title = "", color = "", alpha = "") +
     theme(plot.title = element_text(size = 9), 
           panel.grid.major = element_blank(),
@@ -193,9 +196,13 @@ create_line_plot <- function(dataset,
     ) +
     scale_x_continuous(breaks = 2018:2030)
   
+  if(graph_type == "Across Areas") {
+    plot <- plot + ylim(yrange[1], yrange[2])
+  }
+  
   ggplotly(plot, tooltip = c("text"), source = source_name) %>% 
     config(displayModeBar = FALSE) %>% 
-    layout(xaxis = list(fixedrange = TRUE)) %>% 
+    layout(xaxis = list(fixedrange = TRUE, showspikes = T)) %>% 
     layout(yaxis = list(fixedrange = TRUE)) %>%
     layout(legend = list(orientation = 'v', title = "", itemclick = "toggleothers"))
 }
@@ -330,9 +337,9 @@ update_highlighted_polygon <- function(proxy, small_area) {
   # Remove any previously highlighted polygon
   proxy %>% clearGroup("highlighted_polygon") %>% 
     addPolylines(stroke = TRUE,
-                 weight = 2,
+                 weight = 3,
                  color = "orange",
-                 opacity = 0.8,
+                 opacity = 0.7,
                  data = selected_polygon,
                  group = "highlighted_polygon"
     )
@@ -347,4 +354,46 @@ get_plot_trace_aesthetics <- function(trace_number) {
   opacity <- c(rep(0.7,24))
   opacity[trace_number] <- 1
   return(list(colours = colours, opacity = opacity))
+}
+
+update_across_area_proxy <- function(proxy, small_area, data){
+  area_data <- data %>%
+    filter(LongName == small_area)
+  
+  proxy %>%
+  plotlyProxyInvoke("deleteTraces", list(as.integer(2)))%>%
+    plotlyProxyInvoke("addTraces", list(list(x = area_data$Year,
+                                             y = area_data$Value,
+                                             text = c(rep("Population Index",13)),
+                                             customdata = c(rep(str_replace(small_area, "\n", "<br>"), 13)),
+                                             mode = "lines",
+                                             line = list(color = 'orange', width = 2, shape = 'spline'),
+                                             hovertemplate='<br>Area Name: %{customdata}<br>Year: %{x}<br>%{text}: %{y}<extra></extra>',
+                                             name = str_replace_all(small_area, "\n", "<br>"))
+    ))
+}
+
+
+filter_n_format <- function(dataframe, lookup, councils, ages, years, sex) {
+  data <- as.data.table(dataframe)
+  setkey(data, Council.Name, Area.Name, Year, Sex, Age)
+  small_area_lookup <- as.data.table(lookup)
+  setkey(small_area_lookup, Area.Name, Council.Name)
+  
+  filtered_data <- data[Council.Name %in% councils & 
+                          Sex %in% sex & 
+                          Age %in% ages & 
+                          Year %in% years][
+                            small_area_lookup, 
+                            on =.(Area.Name = Area.Name), 
+                            LongName := i.LongName
+                          ] %>% 
+    dcast(Council.Name + Level + Area.Name + LongName + Sex + Age ~ Year, value.var = "Population")
+  
+  formatted_data <- filtered_data %>% 
+    mutate(LongName = ifelse(is.na(LongName), paste0(Area.Name, " Total"), stringr::str_replace_all(LongName, "\n", " "))) %>%
+    select(!c(Level, Area.Name)) %>%
+    dplyr::rename(Council = Council.Name, "Sub-Council Area" = LongName)
+  
+  return(as.data.frame(formatted_data))
 }
