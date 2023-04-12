@@ -28,8 +28,10 @@ server <- function(input, output, session) {
   # Reactive expression to store selection from age_choice_tab_1 - variable name = selected_age_tab_1
   selected_age_tab_1 <- reactive({
     # slider input only returns first and last values so need to create a vector with all values
-    first_age <- input$age_choice_tab_1[1]
-    last_age <- input$age_choice_tab_1[2]
+    first_age <- if_else(input$age_choice_tab_1[1] == "90+", 90, as.numeric(input$age_choice_tab_1[1]))
+    #first_age <- input$age_choice_tab_1[1]
+    #last_age <- input$age_choice_tab_1[2]
+    last_age <- if_else(input$age_choice_tab_1[2] == "90+", 90, as.numeric(input$age_choice_tab_1[2]))
     full_range <- c(first_age:last_age)
     
     return(full_range)
@@ -37,12 +39,17 @@ server <- function(input, output, session) {
   
   # Generate label string showing selected single age or range for pop-ups and map annotation text
   selected_age_label <- reactive({
-    age_label <- if (length(selected_age_tab_1()) > 1) {
-      paste(first(selected_age_tab_1()), "-", last(selected_age_tab_1()))
+    if (length(selected_age_tab_1()) > 1) {
+      first <- if_else(first(selected_age_tab_1()) == 90, "90+", as.character(first(selected_age_tab_1())))
+      last <- if_else(last(selected_age_tab_1()) == 90, "90+", as.character(last(selected_age_tab_1())))
+      #paste(first(selected_age_tab_1()), "-", last(selected_age_tab_1()))
+      return(paste(first, "-", last))
     } else {
-      selected_age_tab_1()
+      label <- if_else(selected_age_tab_1() == 90, "90+", as.character(selected_age_tab_1()))
+      #selected_age_tab_1()
+      return(label)
     }
-    return(age_label)
+    #return(age_label)
   })
   
   # Calculate population index based on user input for gender and age
@@ -108,7 +115,31 @@ server <- function(input, output, session) {
   proxy_tab_1 <- leafletProxy("la_map_tab_1")
 
 # Tab 1: tabsetPanel UI output --------------------------------
+
+  output$help1 <- renderUI({
+    if (initial_polygon_click() == FALSE) {
+      return(div())
+      } else {
+    actionButton(
+      inputId = "help_tab1",
+      label = NULL,
+      icon = icon("question")
+    )
+      }
+  })
   
+  output$help2 <- renderUI({
+    if (initial_polygon_click() == FALSE) {
+      return(div())
+    } else {
+      actionButton(
+        inputId = "help_tab2",
+        label = "",
+        icon = icon("question")
+      )
+    }
+  })
+    
   #only render the tabsetPanel UI once the user has selected a polygon (causing initial_polygon_click() to 
   #be updated to TRUE)
   output$tabsetPanel <- renderUI ({
@@ -557,7 +588,32 @@ server <- function(input, output, session) {
   ignoreInit = TRUE, once = TRUE)
 
 # Observe Event: Intro/Guide --------------
+
+  observeEvent(input$help_tab1,{
+    #set tab views
+    this <- intro_df %>% filter(tab == "population")
+    #run intro sequence
+    introjs(session, 
+            options = list("nextLabel"="Next",
+                           "prevLabel"="Back",
+                           "skipLabel"="Skip",
+                           steps = this) 
+            
+    )
+  })
   
+  observeEvent(input$help_tab2,{
+    #set tab views
+    this <- intro_df %>% filter(tab == "other_measures")
+    #run intro sequence
+    introjs(session, 
+            options = list("nextLabel"="Next",
+                           "prevLabel"="Back",
+                           "skipLabel"="Skip",
+                           steps = this) 
+            
+    )
+  })
   
 # Tab 2: Map Data ---------------
   
@@ -715,7 +771,11 @@ server <- function(input, output, session) {
   selected_years_dwnld <- reactiveVal(c(2018,2030))
   
   observeEvent(input$apply_filters,{
-    selected_ages_dwnld(input$age_choice_tab_3)
+     selected_ages <- as.numeric(input$age_choice_tab_3)
+     if(is.na(selected_ages[1])) {selected_ages[1] <- 90}
+     if(is.na(selected_ages[2])) {selected_ages[2] <- 90}
+     print(selected_ages)
+    selected_ages_dwnld(selected_ages)
     selected_sex_dwnld(input$gender_choice_tab_3)
     selected_years_dwnld(input$year_select_tab3)
   })

@@ -14,6 +14,9 @@ library(shinyanimate, warn.conflicts = FALSE)
 library(DT)
 library(shinyjs)
 library(shinyWidgets)
+library(rintrojs)
+
+intro_df <- read.csv("Data files/intro_guide.csv")
 
 # Read raw data ------------
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", 
@@ -33,7 +36,7 @@ measures_data <- measures_data %>%
   mutate_at(vars(Value), funs(round(., 0)))
 
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
-la_shape_data <- read_rds("Data files/LAShps.rds") 
+#la_shape_data <- read_rds("Data files/LAShps.rds") 
 
 # Small-area look ups ---------
 small_area_lookup <- vroom::vroom("Data files/ShortNameLookup.csv", 
@@ -52,6 +55,11 @@ years <- unique(projection_data$Year)
  years_labels <- years
 # years_labels[1] <- "2018 - base year"
  names(years) <- years_labels
+ 
+ ages <- unique(projection_data$Age)
+ age_names <- ages
+ age_names[91] <- "90+"
+ names(ages) <- age_names
 
 # Manipulate data objects -----------
 measures_data <- left_join(measures_data, 
@@ -202,7 +210,7 @@ create_line_plot <- function(dataset,
   
   ggplotly(plot, tooltip = c("text"), source = source_name) %>% 
     config(displayModeBar = FALSE) %>% 
-    layout(xaxis = list(fixedrange = TRUE, showspikes = T)) %>% 
+    layout(xaxis = list(fixedrange = TRUE)) %>% 
     layout(yaxis = list(fixedrange = TRUE)) %>%
     layout(legend = list(orientation = 'v', title = "", itemclick = "toggleothers"))
 }
@@ -216,14 +224,11 @@ create_map <- function(map_data,
   #data passed to this function should already be filtered by council and year
   council <- map_data$Council.Name[1]
   year <- map_data$Year[1]
-  #map_data <- map_data$Year[1]
   
   # Set colours for the map
   map_colours <- brewer.pal(8, "Blues")
   # Assign colours to quintiles
   map_colour_quintiles <- colorBin(map_colours, map_data$Value, n = 8)
-  
-  
   
   # Tab 1 content
   hover_content <- ""
@@ -241,6 +246,7 @@ create_map <- function(map_data,
                              )
     )
     legend_content <- "Population"
+    
   } else if (tab_num == 2) {
     hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>%s: %s",
                              map_data$SubCouncil,
@@ -390,8 +396,14 @@ filter_n_format <- function(dataframe, lookup, councils, ages, years, sex) {
                           ] %>% 
     dcast(Council.Name + Level + Area.Name + LongName + Sex + Age ~ Year, value.var = "Population")
   
+  filtered_data$Age[filtered_data$Age == 90] <- "90+"
+  # filtered_data$Age <- as.character(filtered_data$Age)
+  print(class(filtered_data$Age))
+  
   formatted_data <- filtered_data %>% 
-    mutate(LongName = ifelse(is.na(LongName), paste0(Area.Name, " Total"), stringr::str_replace_all(LongName, "\n", " "))) %>%
+    mutate(LongName = ifelse(is.na(LongName), 
+                             paste0(Area.Name, " Total"), 
+                             stringr::str_replace_all(LongName, "\n", " "))) %>%
     select(!c(Level, Area.Name)) %>%
     dplyr::rename(Council = Council.Name, "Sub-Council Area" = LongName)
   

@@ -1,16 +1,12 @@
 ui <- tagList(tags$head(withAnim(),
                         useShinyjs(),
-                        tags$style(
-                          HTML(' #year_panel {background-color: rgba(255,255,255, 0.5);
-                          border-bottom-color:rgba(0,0,255,0);
-                          border-left-color:rgba(0,0,255,0);
-                          border-right-color:rgba(0,0,255,0);
-                              border-top-color:rgba(0,0,255,0);}')) #this ensures background of year panel is transparent
+                        introjsUI(),
+                        tags$link(rel = "stylesheet", type = "text/css", href = "stylesheet.css")
                         #use_tota11y() requires shinya11y package, for assessing accessibility
                         ),
-              navbarPage(title = "Sub-Council Population Projections",
+              navbarPage(title = "Sub-Council Population Projections", id = "navbar",
 # Population Size Tab (Tab 1)-----------------------------------------------------------                           
-                         tabPanel("Population size", 
+                         tabPanel("Population size", value = "population_size", 
                                   # Add selectize input for council dropdown - inputID = la_choice_tab_1
                                   fluidRow(column(3,
                                                   selectizeInput(inputId = "la_choice_tab_1", 
@@ -22,15 +18,14 @@ ui <- tagList(tags$head(withAnim(),
                                                                  )
                                                   ),
                                            column(3,
-                                                  # Add sliderinput for age range - inputID = age_choice_tab_1
-                                                  sliderInput(inputId = "age_choice_tab_1", 
-                                                              label = "Select ages to include:", 
-                                                              min = 0, 
-                                                              max = 90, 
-                                                              step = 1, 
-                                                              value = c(0, 90), 
-                                                              dragRange = TRUE 
-                                                              )
+                                                  sliderTextInput(
+                                                    inputId = "age_choice_tab_1",
+                                                    label = "Select age / range to include:",  
+                                                    choices = age_names,
+                                                    selected = age_names[c(1, 91)],
+                                                    dragRange = TRUE
+                                                  )
+                                                  
                                                   ),
                                            column(2,
                                                   # Add checkbox input for gender - inputID = gender_choice_tab_1
@@ -45,13 +40,15 @@ ui <- tagList(tags$head(withAnim(),
                                                   actionButton("submit_tab_1", 
                                                                "Submit Selections",
                                                                icon("paper-plane"),
-                                                               style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                                                                disabled = '' #disabled on initial load until LA selected
                                                                )
+                                                  ),
+                                           column(1),
+                                           column(1,
+                                                  uiOutput("help1")
                                                   )
-                                           ),
                                            # End of fluidRow
-                                           #), 
+                                           ), 
                                   # If council input and year are not blank show council map
                                   fluidRow(conditionalPanel(condition = "input.submit_tab_1 != 0 || input.submit_tab_2 != 0", 
                                                             column(6,
@@ -59,7 +56,7 @@ ui <- tagList(tags$head(withAnim(),
                                                                      #h3("Population Size"),
                                                                      leafletOutput("la_map_tab_1", width = "100%", height = "80vh") %>%
                                                                      withSpinner(type = 6),
-                                                                   absolutePanel(id = "year_panel",
+                                                                   absolutePanel(id = "year_panel_1",
                                                                                  class = "panel panel-default", 
                                                                                  fixed = FALSE,
                                                                                  draggable = FALSE,
@@ -125,10 +122,13 @@ ui <- tagList(tags$head(withAnim(),
                                            actionButton("submit_tab_2", 
                                                         "Submit Selections", 
                                                         icon("paper-plane"),
-                                                        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                                                         disabled = '' #disabled on initial load until LA selected
                                                         )
                                            ),
+                                    column(2),
+                                    column(1,
+                                           uiOutput("help2")
+                                    )
                                     # End of fluidRow
                                     ),
                                   fluidRow(conditionalPanel(condition = "input.submit_tab_1 != 0 || input.submit_tab_2 != 0", #if either button has ever been clicked
@@ -136,7 +136,7 @@ ui <- tagList(tags$head(withAnim(),
                                                                    leafletOutput("la_map_tab_2", width = "100%", height = "80vh") %>%
                                                                      withSpinner(type = 6),
                                                                    
-                                                                   absolutePanel(id = "year_panel",
+                                                                   absolutePanel(id = "year_panel_2",
                                                                                  class = "panel panel-default", 
                                                                                  fixed = FALSE,
                                                                                  draggable = FALSE,
@@ -198,13 +198,14 @@ ui <- tagList(tags$head(withAnim(),
                                   )
                    ),
             column(4,
-                   # Data download button
-                   downloadButton("dl_data_tab_3", "Download this Selection"),
+                   
                    p(style = "display:inline-block", "All data can be accessed on the IS"), 
                    a(href = "https://www.improvementservice.org.uk/products-and-services/data-and-intelligence2/sub-council-area-population-projections/downloads", 
                      target = "_blank",
                      "website"
-                   )
+                   ),
+                   # Data download button
+                   downloadButton("dl_data_tab_3", "Download this Selection")
             )
            ), #end of fluidRow
     fluidRow (
@@ -219,15 +220,14 @@ ui <- tagList(tags$head(withAnim(),
                               ),
                        conditionalPanel(condition = "input.granularity_selection == 'Custom Population Data'",
                                         column(3,
-                                               # Age choice slider input
-                                               sliderInput(inputId = "age_choice_tab_3", 
-                                                           label = "Select ages to include:", 
-                                                           min = 0, 
-                                                           max = 90, 
-                                                           step = 1, 
-                                                           value = c(0,90), 
-                                                           dragRange = TRUE 
-                                                           )
+                                               sliderTextInput(
+                                                 inputId = "age_choice_tab_3",
+                                                 label = "Select ages to include:",  
+                                                 choices = age_names,
+                                                 selected = age_names[c(1, 91)],
+                                                 dragRange = TRUE
+                                               )
+                                               
                                                ),
                                         column(2,
                                                # Gender choice slider input
