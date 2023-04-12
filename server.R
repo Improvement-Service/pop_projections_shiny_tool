@@ -146,12 +146,11 @@ server <- function(input, output, session) {
     if (initial_polygon_click() == FALSE) {
       return(div("Click on a sub-council area on the map to begin exploring projected change for your selected population."))
     } else {
-      
-      div (h3("Projected Population Growth"),
+      div (
       tabsetPanel(id = "tab_1_plots",
                   type = "tabs",
                   tabPanel(
-                    title = "Across Scotland",
+                    title = "Population Index Across Scotland",
                     value = "across_areas",
                     
                     plotlyOutput("across_areas_plot_tab_1", 
@@ -164,7 +163,7 @@ server <- function(input, output, session) {
                     ), #end of across areas tab panel
                   
                   tabPanel(
-                    title = "Within Council Areas", 
+                    title = "Population Index Within Council Areas", 
                     value = "within_areas",
                     
                     plotlyOutput("within_areas_plot_tab_1", 

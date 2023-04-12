@@ -143,6 +143,7 @@ create_line_plot <- function(dataset,
   all_area_names <- sort(unique(dataset$LongName))
   small_area_index <- match(small_area_selection, all_area_names)
   trace_aes <- get_plot_trace_aesthetics(small_area_index)
+  council <- unique(dataset$Council.Name)
 
   # Default aesthetic for within council area plots...
   # Renders the first area (by factor level) blue and the rest grey
@@ -192,7 +193,7 @@ create_line_plot <- function(dataset,
     scale_color_manual(values = line_colours) + #rep("grey", 25)) +
     scale_alpha_manual(values = alpha_settings) + #rep(0.8, 25)) +
     labs(title = "", color = "", alpha = "") +
-    theme(plot.title = element_text(size = 9), 
+    theme(plot.title = element_text(size = 12), 
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(), 
           panel.background = element_blank(), 
@@ -203,6 +204,10 @@ create_line_plot <- function(dataset,
           axis.title.y = element_blank()
     ) +
     scale_x_continuous(breaks = 2018:2030)
+  
+  if(tab == 2) {
+    plot <- plot + labs(title = paste0(measure_title, " in ", council))
+  }
   
   if(graph_type == "Across Areas") {
     plot <- plot + ylim(yrange[1], yrange[2])
