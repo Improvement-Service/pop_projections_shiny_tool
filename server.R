@@ -1,5 +1,21 @@
 server <- function(input, output, session) {
   
+# Tab links --------------------------------------
+  #Set up links to tabs
+
+  observeEvent(input$pop_size_link, {
+    updateTabsetPanel(session, "main_tabs", selected = "population_size")
+  })
+  
+  observeEvent(input$other_measures_link, {
+    updateTabItems(session, "main_tabs", selected = "other_measures")
+  })
+  
+  observeEvent(input$data_tab_link, {
+    updateTabItems(session, "main_tabs", selected = "data_download")
+  })
+  
+  
 # Input Validation --------------------------------
   # initialise an InputValidator object - do for both tab 1 and tab 2
   iv_tab_1 <- InputValidator$new()

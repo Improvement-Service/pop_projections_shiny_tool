@@ -14,6 +14,7 @@ library(data.table, warn.conflicts = FALSE)
 library(shinyanimate, warn.conflicts = FALSE)
 library(DT)
 library(shinyjs)
+library(shinydashboard)
 
 # Read raw data ------------
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", 
