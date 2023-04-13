@@ -15,6 +15,10 @@ server <- function(input, output, session) {
     updateTabItems(session, "main_tabs", selected = "data_download")
   })
   
+  observeEvent(input$feedback_tab_link, {
+    updateTabItems(session, "main_tabs", selected = "feedback_tab")
+  })
+  
   
 # Input Validation --------------------------------
   # initialise an InputValidator object - do for both tab 1 and tab 2
