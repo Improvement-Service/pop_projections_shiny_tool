@@ -3,6 +3,36 @@ ui <- tagList(tags$head(withAnim()
                         ),
               navbarPage(title = "Sub-Council Area Population Projections",
                          id = "main_tabs",
+# Footer ----------------------------------------------------------------------------
+                         tags$footer(column(6, 
+                                            # Link to IS website
+                                            tags$a(href="https://www.improvementservice.org.uk", 
+                                                   tags$b("Improvement Service"), 
+                                                   class = "externallink", 
+                                                   style = "color: white; text-decoration: none"
+                                                   )
+                                            ), 
+                                     column(6, 
+                                            # Link to research email
+                                            tags$a(href="mailto:research@improvementservice.org.uk", 
+                                                   tags$b("Contact us"), 
+                                                   class="externallink", 
+                                                   style = "color: white; text-decoration: none"
+                                                   )
+                                            ), 
+                                      style = 
+                                      "position:fixed;
+                                      text-align:center;
+                                      left: 0;
+                                      bottom:0;
+                                      width:100%;
+                                      z-index:1000;  
+                                      height:20px; /* Height of the footer */
+                                      color: white;
+                                      padding: 0px;
+                                      font-weight: bold;
+                                     background-color: #1995dc"
+                                     ),
 # Home Page ------------------------------------------------------------
                          tabPanel(title = "Home Page",
                                   fluidRow(column(6,
@@ -47,7 +77,11 @@ ui <- tagList(tags$head(withAnim()
                                                                           )
                                                                    ),
                                                            tags$h5("There you will find background information on the projection and a methodology note detailing how the projections were produced including assumptions made and caveats and limitations to consider when interpreting the data. The full sets of data can be downloaded from the website and answers to frequently asked questions can also be found."),
-                                                           tags$h5("The following video provides an overview of how the projections were produced and how they may be used.")
+                                                           tags$h5("The following video provides an overview of how the projections were produced and how they may be used."),
+                                                           tags$h5("If you have any feedback on the tool please complete ", 
+                                                                   tags$a(href = "https://www.smartsurvey.co.uk/s/B3ZV8T/", 
+                                                                          "this survey."
+                                                                   ))
                                                            )
                                                   ),
                                            column(6,
@@ -56,6 +90,9 @@ ui <- tagList(tags$head(withAnim()
                                                   )
                                            )
                                   ),
+tabPanel(title = "Feedback",
+         HTML('<iframe id="ss-embed-frame" onload="window.parent.parent.scrollTo(0,0)" src="https://www.smartsurvey.co.uk/s/NDC5JZ/" style="width:100%;height:500px;border:0px;padding-bottom:4px;" frameborder="0"><a href="https://www.smartsurvey.co.uk/s/NDC5JZ/">Please take our survey</a></iframe><div>Create your own online surveys with <a href="https://www.smartsurvey.co.uk">SmartSurvey</a>.</div>')
+         ),
 # Population Size Tab (Tab 1)-----------------------------------------------------------                           
                          tabPanel(title = "Population Size", 
                                   value = "population_size",
@@ -295,7 +332,10 @@ ui <- tagList(tags$head(withAnim()
                                      withSpinner(type = 6)
                                    # TabPanel closing bracket
                                    )
+
                         # End of navbar
-                        ) 
+                        ) ,
+# Pop up
+HTML("<script id='ss-popup-1896964'>var _ssq={'cid':1896964};window.onload=function(){var ss=document.createElement('script');ss.type='text/javascript';ss.async=true;ss.src=('https:'==document.location.protocol?'https://':'http://')+'www.smartsurvey.co.uk/s/popup/'+_ssq.cid+'/js/';var s=document.getElementsByTagName('script')[0];s.parentNode.insertBefore(ss,s);};</script>")
               # End of tags$List
               ) 
