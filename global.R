@@ -8,6 +8,7 @@ library(RColorBrewer)
 library(shinycssloaders)
 library(sf)
 library(vroom, warn.conflicts = FALSE)
+library(shinyvalidate, warn.conflicts = FALSE)
 library(stringr)
 library(data.table, warn.conflicts = FALSE)
 library(shinyanimate, warn.conflicts = FALSE)
@@ -206,7 +207,7 @@ create_line_plot <- function(dataset,
     scale_x_continuous(breaks = 2018:2030)
   
   if(tab == 2) {
-    plot <- plot + labs(title = paste0("Projected change in !",measure_title, " in ", council))
+    plot <- plot + labs(title = paste0("Projected change in ",measure_title, " in ", council))
   }
   
   if(graph_type == "Across Areas") {
