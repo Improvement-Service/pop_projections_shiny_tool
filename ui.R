@@ -336,7 +336,7 @@ ui <- tagList(tags$head(withAnim()
                           tabPanel(title = "Feedback",
                                    value = "feedback_tab",
                                    HTML('<iframe id="ss-embed-frame" onload="window.parent.parent.scrollTo(0,0)" src="https://www.smartsurvey.co.uk/s/NDC5JZ/" style="width:100%;height:550px;border:0px;padding-bottom:4px;" frameborder="0"><a href="https://www.smartsurvey.co.uk/s/NDC5JZ/">Please take our survey</a></iframe><div>Create your own online surveys with <a href="https://www.smartsurvey.co.uk">SmartSurvey</a>.</div>')
-                                   ),
+                                   )
                         # End of navbar
                         ) 
               # End of tags$List
