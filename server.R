@@ -185,7 +185,7 @@ server <- function(input, output, session) {
                     value = "across_areas",
                     
                     plotlyOutput("across_areas_plot_tab_1", 
-                                 height = "360px") %>% 
+                                 height = "340px") %>% 
                       withSpinner(type = 6),
                     
                     span(htmlOutput("across_scotland_text"), 
@@ -198,7 +198,7 @@ server <- function(input, output, session) {
                     value = "within_areas",
                     
                     plotlyOutput("within_areas_plot_tab_1", 
-                                        height = "360px") %>% 
+                                        height = "340px") %>% 
                       withSpinner(type = 6), 
                     
                     span(htmlOutput("within_la_text"), 
@@ -310,7 +310,7 @@ server <- function(input, output, session) {
                 "</b>, and for Scotland as a whole.<br>
                 <br><b>Population Index</b> = the projected population size as a percentage of 
                   the population size in 2018. For example, a population index of 96 by 2030 means that the area's population 
-                  is projected to be 96% of its size in 2018. <br><br>"
+                  is projected to be 96% of its size in 2018."
     )
     )
   })
@@ -339,7 +339,7 @@ server <- function(input, output, session) {
                   ".</b><br>
                   <br><b>Population Index</b> = the projected population size as a percentage of 
                   the population size in 2018. For example, a population index of 96 by 2030 means that the area's population 
-                  is projected to be 96% of its size in 2018. <br><br>"
+                  is projected to be 96% of its size in 2018."
                   )
            }
   )
@@ -768,7 +768,7 @@ server <- function(input, output, session) {
           "<b>Sex Ratio</b> = number of males per 100 females"
         } else {
           if (input$measure_choice_tab_2 == "Dependency Ratio") {
-            "<b>Dependency Ratio</b> = population of children (aged 0-15) and elderly people (aged 65+) as a proportion of the working age population (aged 16-64). <br>"
+            "<b>Dependency Ratio</b> = population of children (aged 0-15) and elderly people (aged 65+) as a proportion of the working age population (aged 16-64)."
           } else {
             if (input$measure_choice_tab_2 == "Life Expectancy") {
               "<b>Life Expectancy</b> = expectation of life as an average across males and females"

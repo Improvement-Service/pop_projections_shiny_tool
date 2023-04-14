@@ -21,19 +21,19 @@ ui <- tagList(tags$head(withAnim(),
                             style = "color: white; text-decoration: none"
                      )
               ),
-              style = 
+              style =
                 "position:fixed;
                                       text-align:center;
                                       left: 0;
                                       bottom:0;
                                       width:100%;
                                       z-index:1000;
-                                      height:20px; /* Height of the footer */
+                                      height:18px; /* Height of the footer */
                                       color: white;
                                       padding: 0px;
                                       font-weight: bold;
                                      background-color: #1995dc"
-              
+
               ),
 # navbarPage set up -----------------------------------------------------
               navbarPage(title = "Sub-Council Area Population Projections",
@@ -92,7 +92,7 @@ ui <- tagList(tags$head(withAnim(),
                                                   ),
                                            column(6,
                                                   # Embedded youtube video
-                                                  HTML('<iframe width="580" height="280" src="https://www.youtube-nocookie.com/embed/n8J_7SK3jlI?autoplay=0&showinfo=0&loop=1&rel=0" frameborder="0" allow="accelerometer; loop ;encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
+                                                  HTML('<iframe width="580" height="260" src="https://www.youtube-nocookie.com/embed/n8J_7SK3jlI?autoplay=0&showinfo=0&loop=1&rel=0" frameborder="0" allow="accelerometer; loop ;encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
                                                   )
                                            )
                                   ),
@@ -146,7 +146,7 @@ ui <- tagList(tags$head(withAnim(),
                                                             column(6,
                                                                    div(
                                                                      #h3("Population Size"),
-                                                                     leafletOutput("la_map_tab_1", width = "100%", height = "80vh") %>%
+                                                                     leafletOutput("la_map_tab_1", width = "100%", height = "72vh") %>%
                                                                      withSpinner(type = 6),
                                                                    absolutePanel(id = "year_panel_1",
                                                                                  class = "panel panel-default", 
@@ -225,7 +225,7 @@ ui <- tagList(tags$head(withAnim(),
                                     ),
                                   fluidRow(conditionalPanel(condition = "input.submit_tab_1 != 0 || input.submit_tab_2 != 0", #if either button has ever been clicked
                                                             column(6, 
-                                                                   leafletOutput("la_map_tab_2", width = "100%", height = "80vh") %>%
+                                                                   leafletOutput("la_map_tab_2", width = "100%", height = "75vh") %>%
                                                                      withSpinner(type = 6),
                                                                    
                                                                    absolutePanel(id = "year_panel_2",
@@ -261,6 +261,8 @@ ui <- tagList(tags$head(withAnim(),
   tabPanel(
     title = "Data Download",
     value = "data_download",
+    # Padding at bottom of content to avoid overlap with footer
+    tags$body(style = "margin-bottom: 20px;"),
            fluidRow(
              # Add selectize input for council dropdown - inputID = la_choice_tab_3
                    column(3,
