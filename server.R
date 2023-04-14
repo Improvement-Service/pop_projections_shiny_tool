@@ -29,8 +29,6 @@ server <- function(input, output, session) {
   selected_age_tab_1 <- reactive({
     # slider input only returns first and last values so need to create a vector with all values
     first_age <- if_else(input$age_choice_tab_1[1] == "90+", 90, as.numeric(input$age_choice_tab_1[1]))
-    #first_age <- input$age_choice_tab_1[1]
-    #last_age <- input$age_choice_tab_1[2]
     last_age <- if_else(input$age_choice_tab_1[2] == "90+", 90, as.numeric(input$age_choice_tab_1[2]))
     full_range <- c(first_age:last_age)
     
@@ -42,11 +40,9 @@ server <- function(input, output, session) {
     if (length(selected_age_tab_1()) > 1) {
       first <- if_else(first(selected_age_tab_1()) == 90, "90+", as.character(first(selected_age_tab_1())))
       last <- if_else(last(selected_age_tab_1()) == 90, "90+", as.character(last(selected_age_tab_1())))
-      #paste(first(selected_age_tab_1()), "-", last(selected_age_tab_1()))
       return(paste(first, "-", last))
     } else {
       label <- if_else(selected_age_tab_1() == 90, "90+", as.character(selected_age_tab_1()))
-      #selected_age_tab_1()
       return(label)
     }
     #return(age_label)
@@ -139,6 +135,7 @@ server <- function(input, output, session) {
       )
     }
   })
+
     
   #only render the tabsetPanel UI once the user has selected a polygon (causing initial_polygon_click() to 
   #be updated to TRUE)
@@ -334,16 +331,17 @@ server <- function(input, output, session) {
                       initial_polygon_click(TRUE)
                     }, ignoreInit = TRUE, once = TRUE) #after this event has happened once, stop observing
   
-  
+
 # Observe Events: record/update global selections -------------------------------------------
   
   # On submit_tab_1 click, update global variables and outputs on both tabs to reflect tab 1 selections
   #sequence is important so that tabs don't diverge from another
-
+observe({
+  print(input$measure_choice_tab_3)
+})
   
   
   observeEvent(input$submit_tab_1, {
-    print(initial_polygon_click)
     # Update 'global' value for LA, and dropdown in tab 2
     selected_la(input$la_choice_tab_1)
     #selected_year(input$year_choice_tab_1)
@@ -589,8 +587,24 @@ server <- function(input, output, session) {
 # Observe Event: Intro/Guide --------------
 
   observeEvent(input$help_tab1,{
-    #set tab views
-    this <- intro_df %>% filter(tab == "population")
+    #set tab view
+    updateTabsetPanel(session, "tab_1_plots",
+                      selected = "within_areas")
+    #filter introducion step df
+    these_steps <- intro_df %>% filter(tab == "population")
+    #run intro sequence
+    introjs(session, 
+            options = list("nextLabel"="Next",
+                           "prevLabel"="Back",
+                           "skipLabel"="Skip",
+                           steps = these_steps) 
+            
+    )
+  })
+  
+  observeEvent(input$help_tab2,{
+    #filter intro df for tab specific steps
+    this <- intro_df %>% filter(tab == "other_measures")
     #run intro sequence
     introjs(session, 
             options = list("nextLabel"="Next",
@@ -601,9 +615,11 @@ server <- function(input, output, session) {
     )
   })
   
-  observeEvent(input$help_tab2,{
-    #set tab views
-    this <- intro_df %>% filter(tab == "other_measures")
+  observeEvent(input$help_tab3,{
+    #set choices
+    updateSelectizeInput(session, "measure_choice_tab_3", selected = "Population Data")
+    updateRadioButtons(session, "granularity_selection", selected = "Custom Population Data")
+    this <- intro_df %>% filter(tab == "download")
     #run intro sequence
     introjs(session, 
             options = list("nextLabel"="Next",
@@ -719,13 +735,13 @@ server <- function(input, output, session) {
         "<b>Natural Change</b> = births minus deaths"
       } else {
         if (input$measure_choice_tab_2 == "Sex Ratio") {
-          "<b>Sex Ratio</b> = proportion of males to females"
+          "<b>Sex Ratio</b> = number of males per 100 females"
         } else {
           if (input$measure_choice_tab_2 == "Dependency Ratio") {
-            "<b>Dependency Ratio</b> = population aged 0-15 & 65+ as a proportion of population aged 16-64"
+            "<b>Dependency Ratio</b> = population of children (aged 0-15) and elderly people (aged 65+) as a proportion of the working age population (aged 16-64). <br>"
           } else {
-            if (input$measure_choice_tab_2 == "Life Expectancy - Persons") {
-              "<b>Life Expectancy - Persons</b> = expectation of life as an average across males and females"
+            if (input$measure_choice_tab_2 == "Life Expectancy") {
+              "<b>Life Expectancy</b> = expectation of life as an average across males and females"
             } else {
               return()
             }
@@ -765,6 +781,16 @@ server <- function(input, output, session) {
 
 # Tab 3 - Data filter  ---------------------------------------------
   
+  #render download button only when there is data on display
+  output$download_button <- renderUI ({
+    if(input$measure_choice_tab_3 == '' || is.null(input$la_choice_tab_3)) {
+      div()
+    } else {
+      downloadButton("dl_data_tab_3", "Download this Selection")
+    }
+    
+  })
+  
   selected_ages_dwnld <- reactiveVal(c(0, 90))
   selected_sex_dwnld <- reactiveVal(c("Females", "Males", "Persons"))
   selected_years_dwnld <- reactiveVal(c(2018,2030))
@@ -773,7 +799,6 @@ server <- function(input, output, session) {
      selected_ages <- as.numeric(input$age_choice_tab_3)
      if(is.na(selected_ages[1])) {selected_ages[1] <- 90}
      if(is.na(selected_ages[2])) {selected_ages[2] <- 90}
-     print(selected_ages)
     selected_ages_dwnld(selected_ages)
     selected_sex_dwnld(input$gender_choice_tab_3)
     selected_years_dwnld(input$year_select_tab3)
@@ -783,7 +808,7 @@ server <- function(input, output, session) {
   
   dl_measures_data <- reactive({
     req(input$la_choice_tab_3)
-    if (input$measure_choice_tab_3 != "Detailed Population Data") {
+    if (input$measure_choice_tab_3 != "Population Data") {
       dta <- filter(measures_data, 
                     Council.Name %in% input$la_choice_tab_3 & Measure == input$measure_choice_tab_3
       )

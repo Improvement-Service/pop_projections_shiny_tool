@@ -1,15 +1,16 @@
 tab,step,element,intro
-population,1,#la_map_tab_1,This map shows projected population size. Click on an area to see it highlighted on the time-series change plot. Hover to explore values.
-population,2,#year_panel,Explore projected population size for individual years.
-population,3,#tabsetPanel,"This graph shows projected growth in the selected area from 2018 to 2030 compared other sub-council areas. Click on a line to select a new area (this will also update the highlighted area on the map). Scroll through the legend to see all sub-council areas, click on one to isolate it on the graph."
-population,4,#tab_1_plots,Change tab to view how the selected-area populatoin changes compared to Scotland and the whole council-area.
-population,5,#navbar,"You can explore other population measures (such as net migration and sex ratio), and filter and download projections on these tabs."
-other_measures,1,#la_map_tab_2,This map shows projected values in sub-council areas for the selected measure in the selected year. Hover to explore the values or click on area to highlight this area on the graph.
-other_measures,2,#year_panel_2,View projected values for any individual year from 2019 to 2030. Or view real base year values in 2018.
-other_measures,3,#within_areas_plot_tab_2,"This graph shows projected values for the chosen measure for the selected area from 2018 to 2030 compared other sub-council areas. Click on a line to select a new area (this will also update the highlighted area on the map). Scroll through the legend to see all sub-council areas, click on one to isolate it."
+population,1,#la_map_tab_1,This map shows projected population size. Hover to explore values. Click on an area to see it highlighted on the projected change graph. 
+population,2,#year_panel_1,Explore projected population size for individual years.
+population,3,#tabsetPanel,"This graph shows projected growth in the selected area from 2018 to 2030 compared to other sub-council areas. Click on a line to select a new area (this will also update the highlighted area on the map). Scroll through the legend to see all sub-council areas, click on one to isolate it on the graph."
+population,4,#tab_1_plots,Change tab to view how the selected-area population changes compared to Scotland and the whole council-area.
+population,5,#navbar,You can explore other population measures (such as net migration and sex ratio) and filter and download projections data on other tabs.
+other_measures,1,#la_map_tab_2,This map shows projected values for the selected measure in sub-council areas in the selected year. Hover to explore the values or click on area to highlight this area on the graph.
+other_measures,2,#year_panel_2,View projected values for any individual year from 2018 to 2030. 
+other_measures,3,#within_areas_plot_tab_2,"This graph shows projected values for the chosen measure for the selected area compared to other sub-council areas from 2018 to 2030 . Click on a line to select a new area (this will also update the highlighted area on the map). Scroll through the legend to see all sub-council areas, click on one to isolate it."
 other_measures,4,#navbar,"You can explore projections for specified sex and age groups, and filter and download projections on these tabs."
-download,1,#la_choice_tab_3,Choose one or more councils
-download,2,#measure_choice_tab_3,Choose the population measure of interest.
-download,3,#granularity_selection,"Total Area Population figures are the total number of persons (all ages, both genders) in an area. Custom filtering will give population figures by single year of age for each gender option (Males, Females, Both).  "
-download,4,#preview_table_tab3,Preview your data to ensure you have made the appropriate selections.
-download,5,#dl_data_tab_3,"When you have made your selections, click here to download the csv."
+download,1,#la_choice,Choose one or more councils
+download,2,#measure,Choose the population measure of interest.
+download,3,#granularity_selection,"For Population Data you can choose the level of detail you need: Total Area Population figures are the total number of persons (all ages, sexes) in sub-council areas. By choosing Custom Population Data you can filter detailed population data by single year of age for each selected sex option (Males, Females, Both). Note that custom filtering will not produce aggregated population figures."
+download,4,#selections,Select age /sex /year parameters of interest and click 'Apply Filters' to make these changes. This is only available for population data.
+download,5,#preview_table_tab3,Preview your data to ensure you have made the appropriate selections.
+download,6,#download_button,"When you have made your selections, click here to download a csv file."

@@ -112,7 +112,7 @@ ui <- tagList(tags$head(withAnim(),
                                                                       "Natural Change",
                                                                       "Sex Ratio", 
                                                                       "Dependency Ratio", 
-                                                                      "Life Expectancy - Persons"
+                                                                      "Life Expectancy"
                                                                       ), 
                                                           label = "Select measure:",
                                                           selected = "Dependency Ratio"
@@ -171,46 +171,51 @@ ui <- tagList(tags$head(withAnim(),
     value = "download",
            fluidRow(
              # Add selectize input for council dropdown - inputID = la_choice_tab_3
-             column(4,
+                   column(3,
+                        div(id = "la_choice",
                     pickerInput(
                       inputId = "la_choice_tab_3",
-                      choices = c("Scotland", councils), 
+                      choices = councils, 
                       label = "Select Local Authorities:",
                       options = list(
                         `actions-box` = TRUE), 
                       multiple = TRUE
-                    )
+                    ))
                     ),
             # Selectize input for measure
-            column(4,
+            column(3,
+                   div(id = "measure",
                    selectizeInput(inputId = "measure_choice_tab_3",  
-                                  choices = c("Detailed Population Data",
+                                  choices = c("Population Data",
                                               "Net Migration", 
                                               "Natural Change",
                                                "Sex Ratio", 
                                                "Dependency Ratio", 
-                                               "Life Expectancy - Persons"
+                                               "Life Expectancy"
                                               ), 
                                   label = "Select measure:",
                                   options = list(placeholder = 'Select measure:',
                                                  onInitialize = I('function() { this.setValue(""); }')
                                                  )
                                   )
+                   )
                    ),
-            column(4,
-                   
-                   p(style = "display:inline-block", "All data can be accessed on the IS"), 
-                   a(href = "https://www.improvementservice.org.uk/products-and-services/data-and-intelligence2/sub-council-area-population-projections/downloads", 
-                     target = "_blank",
-                     "website"
-                   ),
+            column(3),
+            column(2,
                    # Data download button
-                   downloadButton("dl_data_tab_3", "Download this Selection")
+                   uiOutput("download_button")
+            ),
+            column(1,
+                   actionButton(
+                     inputId = "help_tab3",
+                     label = "",
+                     icon = icon("question")
+                   )
             )
            ), #end of fluidRow
     fluidRow (
       # Conditional panel to show other select options when measure is "Detailed Data"
-      conditionalPanel(condition = "input.measure_choice_tab_3 == 'Detailed Population Data'",
+      conditionalPanel(condition = "input.measure_choice_tab_3 == 'Population Data'",
                        column(2,
                               radioButtons("granularity_selection",
                                            label = "Select detail:",
@@ -219,7 +224,8 @@ ui <- tagList(tags$head(withAnim(),
                                            )
                               ),
                        conditionalPanel(condition = "input.granularity_selection == 'Custom Population Data'",
-                                        column(3,
+                                        div(id = "selections", style = "height:100px;",
+                                            column(3,
                                                sliderTextInput(
                                                  inputId = "age_choice_tab_3",
                                                  label = "Select ages to include:",  
@@ -260,7 +266,7 @@ ui <- tagList(tags$head(withAnim(),
                                                actionButton(inputId = "apply_filters",
                                                            label = "Apply Filters"
                                                )
-                                        )
+                                        ))
                                         ) #end of conditionalPanel
                        ) #end of conditionalPanel
       ), #end of fluidRow

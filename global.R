@@ -34,6 +34,7 @@ measures_data <- vroom::vroom("Data files/Other measures data.csv",
                               )
 measures_data <- measures_data %>% 
   mutate_at(vars(Value), funs(round(., 0)))
+measures_data$Measure[measures_data$Measure == "Life Expectancy - Persons"] <- "Life Expectancy"
 
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
 #la_shape_data <- read_rds("Data files/LAShps.rds") 
@@ -174,9 +175,6 @@ create_line_plot <- function(dataset,
                                                   "<br>", 
                                                   "Year:", 
                                                   `Year`,
-                                                  # "<br>",
-                                                  # "Measure:", 
-                                                  # `measure_title`, 
                                                   "<br>", 
                                                   `measure_title`,": ",
                                                   # Format values with thousand separator
@@ -206,7 +204,7 @@ create_line_plot <- function(dataset,
     scale_x_continuous(breaks = 2018:2030)
   
   if(tab == 2) {
-    plot <- plot + labs(title = paste0(measure_title, " in ", council))
+    plot <- plot + labs(title = paste0("Projected change in !",measure_title, " in ", council))
   }
   
   if(graph_type == "Across Areas") {
@@ -402,8 +400,6 @@ filter_n_format <- function(dataframe, lookup, councils, ages, years, sex) {
     dcast(Council.Name + Level + Area.Name + LongName + Sex + Age ~ Year, value.var = "Population")
   
   filtered_data$Age[filtered_data$Age == 90] <- "90+"
-  # filtered_data$Age <- as.character(filtered_data$Age)
-  print(class(filtered_data$Age))
   
   formatted_data <- filtered_data %>% 
     mutate(LongName = ifelse(is.na(LongName), 
