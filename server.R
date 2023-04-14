@@ -1,5 +1,39 @@
 server <- function(input, output, session) {
   
+# Tab links --------------------------------------
+  #Set up links to tabs
+
+  observeEvent(input$pop_size_link, {
+    updateTabsetPanel(session, "main_tabs", selected = "population_size")
+  })
+  
+  observeEvent(input$other_measures_link, {
+    updateTabItems(session, "main_tabs", selected = "other_measures")
+  })
+  
+  observeEvent(input$data_tab_link, {
+    updateTabItems(session, "main_tabs", selected = "data_download")
+  })
+  
+  observeEvent(input$feedback_tab_link, {
+    updateTabItems(session, "main_tabs", selected = "feedback_tab")
+  })
+  
+# Input Validation --------------------------------
+  # initialise an InputValidator object - do for both tab 1 and tab 2
+  iv_tab_1 <- InputValidator$new()
+  iv_tab_2 <- InputValidator$new()
+  
+  # Add validation rules: council and year choice cannot be null.
+  # These rules can be enforced by calling req(iv_tab_1$is_valid()) as required.
+  # Do this for both tab 1 and tab 2
+  iv_tab_1$add_rule("la_choice_tab_1", sv_required())
+  iv_tab_1$add_rule("year_choice_tab_1", sv_required())
+  
+  iv_tab_2$add_rule("la_choice_tab_2", sv_required())
+  iv_tab_2$add_rule("year_choice_tab_2", sv_required())
+  iv_tab_2$add_rule("measure_choice_tab_2", sv_required())
+
 # Global variables -----------
   
   # The following 'Global' reactive variables store values which should be consistent across both tabs
@@ -336,11 +370,7 @@ server <- function(input, output, session) {
   
   # On submit_tab_1 click, update global variables and outputs on both tabs to reflect tab 1 selections
   #sequence is important so that tabs don't diverge from another
-observe({
-  print(input$measure_choice_tab_3)
-})
-  
-  
+
   observeEvent(input$submit_tab_1, {
     # Update 'global' value for LA, and dropdown in tab 2
     selected_la(input$la_choice_tab_1)

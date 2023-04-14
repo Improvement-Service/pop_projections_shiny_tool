@@ -15,8 +15,10 @@ library(DT)
 library(shinyjs)
 library(shinyWidgets)
 library(rintrojs)
+library(shinydashboard)
 
 intro_df <- read.csv("Data files/intro_guide.csv")
+
 
 # Read raw data ------------
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", 
