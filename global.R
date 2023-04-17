@@ -28,7 +28,7 @@ projection_data <- vroom::vroom("Data files/Population Projections With Aggregat
                                 show_col_types = FALSE
                                 )
 projection_data <- projection_data %>% 
-  mutate_at(vars(Population), funs(round(., 0)))
+  mutate_at(vars(Population), list(~round(., 0)))
 
 measures_data <- vroom::vroom("Data files/Other measures data.csv", 
                               delim = ",", 
@@ -36,11 +36,10 @@ measures_data <- vroom::vroom("Data files/Other measures data.csv",
                               show_col_types = FALSE
                               )
 measures_data <- measures_data %>% 
-  mutate_at(vars(Value), funs(round(., 0)))
+  mutate_at(vars(Value), list(~round(., 0)))
 measures_data$Measure[measures_data$Measure == "Life Expectancy - Persons"] <- "Life Expectancy"
 
 shape_data <- read_rds("Data files/SCAP_shapefile.rds")
-#la_shape_data <- read_rds("Data files/LAShps.rds") 
 
 # Small-area look ups ---------
 small_area_lookup <- vroom::vroom("Data files/ShortNameLookup.csv", 
