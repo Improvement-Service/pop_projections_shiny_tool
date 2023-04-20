@@ -317,34 +317,9 @@ server <- function(input, output, session) {
                   is projected to be 96% of its size in 2018."
       ))
     })
-    }) %>% bindEvent(selected_small_area())
+    }) %>% bindEvent(selected_small_area(), selected_la())
   
-  # Text to accompany/annotate the 'Population Index Within Council Areas' plot
-  # render_within_la_text <- eventReactive(
-  #   # Will render the text whenever these inputs are changed
-  #   list(input$submit_tab_1, 
-  #        input$submit_tab_2,
-  #        selected_small_area()
-  #        ), {
-  #          req(initial_polygon_click())
-  #          paste0("Showing projected population change for <b>",
-  #                 selected_gender_tab_1(),
-  #                 "</b> aged <b>",
-  #                 input$age_choice_tab_1[1],
-  #                 "-",
-  #                 input$age_choice_tab_1[2],
-  #                 "</b> in <b>",
-  #                 selected_small_area(),
-  #                 "</b> compared to other small areas in <b>",
-  #                 selected_la(),
-  #                 ".</b><br>
-  #                 <br><b>Population Index</b> = the projected population size as a percentage of 
-  #                 the population size in 2018. For example, a population index of 96 by 2030 means that the area's population 
-  #                 is projected to be 96% of its size in 2018."
-  #                 )
-  #          }
-  # )
-  
+
   # Plot text will not render until requirements within render_within_la_text() are met
   output$within_la_text <- renderText({
     #render_within_la_text()
@@ -366,7 +341,7 @@ server <- function(input, output, session) {
                   is projected to be 96% of its size in 2018."
       )
     })
-    }) %>% bindEvent(selected_small_area())
+    }) %>% bindEvent(selected_small_area(), selected_la())
   
   # Observe Events: Input Validation --------------------------------
   
@@ -393,8 +368,12 @@ server <- function(input, output, session) {
 
   observeEvent(input$submit_tab_1, {
     # Update 'global' value for LA, and dropdown in tab 2
+    
+    #first: reset selected area (this means that outputs which react to changes to this
+    #variable will be triggered when submit is clicked even if user has not altered LA)
+    selected_la('')
+    #now update globally referenced LA to be the selected LA on the tab where submit is clicked
     selected_la(input$la_choice_tab_1)
-    #selected_year(input$year_choice_tab_1)
     updateSelectizeInput(inputId = "la_choice_tab_2",
                          selected = selected_la())
     
@@ -419,11 +398,14 @@ server <- function(input, output, session) {
   # On submit_tab_2 click, update global variables and outputs on both tabs to reflect tab 2 selections
   observeEvent(input$submit_tab_2, {
     
-    #update 'global' values for LA, year and small area
+    #first: reset selected area (this means that outputs which react to changes to this
+    #variable will be triggered when submit is clicked even if user has not altered LA)
+    selected_la('')
+    #now update globally referenced LA to be the selected LA on the tab where submit is clicked
     selected_la(input$la_choice_tab_2)
-    #selected_year(input$year_choice_tab_2)
     updateSelectizeInput(inputId = "la_choice_tab_1",
                          selected = selected_la())
+    
     #on initial submit click there should be no highlighted polygon. 
     #once user has clicked a polygon for the first time, submit will cause a polygon
     #to be highlighted with default small area for a council
@@ -534,6 +516,15 @@ server <- function(input, output, session) {
       startAnim(session, id= "submit_tab_2", "bounce")
     }
   })
+  
+  observeEvent({
+    input$age_choice_tab_3
+    input$gender_choice_tab_3
+    input$year_select_tab3
+  },
+  {
+    startAnim(session, id = "apply_filters", "bounce")
+  }, ignoreInit = TRUE)
   
 # Observe Events: map shape clicks--------------------
   
@@ -684,7 +675,7 @@ server <- function(input, output, session) {
                tab = 2,
                #only consider changes to selected_small_area() when other inputs have also changed
                #because small_area change on its own is reflected in the output by proxy_tab_2
-               default_area = isolate(selected_small_area()),
+               default_area = selected_small_area(),
                initial_polygon_click = initial_polygon_click())
     })
   }) %>% bindEvent(c(selected_la(),
@@ -716,11 +707,13 @@ server <- function(input, output, session) {
   # alphabetically. This allows the selected council to have a different line colour - controlled
   # by create_line_graph function.
   measures_data_tab_2 <- eventReactive(list(selected_la(),
-                                            initial_polygon_click()
+                                             initial_polygon_click()#,
+                                            # input$submit_tab_1,
+                                            # input$submit_tab_2
                                             ), {
     measures_data <- measures_data  %>%
       filter(Council.Name == selected_la() &
-               Measure == isolate(input$measure_choice_tab_2) &
+               Measure == input$measure_choice_tab_2 &
                Level == "Small Area"
              )
     council_small_areas <- sort(unique(measures_data$LongName))
@@ -792,7 +785,7 @@ server <- function(input, output, session) {
              "<br><br>Click on the map or click on sub-council areas in the legend to explore the data.<br>   "
       )
     }) #end of isolate
-  }) %>% bindEvent(selected_small_area())
+  }) %>% bindEvent(selected_small_area(), selected_la())
   
   
 
