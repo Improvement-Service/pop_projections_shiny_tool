@@ -410,8 +410,8 @@ server <- function(input, output, session) {
       default_area <- small_area_options[1] #extract first alphabetically
       selected_small_area(default_area) #update global variable
       
-      update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-      update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+      update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+      update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     }
     
   })
@@ -435,8 +435,8 @@ server <- function(input, output, session) {
       default_area <- small_area_options[1]
       selected_small_area(default_area)
       
-      update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-      update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+      update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+      update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     }
   })
   
@@ -459,8 +459,8 @@ server <- function(input, output, session) {
     #update selected small area by finding which trace was clicked (curveNumber gives index of small area in LongName factor levels)
     selected_small_area(levels(within_areas_data_tab_1()$LongName)[plot_click_data$curveNumber + 1])
     #update polygon highlighting on plots
-    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     restyle_obj <- get_plot_trace_aesthetics(plot_click_data$curveNumber + 1)
 
     plotlyProxyInvoke(within_areas_1_proxy(), "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy()$curveNumber)
@@ -479,8 +479,8 @@ server <- function(input, output, session) {
     #update selected small area by finding which trace was clicked (curveNumber gives index of small area in data levels)
     selected_small_area(levels(measures_data_tab_2()$LongName)[plot_click_data$curveNumber + 1])
     #update polygon highlighting on plots
-    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     
     #obtain a list of colours and opacity values to pass to restyle proxy
     restyle_obj <- get_plot_trace_aesthetics(plot_click_data$curveNumber + 1)
@@ -547,8 +547,8 @@ server <- function(input, output, session) {
     if(!is.null(event$id)) {
     selected_small_area(event$id)
 
-    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(), selected_la())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(), selected_la())
     
     #update within_areas aes
     index <- match(event$id, levels(within_areas_data_tab_1()$LongName))
@@ -570,8 +570,8 @@ server <- function(input, output, session) {
     if(!is.null(event$id)) {
     selected_small_area(event$id)
 
-    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     
     index <- match(event$id, levels(measures_data_tab_2()$LongName))
     
