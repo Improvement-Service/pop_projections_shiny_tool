@@ -207,7 +207,7 @@ ui <- tagList(tags$head(withAnim(),
                                                                       "Life Expectancy"
                                                                       ), 
                                                           label = "Select measure:",
-                                                          selected = "Dependency Ratio"
+                                                          selected = "Total Population"
                                                           )
                                            ),
                                     column(3,

@@ -99,37 +99,30 @@ server <- function(input, output, session) {
     return(filtered_data)
   })
   
-# Tab 1: Map Data ---------------
-  #filter data based on selections when submit buttons or map polygons are clicked in either tab
-  map_data_tab_1 <- eventReactive(list(input$submit_tab_1,
-                                       input$submit_tab_2,
-                                       selected_year()),
-  {
-    # Filter this data based on council and year
-    council_map_data <- pop_index_data() %>%
-      filter(Council.Name == selected_la(),
-             Level == "Small Area",
-             Year == selected_year(),
-             Measure == "Total.Population") %>%
-      ungroup()
-    
-    # Filter shape file to selected council before combining with data
-    filtered_shape <- filter(shape_data, Council == selected_la())
-    # Combine map data with shape file 
-    combined_data <- left_join(filtered_shape, 
-                               council_map_data,
-                               by = c("SubCouncil" = "LongName")
-                               )
-    return(combined_data)
-  })
-  
+
 # Tab 1: Create Map LA Output ---------------
   
   # RenderLeaflet for council level map - output name = la_map_tab_1
   output$la_map_tab_1 <- renderLeaflet({
     #map reacts to this reactive data object which itself reacts to submit clicks and year changes
     req(isTruthy(!(selected_la() %in% c('', NULL))))
-    create_map(map_data = map_data_tab_1(),
+    
+    council_map_data <- isolate(pop_index_data()) %>%
+      filter(Council.Name == isolate(selected_la()),
+             Level == "Small Area",
+             Year == isolate(selected_year()),
+             Measure == "Total.Population") %>%
+      ungroup()
+    
+    # Filter shape file to selected council before combining with data
+    filtered_shape <- filter(shape_data, Council == isolate(selected_la()))
+    # Combine map data with shape file 
+    combined_data <- left_join(filtered_shape, 
+                               council_map_data,
+                               by = c("SubCouncil" = "LongName")
+    )
+    
+    create_map(map_data = combined_data,
                tab_num = 1,
                default_area = isolate(selected_small_area()),
                #if the param below is TRUE then map will be rendered with selected polygon highlighted
@@ -138,7 +131,7 @@ server <- function(input, output, session) {
                age_label = isolate(selected_age_label()),
                gender = isolate(selected_gender_tab_1())
                )
-    })
+    }) %>% bindEvent(c(selected_la(), selected_year()))
   
   # create map proxy which will be updated to reflect selected small area without refreshing the whole output;
   # when small area is clicked or submit clicked, update proxy aesthetics with update_highlighted_polygon()
@@ -219,16 +212,16 @@ server <- function(input, output, session) {
                                                 ), {
     # Use indexed data then filter to selected Council and small area
     across_data <- total_population_index_data() %>%
-      filter(Council.Name %in% c(selected_la(), "Scotland") & 
-               LongName %in% c(selected_la(), 
-                               "Scotland", 
+      filter(Council.Name %in% c(selected_la(), "Scotland") &
+               LongName %in% c(selected_la(),
+                               "Scotland",
                                selected_small_area()
                                )
              )
     # The area names need to be stored as a factor so that the order of the areas can be set
     # If this is not done the areas will be ordered alphabetically and the colours will be out of order
-    across_data$LongName <- factor(across_data$LongName, 
-                                   levels = c(selected_la(), 
+    across_data$LongName <- factor(across_data$LongName,
+                                   levels = c(selected_la(),
                                               "Scotland",
                                               selected_small_area()
                                               ),
@@ -244,22 +237,29 @@ server <- function(input, output, session) {
   # in response to these events too
   output$across_areas_plot_tab_1 <- renderPlotly({
     req(initial_polygon_click())
-    create_line_plot(dataset = across_areas_data_tab_1(), 
-                     small_area_selection = isolate(selected_small_area()), 
-                     graph_type = "Across Areas",
-                     tab = 1,
-                     yrange = c(
-                       min(min(within_areas_data_tab_1()$Value),min(across_areas_data_tab_1()$Value)),
-                       max(max(within_areas_data_tab_1()$Value),max(across_areas_data_tab_1()$Value))
-                     ))
+    
+    isolate({
+      create_line_plot(dataset = across_areas_data_tab_1(), 
+                       small_area_selection = isolate(selected_small_area()), 
+                       graph_type = "Across Areas",
+                       tab = 1,
+                       yrange = c(
+                         min(min(within_areas_data_tab_1()$Value),min(across_areas_data_tab_1()$Value)),
+                         max(max(within_areas_data_tab_1()$Value),max(across_areas_data_tab_1()$Value))
+                       )
+                       )
     })
+    
+    }) %>% bindEvent(c(input$submit_tab_1,
+                       input$submit_tab_2,
+                       initial_polygon_click(),
+                       across_areas_data_tab_1()))
   
   across_areas_proxy <- plotlyProxy("across_areas_plot_tab_1", session)
     
 # Tab 1: Within Areas Plot Data-----------
   # Filter data for selections when submit buttons or map polygons are clicked in either tab
-  within_areas_data_tab_1 <- eventReactive(list(input$submit_tab_1,
-                                                input$submit_tab_2,
+  within_areas_data_tab_1 <- eventReactive(list(selected_la(),
                                                 initial_polygon_click()),{
    data <- total_population_index_data() %>%
      filter(Council.Name == selected_la() & Level == "Small Area")
@@ -275,14 +275,17 @@ server <- function(input, output, session) {
 # Tab 1: Create Within Areas Plot----------
   output$within_areas_plot_tab_1 <- renderPlotly({
     req(initial_polygon_click())
-    create_line_plot(dataset = within_areas_data_tab_1(), 
-                     small_area_selection = isolate(selected_small_area()), 
-                     graph_type = "Within Council Areas",
-                     tab = 1
-                     )
+    
+    isolate({
+      create_line_plot(dataset = within_areas_data_tab_1(), 
+                       small_area_selection = isolate(selected_small_area()), 
+                       graph_type = "Within Council Areas",
+                       tab = 1
+      )
+    })
+    
   }) %>%
-    bindEvent(list(input$submit_tab_1,
-                   input$submit_tab_2)) #provoke update when submits are clicked
+    bindEvent(within_areas_data_tab_1()) #provoke update when submits are clicked
   
   
   #create a proxy which will show aesthetic updates when user clicks line trace
@@ -295,59 +298,51 @@ server <- function(input, output, session) {
   
 # Tab 1: Annotations for plots -------------------
   
-  # Text to accompany/annotate the 'Population Index Across Scotland' plot
-  # Text to accompany/annotate the 'Population Index Across Scotland' plot
-  render_across_scotland_text <- reactive({
+  # Plot text will not render until requirements within render_across_scotland_text() are met
+  output$across_scotland_text <- renderText({
+    #render_across_scotland_text()
     req(initial_polygon_click())
-    HTML(paste0("Showing projected population change for <b>",
-                isolate(selected_gender_tab_1()),
-                "</b> aged <b>",
-                isolate(selected_age_label()),
-                "</b> for <b>",
-                selected_small_area(),
-                "</b>, for <b>",
-                isolate(selected_la()), 
-                "</b>, and for Scotland as a whole.<br>
+    isolate({
+      HTML(paste0("Showing projected population change for <b>",
+                  isolate(selected_gender_tab_1()),
+                  "</b> aged <b>",
+                  isolate(selected_age_label()),
+                  "</b> for <b>",
+                  selected_small_area(),
+                  "</b>, for <b>",
+                  isolate(selected_la()), 
+                  "</b>, and for Scotland as a whole.<br>
                 <br><b>Population Index</b> = the projected population size as a percentage of 
                   the population size in 2018. For example, a population index of 96 by 2030 means that the area's population 
                   is projected to be 96% of its size in 2018."
-    )
-    )
-  })
+      ))
+    })
+    }) %>% bindEvent(selected_small_area(), selected_la())
   
-  # Plot text will not render until requirements within render_across_scotland_text() are met
-  output$across_scotland_text <- renderText({render_across_scotland_text()})
-  
-  # Text to accompany/annotate the 'Population Index Within Council Areas' plot
-  render_within_la_text <- eventReactive(
-    # Will render the text whenever these inputs are changed
-    list(input$submit_tab_1, 
-         input$submit_tab_2,
-         selected_small_area()
-         ), {
-           req(initial_polygon_click())
-           paste0("Showing projected population change for <b>",
-                  selected_gender_tab_1(),
-                  "</b> aged <b>",
-                  input$age_choice_tab_1[1],
-                  "-",
-                  input$age_choice_tab_1[2],
-                  "</b> in <b>",
-                  selected_small_area(),
-                  "</b> compared to other small areas in <b>",
-                  selected_la(),
-                  ".</b><br>
+
+  # Plot text will not render until requirements within render_within_la_text() are met
+  output$within_la_text <- renderText({
+    #render_within_la_text()
+    req(initial_polygon_click())
+    isolate({
+      paste0("Showing projected population change for <b>",
+             selected_gender_tab_1(),
+             "</b> aged <b>",
+             input$age_choice_tab_1[1],
+             "-",
+             input$age_choice_tab_1[2],
+             "</b> in <b>",
+             selected_small_area(),
+             "</b> compared to other small areas in <b>",
+             selected_la(),
+             ".</b><br>
                   <br><b>Population Index</b> = the projected population size as a percentage of 
                   the population size in 2018. For example, a population index of 96 by 2030 means that the area's population 
                   is projected to be 96% of its size in 2018."
-                  )
-           }
-  )
-  
-  # Plot text will not render until requirements within render_within_la_text() are met
-  output$within_la_text <- renderText({
-    render_within_la_text()
+      )
     })
+    }) %>% bindEvent(selected_small_area(), selected_la())
+  
   # Observe Events: Input Validation --------------------------------
   
   #when la is clicked for the first time (in either tab), enable submit button (in both tabs)
@@ -373,8 +368,12 @@ server <- function(input, output, session) {
 
   observeEvent(input$submit_tab_1, {
     # Update 'global' value for LA, and dropdown in tab 2
+    
+    #first: reset selected area (this means that outputs which react to changes to this
+    #variable will be triggered when submit is clicked even if user has not altered LA)
+    selected_la('')
+    #now update globally referenced LA to be the selected LA on the tab where submit is clicked
     selected_la(input$la_choice_tab_1)
-    #selected_year(input$year_choice_tab_1)
     updateSelectizeInput(inputId = "la_choice_tab_2",
                          selected = selected_la())
     
@@ -390,30 +389,8 @@ server <- function(input, output, session) {
       default_area <- small_area_options[1] #extract first alphabetically
       selected_small_area(default_area) #update global variable
       
-      update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-      update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
-      
-    #   #update within_areas aes
-    #   index <- match(selected_small_area(), levels(within_areas_data_tab_1()$LongName))
-    #   restyle_obj <- get_plot_trace_aesthetics(index)
-    #   #plotlyProxy("within_areas_plot_tab_1", session, deferUntilFlush = TRUE) %>%
-    #   plotlyProxyInvoke(within_areas_1_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy$curveNumber)
-    #   plotlyProxyInvoke(within_areas_2_proxy, "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_2_proxy$curveNumber)
-    # 
-    #   #update across_areas aes
-    #   area_data <- within_areas_data_tab_1() %>%
-    #     filter(LongName == selected_small_area())
-    #   plotlyProxy("across_areas_plot_tab_1", session, deferUntilFlush = TRUE) %>%
-    #     plotlyProxyInvoke("deleteTraces", list(as.integer(2)))%>%
-    #     plotlyProxyInvoke("addTraces", list(list(x = area_data$Year,
-    #                                              y = area_data$Value,
-    #                                              text = c(rep("Population Index",13)),
-    #                                              customdata = c(rep(str_replace(selected_small_area(), "\n", "<br>"), 13)),
-    #                                              mode = "lines",
-    #                                              line = list(color = 'orange', width = 2, shape = 'spline'),
-    #                                              hovertemplate='<br>Area Name: %{customdata}<br>Year: %{x}<br>Measure: %{text}<br>Value: %{y}<extra></extra>',
-    #                                              name = str_replace_all(selected_small_area(), "\n", "<br>"))
-    #     ))
+      update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+      update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     }
     
   })
@@ -421,11 +398,14 @@ server <- function(input, output, session) {
   # On submit_tab_2 click, update global variables and outputs on both tabs to reflect tab 2 selections
   observeEvent(input$submit_tab_2, {
     
-    #update 'global' values for LA, year and small area
+    #first: reset selected area (this means that outputs which react to changes to this
+    #variable will be triggered when submit is clicked even if user has not altered LA)
+    selected_la('')
+    #now update globally referenced LA to be the selected LA on the tab where submit is clicked
     selected_la(input$la_choice_tab_2)
-    #selected_year(input$year_choice_tab_2)
     updateSelectizeInput(inputId = "la_choice_tab_1",
                          selected = selected_la())
+    
     #on initial submit click there should be no highlighted polygon. 
     #once user has clicked a polygon for the first time, submit will cause a polygon
     #to be highlighted with default small area for a council
@@ -437,8 +417,8 @@ server <- function(input, output, session) {
       default_area <- small_area_options[1]
       selected_small_area(default_area)
       
-      update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-      update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+      update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+      update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     }
   })
   
@@ -461,8 +441,8 @@ server <- function(input, output, session) {
     #update selected small area by finding which trace was clicked (curveNumber gives index of small area in LongName factor levels)
     selected_small_area(levels(within_areas_data_tab_1()$LongName)[plot_click_data$curveNumber + 1])
     #update polygon highlighting on plots
-    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     restyle_obj <- get_plot_trace_aesthetics(plot_click_data$curveNumber + 1)
 
     plotlyProxyInvoke(within_areas_1_proxy(), "restyle", list(opacity=restyle_obj$opacity, line.color=restyle_obj$colours),within_areas_1_proxy()$curveNumber)
@@ -481,8 +461,8 @@ server <- function(input, output, session) {
     #update selected small area by finding which trace was clicked (curveNumber gives index of small area in data levels)
     selected_small_area(levels(measures_data_tab_2()$LongName)[plot_click_data$curveNumber + 1])
     #update polygon highlighting on plots
-    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     
     #obtain a list of colours and opacity values to pass to restyle proxy
     restyle_obj <- get_plot_trace_aesthetics(plot_click_data$curveNumber + 1)
@@ -537,6 +517,15 @@ server <- function(input, output, session) {
     }
   })
   
+  observeEvent({
+    input$age_choice_tab_3
+    input$gender_choice_tab_3
+    input$year_select_tab3
+  },
+  {
+    startAnim(session, id = "apply_filters", "bounce")
+  }, ignoreInit = TRUE)
+  
 # Observe Events: map shape clicks--------------------
   
   # Create observe event to update selected small areas when maps are clicked
@@ -549,8 +538,8 @@ server <- function(input, output, session) {
     if(!is.null(event$id)) {
     selected_small_area(event$id)
 
-    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(), selected_la())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(), selected_la())
     
     #update within_areas aes
     index <- match(event$id, levels(within_areas_data_tab_1()$LongName))
@@ -572,8 +561,8 @@ server <- function(input, output, session) {
     if(!is.null(event$id)) {
     selected_small_area(event$id)
 
-    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area())
-    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area())
+    update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
+    update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
     
     index <- match(event$id, levels(measures_data_tab_2()$LongName))
     
@@ -660,19 +649,18 @@ server <- function(input, output, session) {
     )
   })
   
-# Tab 2: Map Data ---------------
-  
-  # Create reactive data for map - variable name = map_data_tab_2
-  map_data_tab_2 <- eventReactive(list(input$submit_tab_1,
-                                       input$submit_tab_2,
-                                       selected_year()), {
-    # Filter this data based on council, measure and year
-    council_map_data <- measures_data %>%
+# Tab 2: Create Map LA Output ---------------
+
+  # RenderLeaflet for council level map - output name = la_map_tab_1
+  output$la_map_tab_2 <- renderLeaflet({
+    
+   isolate({ 
+     council_map_data <- measures_data %>%
       filter(Council.Name == selected_la(),
              Year == selected_year(),
              Measure == input$measure_choice_tab_2,
              Level == "Small Area"
-             ) %>%
+      ) %>%
       ungroup()
     
     # Filter shape file to selected council before combining with data
@@ -681,21 +669,17 @@ server <- function(input, output, session) {
     combined_data <- left_join(filtered_shape, 
                                council_map_data,
                                by = c("SubCouncil" = "LongName")
-                               )
-    }) #end of map_data_tab_2()
-  
-# Tab 2: Create Map LA Output ---------------
-
-  # RenderLeaflet for council level map - output name = la_map_tab_1
-  output$la_map_tab_2 <- renderLeaflet({
+    )
     
-    create_map(map_data_tab_2(), 
+    create_map(combined_data,
                tab = 2,
                #only consider changes to selected_small_area() when other inputs have also changed
                #because small_area change on its own is reflected in the output by proxy_tab_2
-               default_area = isolate(selected_small_area()),
+               default_area = selected_small_area(),
                initial_polygon_click = initial_polygon_click())
-  })
+    })
+  }) %>% bindEvent(c(selected_la(),
+                     selected_year()))
 
   proxy_tab_2 <- leafletProxy("la_map_tab_2")
 
@@ -722,19 +706,20 @@ server <- function(input, output, session) {
   # Additionally changes factor levels so that the selected council is first followed by the rest
   # alphabetically. This allows the selected council to have a different line colour - controlled
   # by create_line_graph function.
-  measures_data_tab_2 <- eventReactive(list(input$submit_tab_1,
-                                            input$submit_tab_2,
-                                            initial_polygon_click()
+  measures_data_tab_2 <- eventReactive(list(selected_la(),
+                                             initial_polygon_click()#,
+                                            # input$submit_tab_1,
+                                            # input$submit_tab_2
                                             ), {
     measures_data <- measures_data  %>%
       filter(Council.Name == selected_la() &
-               Measure == isolate(input$measure_choice_tab_2) &
+               Measure == input$measure_choice_tab_2 &
                Level == "Small Area"
              )
     council_small_areas <- sort(unique(measures_data$LongName))
-    
-    measures_data$LongName <- factor(measures_data$LongName, 
-                                     levels = council_small_areas, 
+
+    measures_data$LongName <- factor(measures_data$LongName,
+                                     levels = council_small_areas,
                                      ordered = TRUE)
     return(measures_data)
   })
@@ -744,13 +729,16 @@ server <- function(input, output, session) {
   # response to submit buttons or map clicks, this output is also only reactive to these events
   output$within_areas_plot_tab_2 <- renderPlotly({
     req(initial_polygon_click())
-    create_line_plot(dataset = measures_data_tab_2(),
-                     small_area_selection = isolate(selected_small_area()),
-                     # Only consider input$measure when other parameter are changed (since these 
-                     # are changed by submit/polygon clicks)
-                     graph_type = "Within Areas",
-                     tab = 2)
-  })
+    
+    isolate({
+      create_line_plot(dataset = measures_data_tab_2(),
+                       small_area_selection = isolate(selected_small_area()),
+                       # Only consider input$measure when other parameter are changed (since these 
+                       # are changed by submit/polygon clicks)
+                       graph_type = "Within Areas",
+                       tab = 2)
+    })
+  }) %>% bindEvent(c(measures_data_tab_2()))
   
   within_areas_2_proxy <- plotlyProxy("within_areas_plot_tab_2", session)
   
@@ -781,14 +769,11 @@ server <- function(input, output, session) {
     }
     text
   })
-  
-  # Text to accompany/annotate the Within Council Areas plot
-  render_within_la_text_tab_2 <- eventReactive(
-    # Will render the text whenever these inputs are changed
-    list(input$submit_tab_1,
-         input$submit_tab_2, 
-         selected_small_area()
-    ), {
+
+  # Plot text will not render until requirements within render_within_la_text_tab_2() are met
+  output$within_la_text_tab_2 <- renderText({
+    #render_within_la_text_tab_2()
+    isolate({
       paste0("Showing projected change in <b>",
              input$measure_choice_tab_2,
              "</b> in <b>",
@@ -799,13 +784,8 @@ server <- function(input, output, session) {
              measure_info(),
              "<br><br>Click on the map or click on sub-council areas in the legend to explore the data.<br>   "
       )
-    }
-  )
-  
-  # Plot text will not render until requirements within render_within_la_text_tab_2() are met
-  output$within_la_text_tab_2 <- renderText({
-    render_within_la_text_tab_2()
-  })
+    }) #end of isolate
+  }) %>% bindEvent(selected_small_area(), selected_la())
   
   
 

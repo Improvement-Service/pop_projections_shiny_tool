@@ -20,7 +20,6 @@ library(shinydashboard)
 
 intro_df <- read.csv("Data files/intro_guide.csv")
 
-
 # Read raw data ------------
 projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", 
                                 delim = ",", 
@@ -340,9 +339,11 @@ create_map <- function(map_data,
 } #end of create_map()
 
 # Function to update the orange highlighted polygon on LA maps.
-update_highlighted_polygon <- function(proxy, small_area) {
+update_highlighted_polygon <- function(proxy, small_area, council) {
+  
   selected_polygon <- shape_data %>% 
-    filter(SubCouncil == small_area) %>% 
+    filter(Council == council,
+           SubCouncil == small_area) %>% 
     pull(geometry)
   
   # Remove any previously highlighted polygon
