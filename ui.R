@@ -145,15 +145,12 @@ ui <- tagList(tags$head(withAnim(),
                                   fluidRow(conditionalPanel(condition = "input.submit_tab_1 != 0 || input.submit_tab_2 != 0", 
                                                             column(6,
                                                                    div(
-                                                                     #h3("Population Size"),
                                                                      leafletOutput("la_map_tab_1", width = "100%", height = "72vh") %>%
                                                                      withSpinner(type = 6),
                                                                    absolutePanel(id = "year_panel_1",
                                                                                  class = "panel panel-default", 
                                                                                  fixed = FALSE,
                                                                                  draggable = FALSE,
-                                                                                 # top = "0", 
-                                                                                 # left = "280", 
                                                                                  top = "10", 
                                                                                  left = "20", 
                                                                                  right = "auto", 
@@ -163,7 +160,7 @@ ui <- tagList(tags$head(withAnim(),
                                                                                  
                                                                                  pickerInput(
                                                                                    inputId = "year_choice_tab_1",
-                                                                                   label = "Population size in:", 
+                                                                                   label = "Showing values in:", 
                                                                                    selected = years[1],
                                                                                    choices = list(
                                                                                      "Real" = years[1],
@@ -173,7 +170,7 @@ ui <- tagList(tags$head(withAnim(),
                                                                    ),
                                                             column(6,
                                                                    #rendered dynamically when inital polygon click detected
-                                                                   uiOutput("tabsetPanel")
+                                                                   uiOutput("population_graph_tabset")
                                                                    # End of column
                                                                    ) 
                                                             # End of post-input conditionalPanel
