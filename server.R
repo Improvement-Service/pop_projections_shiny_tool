@@ -203,7 +203,7 @@ server <- function(input, output, session) {
                     span(htmlOutput("within_la_text"), 
                          style = "color:#526470; font-size = 12px"
                            ) #end of span
-                  ), #end of within_areas tabPanel
+                  ) #end of within_areas tabPanel
               ) ) # End of tabsetPanel 
     } #end of else
   }) #end of tabsetPanel renderUI
