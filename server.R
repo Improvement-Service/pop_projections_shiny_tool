@@ -370,6 +370,7 @@ server <- function(input, output, session) {
                     }, ignoreInit = TRUE, once = TRUE) #after this event has happened once, stop observing
   
 
+
 # Observe Events: record/update global selections -------------------------------------------
   
   # On submit_tab_1 click, update global variables and outputs on both tabs to reflect tab 1 selections
@@ -418,7 +419,7 @@ server <- function(input, output, session) {
     #on initial submit click there should be no highlighted polygon. 
     #once user has clicked a polygon for the first time, submit will cause a polygon
     #to be highlighted with default small area for a council
-    if (initial_polygon_click()) {
+    if (initial_polygon_click() == TRUE) {
       #update highlighted polygon on both tabs
       small_area_options <- small_area_lookup %>%
         filter(Council.Name == input$la_choice_tab_2) %>%
@@ -536,10 +537,11 @@ server <- function(input, output, session) {
   }, ignoreInit = TRUE)
 # Observe Events:map layer clicks----------
   
-  observeEvent(input$la_map_tab_1_groups, {
+  obs <- observeEvent(input$la_map_tab_1_groups, {
+    req(initial_polygon_click())
     update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(), selected_la())
   })
-  
+
     
 # Observe Events: map shape clicks--------------------
   
