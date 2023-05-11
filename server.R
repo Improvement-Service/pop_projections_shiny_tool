@@ -890,47 +890,54 @@ server <- function(input, output, session) {
 
 
 # Tab 3 - Data Download Button -------------------------------------------------
-  descriptionfile <- reactive({
-    if(input$measure_choice_tab_3 == "Population Data" & 
-       input$granularity_selection == "Custom Population Data") {
-      decsription_file <- make_txt_file(measure = "Custom Population Data",
-                                        councils = input$la_choice_tab_3,
-                                        ages = c(selected_ages_dwnld[1]:selected_ages_dwnld[2]),
-                                        sex = selected_sex_dwnld,
-                                        years = selected_years_dwnld)
-    } else {
-      description_file <- make_txt_file(measure = input$measure_choice_tab_2,
-                                        councils = input$la_choice_tab_3)
-        
-    }
-  }) %>% bindEvent(input$dl_da)
-  # Data to download based on selections in tab 3
   output$dl_data_tab_3 <- downloadHandler(
-    filename = paste(paste0("population_dl_", Sys.Date()), ".zip", sep = ""),
-    content = function(file) {
-      tmpdir <- tempdir()
-      setwd(tempdir())
-      print(tempdir())
-
-      if(input$measure_choice_tab_3 == "Population Data" & 
-         input$granularity_selection == "Custom Population Data") {
-        make_txt_file(measure = "Custom Population Data",
-                                          councils = input$la_choice_tab_3,
-                                          ages = c(selected_ages_dwnld[1]:selected_ages_dwnld[2]),
-                                          sex = selected_sex_dwnld,
-                                          years = selected_years_dwnld)
-      } else {
-        make_txt_file(measure = input$measure_choice_tab_2,
-                      councils = input$la_choice_tab_3)
-        
-      }
-      write.csv(dl_measures_data(), "data.csv", row.names = FALSE)
-      zip(zipfile = file, 
-          files = c("data.csv", 
-                    "data_description.txt")
-          )
-      if(file.exists(paste0(file, ".zip"))) {file.rename(paste0(file, ".zip"), file)}
-      },
-    contentType = "application/zip"
+    filename = paste(paste0("population_dl_", Sys.Date()), ".csv", sep = ""),
+    content = function(con) {
+      write.csv(dl_measures_data(), con, row.names = FALSE)
+    }
   )
+  
+  # descriptionfile <- reactive({
+  #   if(input$measure_choice_tab_3 == "Population Data" & 
+  #      input$granularity_selection == "Custom Population Data") {
+  #     decsription_file <- make_txt_file(measure = "Custom Population Data",
+  #                                       councils = input$la_choice_tab_3,
+  #                                       ages = c(selected_ages_dwnld[1]:selected_ages_dwnld[2]),
+  #                                       sex = selected_sex_dwnld,
+  #                                       years = selected_years_dwnld)
+  #   } else {
+  #     description_file <- make_txt_file(measure = input$measure_choice_tab_2,
+  #                                       councils = input$la_choice_tab_3)
+  #       
+  #   }
+  # }) %>% bindEvent(input$dl_da)
+  # # Data to download based on selections in tab 3
+  # output$dl_data_tab_3 <- downloadHandler(
+  #   filename = paste(paste0("population_dl_", Sys.Date()), ".zip", sep = ""),
+  #   content = function(file) {
+  #     tmpdir <- tempdir()
+  #     setwd(tempdir())
+  #     print(tempdir())
+  # 
+  #     if(input$measure_choice_tab_3 == "Population Data" & 
+  #        input$granularity_selection == "Custom Population Data") {
+  #       make_txt_file(measure = "Custom Population Data",
+  #                                         councils = input$la_choice_tab_3,
+  #                                         ages = c(selected_ages_dwnld[1]:selected_ages_dwnld[2]),
+  #                                         sex = selected_sex_dwnld,
+  #                                         years = selected_years_dwnld)
+  #     } else {
+  #       make_txt_file(measure = input$measure_choice_tab_2,
+  #                     councils = input$la_choice_tab_3)
+  #       
+  #     }
+  #     write.csv(dl_measures_data(), "data.csv", row.names = FALSE)
+  #     zip(zipfile = file, 
+  #         files = c("data.csv", 
+  #                   "data_description.txt")
+  #         )
+  #     if(file.exists(paste0(file, ".zip"))) {file.rename(paste0(file, ".zip"), file)}
+  #     },
+  #   contentType = "application/zip"
+  # )
 }
