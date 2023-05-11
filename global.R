@@ -34,23 +34,23 @@ measures_data <- vroom::vroom("Data files/Other measures data.csv",
                               col_names = TRUE, 
                               show_col_types = FALSE
                               )
+
 measures_data <- measures_data %>% 
   mutate_at(vars(Value), list(~round(., 0)))
+
 measures_data$Measure[measures_data$Measure == "Life Expectancy - Persons"] <- "Life Expectancy"
 
-shape_data <- read_rds("Data files/SCAP_shapefile.rds")
-
-# Small-area look ups ---------
 small_area_lookup <- vroom::vroom("Data files/ShortNameLookup.csv", 
                                   delim = ",", 
                                   col_names = TRUE, 
                                   show_col_types = FALSE
-                                  ) %>%
+) %>%
   rename("Area.Name" = "ShortName", "Council.Name" = "Council")
 # Constrain the width of long area names so that the legend can be narrower in plots
 # this is done for shape data below as well, these must be consistent
 small_area_lookup$LongName <- str_wrap(small_area_lookup$LongName, 13)
 
+shape_data <- read_rds("Data files/simplified_subcouncil_polygons_with_detailed_area.rds")
 # Global variables ----------
 councils <- unique(projection_data$Council.Name[projection_data$Council.Name != "Scotland"])
 years <- unique(projection_data$Year)
@@ -78,13 +78,7 @@ measures_data$Level <- if_else(measures_data$Council.Name == measures_data$LongN
                                "Small Area"
                                )
 
-# Split out council and sub-council in shape_data for merging
-shape_data <- shape_data %>% 
-  separate(`Sub-Council Area Name`, 
-           into = c("SubCouncil", "Council"), 
-           sep = " - ", 
-           remove = TRUE
-           )
+
 # Fix error in annbank name
 shape_data[shape_data$SubCouncil == "Annbank Mossblown and Tarbolton: the Coalfields", "SubCouncil"] <- "Annbank Mossblown and Tarbolton - the Coalfields"
 shape_data$SubCouncil <- str_wrap(shape_data$SubCouncil, 13)
@@ -233,10 +227,11 @@ create_map <- function(map_data,
   map_colours <- brewer.pal(8, "Blues")
   # Assign colours to quintiles
   map_colour_quintiles <- colorBin(map_colours, map_data$Value, n = 8)
+  map_colour_quintiles_popdens <- colorBin(map_colours, map_data$population_density, n = 8)
   
   # Tab 1 content
   hover_content <- ""
-  legend_content <- ""
+  hover_content_popdens <- ""
   if (tab_num == 1) {
     hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population: %s",
                              map_data$SubCouncil,
@@ -249,7 +244,17 @@ create_map <- function(map_data,
                                        scientific = FALSE
                              )
     )
-    legend_content <- "Population"
+    hover_content_popdens <- sprintf("<strong>%s</strong><br/>Year: %s<br/>Age: %s<br/>Gender: %s<br/>Population Density: %s persons/square km",
+                             map_data$SubCouncil,
+                             map_data$Year,
+                             age_label,
+                             gender,
+                             prettyNum(round(map_data$population_density, 0),
+                                       big.mark = ",",
+                                       scientific = FALSE
+                             )
+                             
+    )
     
   } else if (tab_num == 2) {
     hover_content <- sprintf("<strong>%s</strong><br/>Year: %s<br/>%s: %s",
@@ -262,7 +267,6 @@ create_map <- function(map_data,
                                        scientific = FALSE
                              )
     )
-    legend_content <- "Value"
     # Set colours for the map
     map_colours <- brewer.pal(8, "Purples")
     # Assign colours to quintiles
@@ -281,34 +285,23 @@ create_map <- function(map_data,
     addProviderTiles(providers$CartoDB.VoyagerLabelsUnder) %>%
     addLegend("bottomleft", 
               colors = map_colours,
-              labels = c(paste0("Smallest ", legend_content), 
+              labels = c(paste0("Smallest Value"), 
                          "",
                          "",
                          "",
                          "",
                          "",
                          "",
-                         paste0("Largest ", legend_content)
+                         paste0("Largest Value")
               ),
-              #title = paste0(legend_content,", ", year),
               opacity = 1
     ) %>% 
-    #this button is for resetting map view (centre on selected_la again)
-    addEasyButton(easyButton(
-      icon = icon("rotate-left", lib = "font-awesome"),
-      title = 'Reset view',
-      position = "topright",
-      onClick = JS("function(btn, map) { 
-       var groupLayer = map.layerManager.getLayerGroup('year_layer');
-       map.fitBounds(groupLayer.getBounds());
-    }")  
-    )) %>%
-    addPolygons(
+    addPolygons(data = map_data,
       smoothFactor = 1,
       weight = 1.5,
       fillOpacity = 0.8,
       layerId = ~SubCouncil,
-      group = "year_layer",
+      group = "Population Size",
       color = "black", 
       # colour of polygons should map to population quintiles
       fillColor = ~map_colour_quintiles(Value),
@@ -319,7 +312,32 @@ create_map <- function(map_data,
                                           weight = 5,
                                           bringToFront = FALSE
       )
-    )
+    ) 
+  
+  #add population density layer
+  if (tab_num == 1) {
+    map <- map %>%
+      addPolygons(data = map_data,
+        smoothFactor = 1,
+        weight = 1.5,
+        fillOpacity = 0.8,
+        layerId = ~alt_layer_id,
+        group = "Population Density",
+        color = "black", 
+        # colour of polygons should map to population quintiles
+        fillColor = ~map_colour_quintiles_popdens(population_density),
+        # Use HTML to create popover labels with all the selected info
+        label = hover_content_popdens %>% lapply(htmltools::HTML),
+        # Creates a white border on the polygon where the mouse hovers
+        highlightOptions = highlightOptions(color = "white", 
+                                            weight = 5,
+                                            bringToFront = FALSE
+        )
+      ) %>%
+      addLayersControl(baseGroups=c("Population Size", "Population Density"), 
+                       options = layersControlOptions(position = "topright", collapsed = FALSE))
+  }
+  
   #render the map with no highlight (only add highlight if initial polygon selected)
   if (initial_polygon_click == TRUE) {
     default_selected_polygon <- shape_data %>% 
@@ -333,7 +351,20 @@ create_map <- function(map_data,
                    opacity = 0.7,
                    data = default_selected_polygon,
                    group ="highlighted_polygon")
+      
   }
+  
+  map <- map %>%
+    #this button is for resetting map view (centre on selected_la again)
+    addEasyButton(easyButton(
+      icon = icon("rotate-left", lib = "font-awesome"),
+      title = 'Reset view',
+      position = "topright",
+      onClick = JS("function(btn, map) { 
+       var groupLayer = map.layerManager.getLayerGroup('Population Size');
+       map.fitBounds(groupLayer.getBounds());
+    }")  
+    ))
   
   return(map)
 } #end of create_map()
@@ -353,8 +384,7 @@ update_highlighted_polygon <- function(proxy, small_area, council) {
                  color = "orange",
                  opacity = 0.7,
                  data = selected_polygon,
-                 group = "highlighted_polygon"
-    )
+                 group = "highlighted_polygon")
 }
 
 #function to re-render orange lines on map or plot lick. 
@@ -412,4 +442,29 @@ filter_n_format <- function(dataframe, lookup, councils, ages, years, sex) {
     dplyr::rename(Council = Council.Name, "Sub-Council Area" = LongName)
   
   return(as.data.frame(formatted_data))
+}
+
+make_txt_file <- function(measure, councils, ages = "All", sex = "All", years = c(2018:2030)) {
+   file_name <- "data_description.txt"
+  if (file.exists(file_name)) {
+    file.remove(file_name)
+  }
+  council_list <- paste(councils, sep = ', ', collapse = ", ")
+  years_list <- paste(years, sep = ', ', collapse = ", ")
+  sex_str <- paste(sex, sep = ', ', collapse = ", ")[1]
+  ages_str <- paste(ages, sep = ', ', collapse = ", ")[1]
+  open_file <-file(file_name)
+  writeLines(c("Dataset: 2018-based Sub-Council Area Population Projections",
+               paste0("Accessed: ", Sys.time()),
+               paste0("Measure: ", measure),
+               paste0("Councils: ", council_list),
+               paste0("Ages: ", ages_str),
+               paste0("Sex: ", sex_str),
+               paste0("Years:", years_list),
+               "Version: 2018-based projections",
+               "source: Improvement Service",
+               "website: https://www.improvementservice.org.uk/products-and-services/data-and-intelligence2/sub-council-area-population-projections",
+               "data dashboard: https://scotland.shinyapps.io/is-sub-council-projections/"), 
+             open_file)
+  close(open_file)
 }

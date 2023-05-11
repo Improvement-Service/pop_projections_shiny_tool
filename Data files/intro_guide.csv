@@ -1,9 +1,10 @@
 tab,step,element,intro,position
-population,1,#la_map_tab_1,This map shows projected population size. Hover to explore values. Click on an area to see it highlighted on the projected change graph. ,auto
-population,2,#year_panel_1,Explore projected population size for individual years.,right
-population,3,#tabsetPanel,"This graph shows projected growth in the selected area from 2018 to 2030 compared to other sub-council areas. Click on a line to select a new area (this will also update the highlighted area on the map). Scroll through the legend to see all sub-council areas, click on one to isolate it on the graph.",auto
-population,4,#tab_1_plots,Change tab to view how the selected-area population changes compared to Scotland and the whole council-area.,auto
-population,5,#main_tabs,You can explore other population measures (such as net migration and sex ratio) and filter and download projections data on other tabs.,auto
+population,1,#la_map_tab_1,This map shows projected population size by default (or you can view projected population density by changing selections). HOVER over areas to explore values and CLICK on an area of interest to see it highlighted on time-series change graphs to the right.,auto
+population,2,#year_panel_1,Explore projected population size and density for individual years.,right
+population,3,#population_graph_tabset,Here you can view projected growth in the selected area from 2018 to 2030 compared to other sub-council areas. Click on a line to select a new area (this will also update the highlighted area on the map). ,auto
+population,4,#population_graph_tabset,You can scroll through the list of areas in a council in the legend and click on one to isolate it on the graph (click anywhere on the legend to show all areas again).,auto
+population,5,#tab_1_plots,Change tab to view how the selected-area population changes compared to Scotland and the whole council-area.,auto
+population,6,#main_tabs,You can explore other population measures (such as net migration and sex ratio) and filter and download projections data on other tabs. You are also welcome to provide any feedback you have about this tool or its contents.,auto
 other_measures,1,#la_map_tab_2,This map shows projected values for the selected measure in sub-council areas in the selected year. Hover to explore the values or click on area to highlight this area on the graph.,auto
 other_measures,2,#year_panel_2,View projected values for any individual year from 2018 to 2030. ,right
 other_measures,3,#within_areas_plot_tab_2,"This graph shows projected values for the chosen measure for the selected area compared to other sub-council areas from 2018 to 2030 . Click on a line to select a new area (this will also update the highlighted area on the map). Scroll through the legend to see all sub-council areas, click on one to isolate it.",auto
