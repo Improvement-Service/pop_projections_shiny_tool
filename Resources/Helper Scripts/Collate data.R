@@ -156,9 +156,9 @@ measures_data <- map2(file_paths_other_measures,
   list_rbind()
 
 # Write data files -------------------------------------------------------------
-write.csv(projections_data_with_scot, 
-          "Data files/Population Projections With Aggregations.csv", 
+write.csv(population_data_with_scot, 
+          "Data files/2022 SCAP - Population Projections With Aggregations.csv", 
           row.names = FALSE)
 write.csv(measures_data, 
-          "Data files/Other measures data.csv", 
+          "Data files/2022 SCAP - Other measures data.csv", 
           row.names = FALSE)
