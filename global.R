@@ -21,7 +21,7 @@ library(shinydashboard)
 intro_df <- read.csv("Data files/intro_guide.csv")
 
 # Read raw data ------------
-projection_data <- vroom::vroom("Data files/Population Projections With Aggregations.csv", 
+projection_data <- vroom::vroom("Data files/2022 SCAP - Population Projections With Aggregations.csv", 
                                 delim = ",", 
                                 col_names = TRUE, 
                                 show_col_types = FALSE
@@ -29,7 +29,7 @@ projection_data <- vroom::vroom("Data files/Population Projections With Aggregat
 projection_data <- projection_data %>% 
   mutate_at(vars(Population), list(~round(., 0)))
 
-measures_data <- vroom::vroom("Data files/Other measures data.csv", 
+measures_data <- vroom::vroom("Data files/2022 SCAP - Other measures data.csv", 
                               delim = ",", 
                               col_names = TRUE, 
                               show_col_types = FALSE
@@ -40,7 +40,7 @@ measures_data <- measures_data %>%
 
 measures_data$Measure[measures_data$Measure == "Life Expectancy - Persons"] <- "Life Expectancy"
 
-small_area_lookup <- vroom::vroom("Data files/ShortNameLookup.csv", 
+small_area_lookup <- vroom::vroom("Data files/2022 SCAP - ShortNameLookup.csv", 
                                   delim = ",", 
                                   col_names = TRUE, 
                                   show_col_types = FALSE
@@ -50,7 +50,7 @@ small_area_lookup <- vroom::vroom("Data files/ShortNameLookup.csv",
 # this is done for shape data below as well, these must be consistent
 small_area_lookup$LongName <- str_wrap(small_area_lookup$LongName, 13)
 
-shape_data <- read_rds("Data files/simplified_subcouncil_polygons_with_detailed_area.rds")
+shape_data <- read_rds("Data files/SCAP_shapefile_2026.rds")
 # Global variables ----------
 councils <- unique(projection_data$Council.Name[projection_data$Council.Name != "Scotland"])
 years <- unique(projection_data$Year)
