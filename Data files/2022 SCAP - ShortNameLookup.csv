@@ -1,0 +1,346 @@
+ShortName,LongName,Council
+LowerDee,Lower Deeside,Aberdeen City
+Airyhal,Airyhall/Broomhill/Garthdee,Aberdeen City
+HazleAsh,Hazlehead/Queens Cross/Countesswells,Aberdeen City
+Kingswel,Kingswells/Sheddocksley/Summerhill,Aberdeen City
+Midstock,Midstocket/Rosemount,Aberdeen City
+TorFerry,Torry/Ferryhill,Aberdeen City
+GeogHarb,George St/Harbour,Aberdeen City
+Kincorth,Kincorth/Nigg/Cove,Aberdeen City
+HiltWood,Hilton/Woodside/Stockethill,Aberdeen City
+Tillydrn,Tillydrone/Seaton/Old Aberdeen,Aberdeen City
+Nrthfild,Northfield/Mastrick North,Aberdeen City
+DyceBuck,Dyce/Bucksburn/Danestone,Aberdeen City
+BrdgeDon,Bridge of Don,Aberdeen City
+Aboyne,Aboyne Place,Aberdeenshire
+Alford,Alford Place,Aberdeenshire
+Banchory,Banchory Place,Aberdeenshire
+Laurncrk,Laurencekirk (Mearns) Place,Aberdeenshire
+Stonehvn,Stonehaven Place,Aberdeenshire
+Portlthn,Portlethen Place,Aberdeenshire
+Invrurie,Inverurie Place,Aberdeenshire
+Kemnay,Kemnay Place,Aberdeenshire
+Oldmldrm,Oldmeldrum Place,Aberdeenshire
+Westhill,Westhill Place,Aberdeenshire
+Ellon,Ellon Place,Aberdeenshire
+Turriff,Turriff Place,Aberdeenshire
+Huntly,Huntly Place,Aberdeenshire
+Banff,Banff Place,Aberdeenshire
+Frasbrgh,Fraserburgh Place,Aberdeenshire
+Mintlaw,Mintlaw Place,Aberdeenshire
+Peterhd,Peterhead Place,Aberdeenshire
+Monifiet,Monifieth and Sidlaw,Angus
+Carnoust,Carnoustie and District,Angus
+ArbrWLaF,"Arbroath West, Letham and Friockheim",Angus
+ArbroEaL,Arbroath East and Lunan,Angus
+Montrose,Montrose and District,Angus
+Brechina,Brechin and Edzell,Angus
+Forfaran,Forfar and District,Angus
+Kirriemu,Kirriemuir and Dean,Angus
+CollTire,Coll and Tiree,Argyll and Bute
+MulIona,Mull and Iona,Argyll and Bute
+Lorn,Lorn and the Inner Isles,Argyll and Bute
+MidArgyl,Mid Argyll,Argyll and Bute
+IslJurCo,"Islay, Jura and Colonsay",Argyll and Bute
+Kintyre,Kintyre,Argyll and Bute
+Bute,Bute,Argyll and Bute
+Cowal,Cowal,Argyll and Bute
+HelenLom,Helensburgh and Lomond,Argyll and Bute
+ClackmaW,Clackmannanshire West,Clackmannanshire
+ClackmaN,Clackmannanshire North,Clackmannanshire
+ClackmaC,Clackmannanshire Central,Clackmannanshire
+ClackmaE,Clackmannanshire East,Clackmannanshire
+ClackmaS,Clackmannanshire South,Clackmannanshire
+Stranrae,Stranraer and the Rhins,Dumfries and Galloway
+MidGallo,Mid Galloway and Wigtown West,Dumfries and Galloway
+DeeandGl,Dee and Glenkens,Dumfries and Galloway
+CastleDo,Castle Douglas and Crocketford,Dumfries and Galloway
+Abbey,Abbey,Dumfries and Galloway
+MidandUp,Mid and Upper Nithsdale,Dumfries and Galloway
+AnnandaN,Annandale North,Dumfries and Galloway
+Lochar,Lochar,Dumfries and Galloway
+NorthWes,North West Dumfries,Dumfries and Galloway
+AnnandaS,Annandale South,Dumfries and Galloway
+Nith,Nith,Dumfries and Galloway
+AnnandaE,Annandale East and Eskdale ,Dumfries and Galloway
+WestEnd,West End,Dundee City
+Coldside,Coldside,Dundee City
+MaryFiel,Maryfield,Dundee City
+EastEnd,East End,Dundee City
+TheFerry,The Ferry,Dundee City
+NorthEaD,North East,Dundee City
+Strathma,Strathmartine,Dundee City
+Lochee,Lochee,Dundee City
+DoonVall,Doon Valley,East Ayrshire
+Cumnocka,Cumnock and New Cumnock,East Ayrshire
+Ballochm,Ballochmyle,East Ayrshire
+IrvineVa,Irvine Valley,East Ayrshire
+Annick,Annick,East Ayrshire
+KilmaEaH,Kilmarnock East and Hurlford,East Ayrshire
+KilmarnS,Kilmarnock South,East Ayrshire
+KilmaWaC,Kilmarnock West and Crosshouse,East Ayrshire
+KimlarnN,Kilmarnock North,East Ayrshire
+Milngavi,Milngavie,East Dunbartonshire
+BearsdN,Bearsden North,East Dunbartonshire
+BearsdS,Bearsden South,East Dunbartonshire
+BishoNaC,Bishopbriggs North and Campsie,East Dunbartonshire
+BishopbS,Bishopbriggs South,East Dunbartonshire
+Lenziean,Lenzie and Kirkintilloch South,East Dunbartonshire
+Kirkinti,Kirkintilloch East and North and Twechar,East Dunbartonshire
+TranentW,"Tranent, Wallyford and Macmerry",East Lothian
+Musselbu,Musselburgh,East Lothian
+PrestonS,"Preston, Seton and Gosford",East Lothian
+Haddingt,Haddington and Lammermuir,East Lothian
+NorthBer,North Berwick Coastal,East Lothian
+Dunbaran,Dunbar and East Linton,East Lothian
+Lev_Vall,Levern Valley,East Renfrewshire
+Eastwood,Eastwood,East Renfrewshire
+Pentland,Pentland Hills,City of Edinburgh
+Colinton,Colinton/Fairmilehead,City of Edinburgh
+Fountain,Fountainbridge/Craiglockhart,City of Edinburgh
+Sighthil,Sighthill/Gorgie,City of Edinburgh
+Mornings,Morningside,City of Edinburgh
+Liberton,Liberton/Gilmerton,City of Edinburgh
+Southsid,Southside/Newington,City of Edinburgh
+CityCent,City Centre,City of Edinburgh
+Craigent,Craigentinny/Duddingston,City of Edinburgh
+LeithWal,Leith Walk,City of Edinburgh
+Portobel,Portobello/Craigmillar,City of Edinburgh
+Leith,Leith,City of Edinburgh
+Forth,Forth,City of Edinburgh
+Inverlei,Inverleith,City of Edinburgh
+Corstorp,Corstorphine/Murrayfield,City of Edinburgh
+Almond,Almond,City of Edinburgh
+DrumBrae,Drum Brae/Gyle,City of Edinburgh
+Barraigh,Barraigh agus Bhatarsaigh,Na h-Eileanan Siar
+UbhstaDs,"Uibhist a Deas, Èirisgeigh agus Beinn na Faoghla",Na h-Eileanan Siar
+UbhstaTu,Uibhist a Tuath,Na h-Eileanan Siar
+NaHearad,Na Hearadh,Na h-Eileanan Siar
+SgirLoch,Sgìre nan Loch,Na h-Eileanan Siar
+SgirUige,Sgìr’ Ùige agus Càrlabhagh,Na h-Eileanan Siar
+AnTaobhS,An Taobh Siar agus Nis,Na h-Eileanan Siar
+LochaTua,Loch a Tuath,Na h-Eileanan Siar
+SteornaT,Steòrnabhagh a Tuath,Na h-Eileanan Siar
+SteornaD,Steòrnabhagh a Deas,Na h-Eileanan Siar
+SgireanR,Sgìre an Rubha,Na h-Eileanan Siar
+Dennyand,Denny and Banknock,Falkirk
+Bonnybri,Bonnybridge and Larbert,Falkirk
+Careskin,"Carse, Kinnaird and Tryst",Falkirk
+Grangemo,Grangemouth,Falkirk
+FalkirkN,Falkirk North,Falkirk
+FalkirkS,Falkirk South,Falkirk
+UpBraes,Upper Braes,Falkirk
+LoBraes,Lower Braes,Falkirk
+BonessBn,Bo’ness and Blackness,Falkirk
+WestFife,West Fife and Coastal Villages,Fife
+DunfermN,Dunfermline North,Fife
+Rosyth,Rosyth,Fife
+DunfermC,Dunfermline Central,Fife
+DunfermS,Dunfermline South,Fife
+Inverkei,Inverkeithing and Dalgety Bay,Fife
+Cowdenbe,Cowdenbeath,Fife
+Lochgell,"Lochgelly, Cardenden and Benarty",Fife
+Burntisl,"Burntisland, Kinghorn and Western Kirkcaldy",Fife
+KirkcalC,Kirkcaldy Central,Fife
+KirkcalE,Kirkcaldy East,Fife
+KirkcalN,Kirkcaldy North,Fife
+Buckhave,"Buckhaven, Methil and Wemyss Villages",Fife
+GlenrWaK,Glenrothes West and Kinglassie,Fife
+GlenCaT,Glenrothes Central and Thornton,Fife
+GlenNLaM,"Glenrothes North, Leslie and Markinch",Fife
+LevenKen,"Leven, Kennoway and Largo",Fife
+HoweofFi,Howe of Fife and Tay Coast,Fife
+Cupar,Cupar,Fife
+EastNeuk,East Neuk and Landward,Fife
+StAndrew,St Andrews,Fife
+TayBridg,Tay Bridgehead,Fife
+GreaterP,Greater Pollok,Glasgow City
+Newlands,Newlands/Auldburn,Glasgow City
+Cardonal,Cardonald,Glasgow City
+Govan,Govan,Glasgow City
+Polloksh,Pollokshields,Glasgow City
+SouthsiC,Southside Central,Glasgow City
+Langside,Langside,Glasgow City
+Linn,Linn,Glasgow City
+Calton,Calton,Glasgow City
+Shettles,Shettleston,Glasgow City
+Baillies,Baillieston,Glasgow City
+NorthEaG,North East,Glasgow City
+EastCent,East Centre,Glasgow City
+Springbu,Springburn/Robroyston,Glasgow City
+Canal,Canal,Glasgow City
+Dennisto,Dennistoun,Glasgow City
+Andersto,Anderston/City/Yorkhill,Glasgow City
+Hillhead,Hillhead,Glasgow City
+Maryhill,Maryhill,Glasgow City
+PartickE,Partick East/Kelvindale,Glasgow City
+Victoria,Victoria Park,Glasgow City
+Garscadd,Garscadden/Scotstounhill,Glasgow City
+Drumchap,Drumchapel/Anniesland,Glasgow City
+FrtWllmA,Fort William and Ardnamurchan,Highland
+CaolMllg,Caol and Mallaig,Highland
+BdnchStr,Badenoch and Strathspey,Highland
+NrnCawdr,Nairn and Cawdor,Highland
+InvSouth,Inverness South,Highland
+ClldnArd,Culloden and Ardersier,Highland
+InvMlbrn,Inverness Millburn,Highland
+InvNssde,Inverness Ness-side,Highland
+InvCntrl,Inverness Central,Highland
+InvWest,Inverness West,Highland
+ArdLchNs,Aird and Loch Ness,Highland
+WRsStrLc,"Wester Ross, Strathpeffer and Lochalsh",Highland
+EileanCh,Eilean a' Chèo,Highland
+DngwlSfr,Dingwall and Seaforth,Highland
+CrmrtyFr,Cromarty Firth,Highland
+TnEstrRs,Tain and Easter Ross,Highland
+BlckIsle,Black Isle,Highland
+NWCSthrl,"North, West and Central Sutherland",Highland
+ESthrEdr,East Sutherland and Edderton,Highland
+WkECthns,Wick and East Caithness,Highland
+ThrsNCth,Thurso and Northwest Caithness,Highland
+InverclE,Inverclyde East,Inverclyde
+InverclC,Inverclyde Central,Inverclyde
+InvercSW,Inverclyde South West,Inverclyde
+InverclW,Inverclyde West,Inverclyde
+InverclS,Inverclyde South,Inverclyde
+InverclN,Inverclyde North,Inverclyde
+InvercEC,Inverclyde East Central,Inverclyde
+Penicuik,Penicuik,Midlothian
+MidlothS,Midlothian South,Midlothian
+MidlothW,Midlothian West,Midlothian
+Bonnyrig,Bonnyrigg,Midlothian
+MidlothE,Midlothian East,Midlothian
+Dalkeith,Dalkeith,Midlothian
+Speyside,Speyside Glenlivet,Moray
+KeithCul,Keith and Cullen,Moray
+Buckie,Buckie,Moray
+Fochaber,Fochabers Lhanbryde,Moray
+ElginCN,Elgin City North,Moray
+ElginCS,Elgin City South,Moray
+HeldonLa,Heldon and Laich,Moray
+Forres,Forres,Moray
+Arran,Arran,North Ayrshire
+Irvine,Irvine,North Ayrshire
+Kilw,Kilwinning,North Ayrshire
+3Towns,Three Towns,North Ayrshire
+GarnockV,Garnock Valley,North Ayrshire
+NorthCst,North Coast & Cumbraes,North Ayrshire
+Wishaw,Wishaw,North Lanarkshire
+MothSEaR,Motherwell South East and Ravenscraig,North Lanarkshire
+Murdosto,Murdostoun,North Lanarkshire
+Fortissa,Fortissat,North Lanarkshire
+AirdrieS,Airdrie South,North Lanarkshire
+MotherwN,Motherwell North,North Lanarkshire
+MossendH,Mossend and Holytown,North Lanarkshire
+MotherwW,Motherwell West,North Lanarkshire
+Bellshil,Bellshill,North Lanarkshire
+Thorniew,Thorniewood,North Lanarkshire
+CoatbriW,Coatbridge West,North Lanarkshire
+CoatbriS,Coatbridge South,North Lanarkshire
+CoatbriN,Coatbridge North,North Lanarkshire
+AirdrieC,Airdrie Central,North Lanarkshire
+AirdrieN,Airdrie North,North Lanarkshire
+Gartcosh,"Gartcosh, Glenboig and Moodiesburn",North Lanarkshire
+SteppsCh,"Stepps, Chryston and Muirhead",North Lanarkshire
+CumbernS,Cumbernauld South,North Lanarkshire
+CumbernN,Cumbernauld North,North Lanarkshire
+CumbernE,Cumbernauld East,North Lanarkshire
+Kilsyth,Kilsyth,North Lanarkshire
+Stromnes,Stromness and South Isles,Orkney Islands
+WestMain,West Mainland,Orkney Islands
+KrkwalWO,Kirkwall West and Orphir,Orkney Islands
+EastMain,"East Mainland, South Ronaldsay and Burray",Orkney Islands
+KirkwalE,Kirkwall East,Orkney Islands
+NorthIsO,North Isles,Orkney Islands
+Kinrosss,Kinross-shire,Perth and Kinross
+Strathal,Strathallan,Perth and Kinross
+Strathea,Strathearn,Perth and Kinross
+Almondan,Almond and Earn,Perth and Kinross
+Strathta,Strathtay,Perth and Kinross
+PerthCS,Perth City South,Perth and Kinross
+PerthCC,Perth City Centre,Perth and Kinross
+PerthCN,Perth City North,Perth and Kinross
+Strathmo,Strathmore,Perth and Kinross
+CarseofG,Carse of Gowrie,Perth and Kinross
+Blairgow,Blairgowrie and Glens,Perth and Kinross
+Highland,Highland,Perth and Kinross
+JohNKHaL,"Johnstone North, Kilbarchan, Howwood and Lochwinnoch",Renfrewshire
+JohnsSaE,Johnstone South and Elderslie,Renfrewshire
+PaisleSE,Paisley Southeast,Renfrewshire
+Bishopto,"Bishopton, Bridge of Weir and Langbank",Renfrewshire
+Erskinel,Erskine and Inchinnan,Renfrewshire
+HoustonC,"Houston, Crosslee and Linwood",Renfrewshire
+PaisleyN,Paisley Northwest,Renfrewshire
+PaisleSW,Paisley Southwest,Renfrewshire
+PaisleyE,Paisley East and Central,Renfrewshire
+PaislNaR,Paisley Northeast and Ralston,Renfrewshire
+RenfrewS,Renfrew South and Gallowhill,Renfrewshire
+RenfrewN,Renfrew North and Braehead,Renfrewshire
+TweeddaW,Tweeddale West,Scottish Borders
+TweeddaE,Tweeddale East,Scottish Borders
+Leaderda,Leaderdale and Melrose,Scottish Borders
+Galashie,Galashiels and District,Scottish Borders
+MidBerwi,Mid Berwickshire,Scottish Borders
+EastBerw,East Berwickshire,Scottish Borders
+KelsoDis,Kelso and District,Scottish Borders
+Jedburgh,Jedburgh and District,Scottish Borders
+Selkirks,Selkirkshire,Scottish Borders
+HawickaH,Hawick and Hermitage,Scottish Borders
+HawickaD,Hawick and Denholm,Scottish Borders
+ShetlanS,Shetland South,Shetland Islands
+LerwickS,Lerwick South,Shetland Islands
+LerwickN,Lerwick North and Bressay,Shetland Islands
+ShetlanC,Shetland Central,Shetland Islands
+ShetlanN,Shetland North,Shetland Islands
+ShetlanW,Shetland West,Shetland Islands
+NorthIsS,North Isles,Shetland Islands
+GrvanSCk,Girvan and South Carrick,South Ayrshire
+MblNCCln,"Maybole, North Carrick and Coylton",South Ayrshire
+AyrWest,Ayr West,South Ayrshire
+AyrEast,Ayr East,South Ayrshire
+AyrNorth,Ayr North,South Ayrshire
+Prestwik,Prestwick,South Ayrshire
+Kyle,Kyle,South Ayrshire
+Troon,Troon,South Ayrshire
+ClydsdlE,Clydesdale East,South Lanarkshire
+ClydsdlN,Clydesdale North,South Lanarkshire
+ClydsdlW,Clydesdale West,South Lanarkshire
+ClydsdlS,Clydesdale South,South Lanarkshire
+Larkhall,Larkhall,South Lanarkshire
+AvndStnh,Avondale and Stonehouse,South Lanarkshire
+HamiltnS,Hamilton South,South Lanarkshire
+HamltnNE,Hamilton North and East,South Lanarkshire
+HmltnWEk,Hamilton West and Earnock,South Lanarkshire
+Blantyre,Blantyre,South Lanarkshire
+BthlUdng,Bothwell and Uddingston,South Lanarkshire
+CmbslngE,Cambuslang East,South Lanarkshire
+CmbslngW,Cambuslang West,South Lanarkshire
+RthrglCN,Rutherglen Central and North,South Lanarkshire
+RthrglnS,Rutherglen South,South Lanarkshire
+EKlbrdeS,East Kilbride South,South Lanarkshire
+EKlbrdCN,East Kilbride Central North,South Lanarkshire
+EKlbrdeE,East Kilbride East,South Lanarkshire
+EKlbrdeW,East Kilbride West,South Lanarkshire
+EKlbrdCS,East Kilbride Central South,South Lanarkshire
+ForthEnd,Forth and Endrick,Stirling
+StirlinW,Stirling West,Stirling
+Bannockb,Bannockburn,Stirling
+StirlinE,Stirling East,Stirling
+StirlinN,Stirling North,Stirling
+Dunblane,Dunblane and Bridge of Allan,Stirling
+Trossach,Trossachs and Teith,Stirling
+ClydebaW,Clydebank Waterfront,West Dunbartonshire
+ClydebaC,Clydebank Central,West Dunbartonshire
+Kilpatri,Kilpatrick,West Dunbartonshire
+Dumbarto,Dumbarton,West Dunbartonshire
+Leven,Leven,West Dunbartonshire
+Lomond,Lomond,West Dunbartonshire
+Fauldhou,Fauldhouse and the Breich Valley,West Lothian
+LivingsS,Livingston South,West Lothian
+EastLivi,East Livingston and East Calder,West Lothian
+LivingsN,Livingston North,West Lothian
+Whitburn,Whitburn and Blackburn,West Lothian
+Armadale,Armadale and Blackridge,West Lothian
+Bathgate,Bathgate,West Lothian
+Linlithg,Linlithgow,West Lothian
+Broxburn,"Broxburn, Uphall and Winchburgh",West Lothian
