@@ -126,6 +126,7 @@ file_paths_other_measures <- c(
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Falkirk_MMW_2011_out/comp_Continuity_SCAP.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Fife_MMW_2011_out/comp_Continuity_SCAP_Mig9.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Glasgow_City_MMW_2011_out/comp_Continuity_SCAP.xls",
+"C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Highland_MMW_2011_out/comp_Continuity_SCAP.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Inverclyde_MMW_2011_out/comp_Continuity_SCAP.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Midlothian_MMW_2011_out/comp_Continuity_SCAP.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Moray_MMW_2011_out/comp_Continuity_SCAP_7.xls",
@@ -204,13 +205,14 @@ measures_data <- map2(file_paths_other_measures,
   list_rbind()
 
 # Write data files -------------------------------------------------------------
-write.csv(population_data_with_scot, 
-          "Data files/2022 SCAP - Population Projections With Aggregations.csv", 
-          row.names = FALSE)
 
-write.csv(national_summary_data_with_scot,
-          "Data files/2022 SCAP - National Summary Data.csv",
-          row.names = FALSE)
+# Need to use write_excel_csv to write apostrophe's correctly
+write_excel_csv(population_data_with_scot, 
+                "Data files/2022 SCAP - Population Projections With Aggregations.csv")
+
+# Need to use write_excel_csv to write apostrophe's correctly
+write_excel_csv(national_summary_data_with_scot,
+                "Data files/2022 SCAP - National Summary Data.csv")
 
 write.csv(measures_data, 
           "Data files/2022 SCAP - Other measures data.csv", 
