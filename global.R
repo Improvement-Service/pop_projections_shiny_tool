@@ -24,66 +24,73 @@ intro_df <- read.csv("Data files/intro_guide.csv")
 projection_data <- vroom::vroom("Data files/2022 SCAP - Population Projections With Aggregations.csv", 
                                 delim = ",", 
                                 col_names = TRUE, 
-                                show_col_types = FALSE
-                                )
-projection_data <- projection_data %>% 
-  mutate_at(vars(Population), list(~round(., 0)))
+                                show_col_types = FALSE)
 
 measures_data <- vroom::vroom("Data files/2022 SCAP - Other measures data.csv", 
                               delim = ",", 
                               col_names = TRUE, 
-                              show_col_types = FALSE
-                              )
+                              show_col_types = FALSE)
 
-measures_data <- measures_data %>% 
-  mutate_at(vars(Value), list(~round(., 0)))
+small_area_lookup <- read.csv("Data files/2022 SCAP - ShortNameLookup.csv", 
+                              # Need this setting to read apostrophe's correctly
+                              fileEncoding = "WINDOWS-1252") %>%
+  mutate(LongName = str_trim(LongName)) %>%
+  # Replace "and" with ampersand - this is to allow merging with projection_data
+  mutate(Council.Name = str_replace_all(Council.Name, " and ", " & "))
 
-measures_data$Measure[measures_data$Measure == "Life Expectancy - Persons"] <- "Life Expectancy"
+# In 2018 short name was used in projection data but this time long name has been used
+# In order for the rest of the code to work, need to convert long name to short name
+# within the projection data
+temp_lookup <- small_area_lookup %>%
+  rename("ShortName" = "Area.Name",
+         "Area.Name" = "LongName")
+projection_data <- projection_data %>%
+  left_join(temp_lookup,
+            by = c("Council.Name", "Area.Name")) %>%
+  # Fix Long Names for council level (set shortname equal to council name at council level)
+  mutate(ShortName = case_when(is.na(ShortName) ~ Council.Name,
+                              .default = ShortName)) %>%
+  # Remove long name and rename short name column to match elsewhere in the code
+  select(-Area.Name) %>%
+  rename("Area.Name" = "ShortName")
 
-small_area_lookup <- vroom::vroom("Data files/2022 SCAP - ShortNameLookup.csv", 
-                                  delim = ",", 
-                                  col_names = TRUE, 
-                                  show_col_types = FALSE
-) %>%
-  rename("Area.Name" = "ShortName", "Council.Name" = "Council")
-# Constrain the width of long area names so that the legend can be narrower in plots
-# this is done for shape data below as well, these must be consistent
-small_area_lookup$LongName <- str_wrap(small_area_lookup$LongName, 13)
+shape_data <- read_rds("Data files/SCAP_shapefile_2026.rds") %>%
+  rename("SubCouncil" = "Sub-Council Area Name",
+         "Council" = "Local Authority Name") %>%
+  mutate(SubCouncil = str_wrap(SubCouncil, width = 13)) %>%
+  # Replace "and" with ampersand - this is to allow merging with projection_data
+  mutate(Council = str_replace_all(Council, " and ", " & "))
 
-shape_data <- read_rds("Data files/SCAP_shapefile_2026.rds")
+# Constrain the width of long area names in the lookup so that the legend can be 
+# narrower in plots. This is done for shape data above as well, these must be consistent
+small_area_lookup <- small_area_lookup %>%
+mutate(LongName = str_wrap(LongName, width = 13))
+
 # Global variables ----------
+
 councils <- unique(projection_data$Council.Name[projection_data$Council.Name != "Scotland"])
 years <- unique(projection_data$Year)
- years_labels <- years
-# years_labels[1] <- "2018 - base year"
- names(years) <- years_labels
+years_labels <- years
+names(years) <- years_labels
  
- ages <- unique(projection_data$Age)
- age_names <- ages
- age_names[91] <- "90+"
- names(ages) <- age_names
+ages <- unique(projection_data$Age)
+age_names <- ages
+age_names[91] <- "90+"
+names(ages) <- age_names
 
 # Manipulate data objects -----------
+
 measures_data <- left_join(measures_data, 
                            small_area_lookup, 
-                           by = c("Council.Name", "Area.Name")
-                           )
-# Fix issue with NA lookup in Highland
-measures_data$LongName[measures_data$Area.Name == "NA"] <- "Nairn"
-# Fix Long Names for council level (set longname equal to council name at council level)
-measures_data$LongName[is.na(measures_data$LongName)] <- measures_data$Council.Name[is.na(measures_data$LongName)]
-# Add area level
-measures_data$Level <- if_else(measures_data$Council.Name == measures_data$LongName,
-                               "Council",
-                               "Small Area"
-                               )
+                           by = c("Council.Name", "Area.Name")) %>%
+  # Fix Long Names for council level (set longname equal to council name at council level)
+  mutate(LongName = case_when(is.na(LongName) ~ Council.Name,
+                              .default = LongName)) %>%
+  # Add area level
+  mutate(Level = case_when(Council.Name == LongName ~ "Council",
+                           .default = "Small Area"))
 
 
-# Fix error in annbank name
-shape_data[shape_data$SubCouncil == "Annbank Mossblown and Tarbolton: the Coalfields", "SubCouncil"] <- "Annbank Mossblown and Tarbolton - the Coalfields"
-shape_data$SubCouncil <- str_wrap(shape_data$SubCouncil, 13)
-# Replace "and" with ampersand in shapefiles - this is to allow merging with projection_data
-shape_data$Council <- gsub(" and ", " & ", shape_data$Council)
 
 # Functions -------------
 
@@ -91,8 +98,7 @@ shape_data$Council <- gsub(" and ", " & ", shape_data$Council)
 add_pop_index <- function(raw_data, 
                           gender_selection, 
                           age_selection, 
-                          lookup = small_area_lookup
-                          ) {
+                          lookup = small_area_lookup) {
   # Make data table copies of raw_data and lookup dataframes and 
   # assign keys (columns to index by for speed)
   data <- as.data.table(raw_data)
@@ -196,7 +202,7 @@ create_line_plot <- function(dataset,
           axis.title.x = element_blank(),
           axis.title.y = element_blank()
     ) +
-    scale_x_continuous(breaks = 2018:2030)
+    scale_x_continuous(breaks = 2022:2037)
   
   if(tab == 2) {
     plot <- plot + labs(title = paste0("Projected change in ",measure_title, " in ", council))
@@ -281,8 +287,10 @@ create_map <- function(map_data,
     htmlwidgets::onRender("function(el, x) {
           L.control.zoom({ position: 'topright' }).addTo(this)}"
     ) %>%
-    # Create background map - OpenStreetMap by default
-    addProviderTiles(providers$CartoDB.VoyagerLabelsUnder) %>%
+    # Create background map - OS greyscale base map with correct attribution
+    addTiles(urlTemplate = "https://api.os.uk/maps/raster/v1/zxy/Light_3857/{z}/{x}/{y}.png?key=18rIg7nvIh7JPVpMptepmBawj9yMAXv8" , 
+             attribution = paste0("Contains <a href='https://www.ordnancesurvey.co.uk/' target='_blank'>OS</a> data © Crown copyright and database right 2024. OS licence number AC0000807570"), 
+             group = "OS Basemap") %>%
     addLegend("bottomleft", 
               colors = map_colours,
               labels = c(paste0("Smallest Value"), 
@@ -299,7 +307,7 @@ create_map <- function(map_data,
     addPolygons(data = map_data,
       smoothFactor = 1,
       weight = 1.5,
-      fillOpacity = 0.8,
+      fillOpacity = 0.5,
       layerId = ~SubCouncil,
       group = "Population Size",
       color = "black", 
@@ -320,7 +328,7 @@ create_map <- function(map_data,
       addPolygons(data = map_data,
         smoothFactor = 1,
         weight = 1.5,
-        fillOpacity = 0.8,
+        fillOpacity = 0.5,
         layerId = ~alt_layer_id,
         group = "Population Density",
         color = "black", 
@@ -406,8 +414,8 @@ update_across_area_proxy <- function(proxy, small_area, data){
   plotlyProxyInvoke("deleteTraces", list(as.integer(2)))%>%
     plotlyProxyInvoke("addTraces", list(list(x = area_data$Year,
                                              y = area_data$Value,
-                                             text = c(rep("Population Index",13)),
-                                             customdata = c(rep(str_replace(small_area, "\n", "<br>"), 13)),
+                                             text = c(rep("Population Index",16)),
+                                             customdata = c(rep(str_replace(small_area, "\n", "<br>"), 16)),
                                              mode = "lines",
                                              line = list(color = 'orange', width = 2, shape = 'spline'),
                                              hovertemplate='<br>Area Name: %{customdata}<br>Year: %{x}<br>%{text}: %{y}<extra></extra>',
@@ -444,7 +452,7 @@ filter_n_format <- function(dataframe, lookup, councils, ages, years, sex) {
   return(as.data.frame(formatted_data))
 }
 
-make_txt_file <- function(measure, councils, ages = "All", sex = "All", years = c(2018:2030)) {
+make_txt_file <- function(measure, councils, ages = "All", sex = "All", years = c(2022:2037)) {
    file_name <- "data_description.txt"
   if (file.exists(file_name)) {
     file.remove(file_name)
@@ -454,14 +462,14 @@ make_txt_file <- function(measure, councils, ages = "All", sex = "All", years = 
   sex_str <- paste(sex, sep = ', ', collapse = ", ")[1]
   ages_str <- paste(ages, sep = ', ', collapse = ", ")[1]
   open_file <-file(file_name)
-  writeLines(c("Dataset: 2018-based Sub-Council Area Population Projections",
+  writeLines(c("Dataset: 2022-based Sub-Council Area Population Projections",
                paste0("Accessed: ", Sys.time()),
                paste0("Measure: ", measure),
                paste0("Councils: ", council_list),
                paste0("Ages: ", ages_str),
                paste0("Sex: ", sex_str),
                paste0("Years:", years_list),
-               "Version: 2018-based projections",
+               "Version: 2022-based projections",
                "source: Improvement Service",
                "website: https://www.improvementservice.org.uk/products-and-services/data-and-intelligence2/sub-council-area-population-projections",
                "data dashboard: https://scotland.shinyapps.io/is-sub-council-projections/"), 

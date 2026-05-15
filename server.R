@@ -39,7 +39,7 @@ server <- function(input, output, session) {
   # The following 'Global' reactive variables store values which should be consistent across both tabs
   # these will be updated by a submit button event on either tab
   selected_la <- reactiveVal()
-  selected_year <- reactiveVal(2018)
+  selected_year <- reactiveVal(2022)
   selected_small_area <- reactiveVal("") #this var is also updated by map clicks and plot trace clicks in either tab
   
   #this variable indicates whether user has made first small area selection
@@ -322,8 +322,8 @@ server <- function(input, output, session) {
                   isolate(selected_la()), 
                   "</b>, and for Scotland as a whole.<br>
                 <br><b>Population Index</b> = the projected population size as a percentage of 
-                  the population size in 2018. For example, a population index of 96 by 2030 means that the area's population 
-                  is projected to be 96% of its size in 2018."
+                  the population size in 2022. For example, a population index of 96 by 2037 means that the area's population 
+                  is projected to be 96% of its size in 2022."
       ))
     })
     }) %>% bindEvent(selected_small_area(), selected_la())
@@ -346,8 +346,8 @@ server <- function(input, output, session) {
              selected_la(),
              ".</b><br>
                   <br><b>Population Index</b> = the projected population size as a percentage of 
-                  the population size in 2018. For example, a population index of 96 by 2030 means that the area's population 
-                  is projected to be 96% of its size in 2018."
+                  the population size in 2022. For example, a population index of 96 by 2037 means that the area's population 
+                  is projected to be 96% of its size in 2022."
       )
     })
     }) %>% bindEvent(selected_small_area(), selected_la())
@@ -772,21 +772,13 @@ server <- function(input, output, session) {
       if (input$measure_choice_tab_2 == "Natural Change") {
         "<b>Natural Change</b> = births minus deaths"
       } else {
-        if (input$measure_choice_tab_2 == "Sex Ratio") {
-          "<b>Sex Ratio</b> = number of males per 100 females"
-        } else {
-          if (input$measure_choice_tab_2 == "Dependency Ratio") {
+        if (input$measure_choice_tab_2 == "Dependency Ratio") {
             "<b>Dependency Ratio</b> = population of children (aged 0-15) and elderly people (aged 65+) as a proportion of the working age population (aged 16-64)."
           } else {
-            if (input$measure_choice_tab_2 == "Life Expectancy") {
-              "<b>Life Expectancy</b> = expectation of life as an average across males and females"
-            } else {
-              return()
-            }
+            return()
           }
-        }
       }
-    }
+      }
     text
   })
 
@@ -823,7 +815,7 @@ server <- function(input, output, session) {
   
   selected_ages_dwnld <- reactiveVal(c(0, 90))
   selected_sex_dwnld <- reactiveVal(c("Females", "Males", "Persons"))
-  selected_years_dwnld <- reactiveVal(c(2018,2030))
+  selected_years_dwnld <- reactiveVal(c(2022,2037))
   
   observeEvent(input$apply_filters,{
      selected_ages <- as.numeric(input$age_choice_tab_3)
@@ -893,7 +885,9 @@ server <- function(input, output, session) {
   output$dl_data_tab_3 <- downloadHandler(
     filename = paste(paste0("population_dl_", Sys.Date()), ".csv", sep = ""),
     content = function(con) {
-      write.csv(dl_measures_data(), con, row.names = FALSE)
+      # Need to use write_excel_csv to write apostrophe's correctly
+      write_excel_csv(dl_measures_data(), con)
+                      
     }
   )
   

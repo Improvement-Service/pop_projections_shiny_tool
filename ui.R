@@ -43,7 +43,7 @@ ui <- tagList(tags$head(withAnim(),
                                   fluidRow(column(6,
                                                   # About the tool text
                                                   tags$div(tags$h3("About this tool"),
-                                                           tags$h5("This interactive visualisation presents sub-council area population projections produced by the Improvement Service in collaboration with the National Records of Scotland."),
+                                                           tags$h5("This interactive visualisation presents sub-council area population projections produced by the Improvement Service."),
                                                            tags$h5("Sub-council area population projections can help local authorities understand how the future size and structure of the population is likely to vary across the local authority area and how the rate of change varies across these areas."),
                                                            tags$h5("These insights can support a wide range of local level decision making and planning including:"),
                                                            tags$li("housing need"),
@@ -62,7 +62,7 @@ ui <- tagList(tags$head(withAnim(),
                                                                       "Other Measures", 
                                                                       style = "font-size: 14px;"
                                                                       ),
-                                                           tags$h5("This tab allows users to analyse the components of population change, including net migration and natural change, to understand how projected changes in these will contribute to growth or decline in population size. It also shows how the changing population is projected to impact on the make up of the population, including, dependency ratio, sex ratio and life expectancy."),
+                                                           tags$h5("This tab allows users to analyse the components of population change, including net migration and natural change, to understand how projected changes in these will contribute to growth or decline in population size. It also shows how the changing population is projected to impact on the make up of the population, highlighting the dependency ratio."),
                                                            actionLink("data_tab_link", 
                                                                       "Data Download", 
                                                                       style = "font-size: 14px;"
@@ -78,7 +78,7 @@ ui <- tagList(tags$head(withAnim(),
                                            ),
                                   # Vertical line
                                   fluidRow(tags$div(tags$hr()),
-                                           column(6,
+                                           column(12,
                                                   # Further information text
                                                   tags$div(tags$h3("Further Information"),
                                                            tags$h5("Further information about the sub-council area population projections used in this tool can be found on the ", 
@@ -86,14 +86,9 @@ ui <- tagList(tags$head(withAnim(),
                                                                           "Improvement Service website."
                                                                           )
                                                                    ),
-                                                           tags$h5("There you will find background information on the projection and a methodology note detailing how the projections were produced including assumptions made and caveats and limitations to consider when interpreting the data. The full sets of data can be downloaded from the website and answers to frequently asked questions can also be found."),
-                                                           tags$h5("The following video provides an overview of how the projections were produced and how they may be used.")
+                                                           tags$h5("There you will find background information on the projection and a methodology note detailing how the projections were produced including assumptions made and caveats and limitations to consider when interpreting the data. The full sets of data can be downloaded from the website and answers to frequently asked questions can also be found.")
                                                            )
-                                                  ),
-                                           column(6,
-                                                  # Embedded youtube video
-                                                  HTML('<iframe width="580" height="260" src="https://www.youtube-nocookie.com/embed/n8J_7SK3jlI?autoplay=0&showinfo=0&loop=1&rel=0" frameborder="0" allow="accelerometer; loop ;encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
-                                                  )
+                                                   )
                                            )
                                   ),
 # Population Size Tab (Tab 1)-----------------------------------------------------------                           
@@ -164,7 +159,7 @@ ui <- tagList(tags$head(withAnim(),
                                                                                    selected = years[1],
                                                                                    choices = list(
                                                                                      "Real" = years[1],
-                                                                                     "Projected" = years[2:13])
+                                                                                     "Projected" = years[2:16])
                                                                                  )
                                                                    )) #end of absolutePanel / div
                                                                    ),
@@ -199,9 +194,7 @@ ui <- tagList(tags$head(withAnim(),
                                                           choices = c("Total Population", 
                                                                       "Net Migration", 
                                                                       "Natural Change",
-                                                                      "Sex Ratio", 
-                                                                      "Dependency Ratio", 
-                                                                      "Life Expectancy"
+                                                                      "Dependency Ratio"
                                                                       ), 
                                                           label = "Select measure:",
                                                           selected = "Total Population"
@@ -241,7 +234,7 @@ ui <- tagList(tags$head(withAnim(),
                                                                                    selected = years[1],
                                                                                    choices = list(
                                                                                      "Real" = years[1],
-                                                                                     "Projected" = years[2:13])
+                                                                                     "Projected" = years[2:16])
                                                                                  )
                                                                    ) #end of absolutePanel
                                                                    
@@ -280,9 +273,7 @@ ui <- tagList(tags$head(withAnim(),
                                   choices = c("Population Data",
                                               "Net Migration", 
                                               "Natural Change",
-                                               "Sex Ratio", 
-                                               "Dependency Ratio", 
-                                               "Life Expectancy"
+                                              "Dependency Ratio"
                                               ), 
                                   label = "Select measure:",
                                   options = list(placeholder = 'Select measure:',
@@ -343,14 +334,12 @@ ui <- tagList(tags$head(withAnim(),
                                                ),
                                         column(3, 
                                                # Year choice slider input
-                                               sliderInput(inputId = "year_select_tab3",
-                                                           label = "Select years to include:",
-                                                           min = 2018,
-                                                           max = 2030,
-                                                           step = 1,
-                                                           value = c(2018,2030),
-                                                           sep = ""
-                                                           )
+                                               sliderTextInput(
+                                                 inputId = "year_select_tab3",
+                                                 label = "Select years to include:",  
+                                                 choices = years_labels,
+                                                 selected = years_labels[c(1, 16)],
+                                                 dragRange = TRUE)
                                                ),
                                         column(2, 
                                                # Year choice slider input
