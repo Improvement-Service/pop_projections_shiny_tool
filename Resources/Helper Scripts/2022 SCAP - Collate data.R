@@ -58,6 +58,54 @@ population_data_with_scot <- total_population_data %>%
   select(Council.Name, Level, Area.Name, Year, Sex, Age, Population) %>%
   rbind(., total_population_data)
 
+# Collate data for national summary doc -----------------------------------------
+
+# Function for reading and cleaning
+read_and_clean_national_summ <- function(path) {
+  
+  # Extract council name from file  path
+  council_name <- path %>%
+    str_extract(., ".+(?=\\s-\\sDetailed\\sTables\\.xlsx)") %>%
+    str_replace(., "C:/Users/connachan.cara/OneDrive - IS/Research - Detailed Tables/", "")
+  
+  data <- read_xlsx(path, sheet = "Table 1") %>%
+    row_to_names(row_number = 1) %>%
+    rename("Small Area Name" = "Area Name") %>%
+    # Add council name as column
+    mutate("Area Name" = council_name) %>%
+    mutate_at("All Ages", as.numeric) %>%
+    filter(Sex == "Persons") %>%
+    select("Area Name", 
+           "Small Area Name", 
+           "Area Type",
+           "Year to 30 June",
+           "All Ages")
+  
+}
+
+# Run function for all detailed tables
+national_summary_data <- file_paths %>% 
+  # map applys the read and clean function to each of the files passed from the list
+  map(., read_and_clean_national_summ) %>% 
+  # list_rbind appends the rows of the different files read in 
+  list_rbind()
+
+# Add Scotland level data 
+national_summary_data_with_scot <- national_summary_data %>%
+  filter(`Area Type` == "Council") %>%
+  group_by(`Year to 30 June`) %>% 
+  summarise(`All Ages` = sum(`All Ages`)) %>%
+  mutate(`Area Name` = "Scotland") %>%
+  mutate(`Area Type` = "Scotland") %>%
+  mutate(`Small Area Name` = "Scotland") %>%
+  select("Area Name", 
+         "Small Area Name", 
+         "Area Type",
+         "Year to 30 June",
+         "All Ages") %>%
+  rbind(., national_summary_data) %>%
+  pivot_wider(names_from = `Year to 30 June`, values_from = `All Ages`)
+
 # Read and combine other measures data -----------------------------------------
 
 # Create vector of file paths
@@ -128,7 +176,7 @@ read_sheets <- function(sheets, path, council) {
     # Converts dependency ratio value to % value
     mutate(Value = case_when(Measure == "Dependency Ratio" ~ Value * 100,
                              .default = Value)) %>%
-    mutate(Value = round(Value, 1))
+    mutate(Value = round(Value, 0))
     
 }
 
@@ -159,6 +207,11 @@ measures_data <- map2(file_paths_other_measures,
 write.csv(population_data_with_scot, 
           "Data files/2022 SCAP - Population Projections With Aggregations.csv", 
           row.names = FALSE)
+
+write.csv(national_summary_data_with_scot,
+          "Data files/2022 SCAP - National Summary Data.csv",
+          row.names = FALSE)
+
 write.csv(measures_data, 
           "Data files/2022 SCAP - Other measures data.csv", 
           row.names = FALSE)
