@@ -396,8 +396,13 @@ server <- function(input, output, session) {
         filter(Council.Name == input$la_choice_tab_1) %>%
         pull(LongName)
       
-      default_area <- small_area_options[1] #extract first alphabetically
-      selected_small_area(default_area) #update global variable
+      # Isolates currently selected area
+      current  <- isolate(selected_small_area())
+      # Makes sure default area doesn't change when submit selections is pressed
+      # but defaults to first area if no area has been selected
+      default_area <- if(current %in% small_area_options) current else small_area_options[1]
+      # Update global variable
+      selected_small_area(default_area) 
       
       update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
       update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
@@ -424,8 +429,13 @@ server <- function(input, output, session) {
       small_area_options <- small_area_lookup %>%
         filter(Council.Name == input$la_choice_tab_2) %>%
         pull(LongName)
-      default_area <- small_area_options[1]
-      selected_small_area(default_area)
+      # Isolates currently selected area
+      current  <- isolate(selected_small_area())
+      # Makes sure default area doesn't change when submit selections is pressed
+      # but defaults to first area if no area has been selected
+      default_area <- if(current %in% small_area_options) current else small_area_options[1]
+      # Update global variable
+      selected_small_area(default_area) 
       
       update_highlighted_polygon(proxy = proxy_tab_1, selected_small_area(),selected_la())
       update_highlighted_polygon(proxy = proxy_tab_2, selected_small_area(),selected_la())
