@@ -126,7 +126,7 @@ file_paths_other_measures <- c(
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Falkirk_MMW_2011_out/comp_Continuity_SCAP.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Fife_MMW_2011_out/comp_Continuity_SCAP_Mig9.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Glasgow_City_MMW_2011_out/comp_Continuity_SCAP.xls",
-"C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Highland_MMW_2011_out/comp_Continuity_SCAP.xls",
+"C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Highland_MMW_2011_out/comp_Continuity_SCAP_5.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Inverclyde_MMW_2011_out/comp_Continuity_SCAP.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Midlothian_MMW_2011_out/comp_Continuity_SCAP.xls",
 "C:/Users/connachan.cara/Documents/Population Projections 2026/Forecast/1. POPGROUP V4.1/Moray_MMW_2011_out/comp_Continuity_SCAP_7.xls",
